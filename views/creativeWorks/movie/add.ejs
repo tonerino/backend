@@ -1,0 +1,61 @@
+<%- contentFor('title') %>
+映画作品マスタ登録
+<%- contentFor('displayId') %>
+Aa-9
+<%- contentFor('styles') %>
+
+<%- contentFor('scripts') %>
+
+
+
+<%- contentFor('body') %>
+<div class="col-sm-12 form-container">
+    <% /* フォーム */ %>
+    <form method="post" class="form-horizontal" >
+        <div class="menu-group">
+            <% /* メッセージ */ %>
+            <% if (message !== '') { %>
+            <p class="error message text-danger panel-body bg-danger"><%= message %></p>
+            <% } %>
+        </div>
+        <% /* 作品コード */ %>
+        <div class="form-group ">
+            <label for="identifier" class="col-sm-3 control-label label-title">
+                作品コード<font color="red">＊</font>
+            </label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="identifier" id="identifier" placeholder="" maxlength=64 value="<%= forms.identifier %>">
+                <p class="message">
+                <% /*半角64文字以内でご入力ください。*/ %>
+                半角64文字以内でご入力ください。
+                </p>
+                <p class="error message text-danger">
+                <% if (errors && errors.identifier) { %>
+                <%- errors.identifier.msg %>
+                <% } %>
+                </p>
+            </div>
+        </div>
+
+        <% /* 登録・更新共通部 */ %>
+        <%- include('form', { forms: forms }) %>
+
+        <% /* 登録ボタン */ %>
+        <div class="form-group">
+            <div class="btn-area panel-body">
+                <a class="btn btn-ok btn-primary">登録する</a>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+$(function(){
+    $('.btn-ok').on('click', function(){
+        $('form').submit();
+    });
+    // datepickerセット
+    $('.datepicker').datepicker({
+        language: 'ja'
+    })
+});
+</script>

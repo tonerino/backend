@@ -1,0 +1,59 @@
+<div class="form-group">
+    <label for="name" class="col-sm-3 control-label label-title">
+        作品名<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <input class="form-control" name="name" id="name" placeholder="" maxlength=64 value="<%= forms.name %>">
+        <p class="message">
+        全角64文字以内でご入力ください。
+        </p>
+        <p class="error message text-danger">
+        <% if (errors && errors.name) { %>
+        <%- errors.name.msg %>
+        <% } %>
+        </p>
+    </div>
+</div>
+<div class="form-group">
+    <label for="duration" class="col-sm-3 control-label label-title">
+        上映時間<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <input class="form-control" style="width:30%;display:inline-block;" name="duration" id="duration" placeholder="" maxlength=10 value="<%= forms.duration %>">
+        分
+        <p class="message">
+        半角10文字以内でご入力ください。
+        </p>
+        <p class="error message text-danger">
+        <% if (errors && errors.duration) { %>
+        <%- errors.duration.msg %>
+        <% } %>
+        </p>
+    </div>
+</div>
+<div class="form-group">
+    <label for="contentRating" class="col-sm-3 control-label label-title">
+        レイティング<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <%
+            let ratings = [
+                {code: 'G', name: {ja: 'なし', en:'General Audience'}},
+                {code: 'PG12', name: {ja: 'PG-12指定', en:'PG-12'}},
+                {code: 'R15+', name: {ja: 'R-15指定', en:'R-15'}},
+                {code: 'R18+', name: {ja: 'R-18指定', en:'R-18'}}
+            ];
+        %>
+        <select name="contentRating" id="contentRating" class="form-control">
+            <option value="">---</option>
+            <% for (let rating of ratings) { %>
+            <option value="<%= rating.code %>"<% if (forms.contentRating === rating.code) { %> selected="selected"<% } %>><%- rating.name.ja %></option>
+            <% } %>
+        </select>
+        <p class="error message text-danger">
+        <% if (errors && errors.contentRating) { %>
+        <%- errors.contentRating.msg %>
+        <% } %>
+        </p>
+    </div>
+</div>

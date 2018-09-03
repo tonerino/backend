@@ -1,0 +1,99 @@
+<div class="modal fade" id="editModal" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span>×</span></button>
+				<h4 class="modal-title">パフォーマンス編集</h4>
+			</div>
+			<div class="modal-body">
+                <div class="panel-body">
+                    <form class="form-horizontal">
+                        <ul class="list-group">
+                            <li class="list-group-item film">作品 : <span></span></li>
+                            <li class="list-group-item theater">劇場 : <span></span></li>
+                            <li class="list-group-item day">上映日 : <span></span></li>
+                        </ul>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label" for="doorTime">開場時間</label>
+                            <div class="col-sm-9 form-inline">
+                                <select class="form-control" name="doorTimeHour">
+                                <% for (let i = 0; i < 24; i++) { %>
+                                <% let hour = ('00' + String(i)).slice(-2); %>
+                                    <option value="<%= hour %>"><%= hour %></option>
+                                <% } %>
+                                </select>
+                                時
+                                <select class="form-control" name="doorTimeMinutes">
+                                <% for (let i = 0; i < 60; i++) { %>
+                                <% let minutes = ('00' + String(i)).slice(-2); %>
+                                    <option value="<%= minutes %>"><%= minutes %></option>
+                                <% } %>
+                                </select>
+                                分
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label" for="startTime">開始時間</label>
+                            <div class="col-sm-9 form-inline">
+                                <select class="form-control" name="startTimeHour">
+                                <% for (let i = 0; i < 24; i++) { %>
+                                <% let hour = ('00' + String(i)).slice(-2); %>
+                                    <option value="<%= hour %>"><%= hour %></option>
+                                <% } %>
+                                </select>
+                                時
+                                <select class="form-control" name="startTimeMinutes">
+                                <% for (let i = 0; i < 60; i++) { %>
+                                <% let minutes = ('00' + String(i)).slice(-2); %>
+                                    <option value="<%= minutes %>"><%= minutes %></option>
+                                <% } %>
+                                </select>
+                                分
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label" for="endTime">終了時間</label>
+                            <div class="col-sm-9 form-inline">
+                                <select class="form-control" name="endTimeHour">
+                                <% for (let i = 0; i < 24; i++) { %>
+                                <% let hour = ('00' + String(i)).slice(-2); %>
+                                    <option value="<%= hour %>"><%= hour %></option>
+                                <% } %>
+                                </select>
+                                時
+                                <select class="form-control" name="endTimeMinutes">
+                                <% for (let i = 0; i < 60; i++) { %>
+                                <% let minutes = ('00' + String(i)).slice(-2); %>
+                                    <option value="<%= minutes %>"><%= minutes %></option>
+                                <% } %>
+                                </select>
+                                分
+                            </div>
+                        </div>
+                        <div class="form-group form-inline">
+                            <label class="col-sm-3 control-label" for="screen">スクリーン</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="screen"></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-12" for="ticketTypeGroup">券種グループ</label>
+                            <div class="col-sm-12">
+                                <select class="form-control" name="ticketTypeGroup"></select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+			</div>
+            <input type="hidden" name="screeningEventId" value="">
+            <input type="hidden" name="performance" value="">
+            <input type="hidden" name="film" value="">
+            <input type="hidden" name="theater" value="">
+            <input type="hidden" name="day" value="">
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+				<button type="button" class="btn btn-primary update-button">パフォーマンスを更新</button>
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,168 @@
+<div class="form-group">
+    <label for="locationBranchCode" class="col-sm-3 control-label label-title">
+        劇場<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <select class="form-control" name="locationBranchCode">
+            <option value="">選択してください</option>
+            <% for (const movieTheater of movieTheaters) { %>
+            <option value="<%= movieTheater.branchCode %>"<% if (forms.locationBranchCode === movieTheater.branchCode) { %> selected<% } %>><%= movieTheater.name.ja %></option>
+            <% } %>
+        </select>
+    </div>
+</div>
+<div class="form-group">
+    <label for="locationBranchCode" class="col-sm-3 control-label label-title">
+        作品<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <select class="form-control" name="movieIdentifier">
+            <option value="">選択してください</option>
+            <% for (const movie of movies) { %>
+            <option value="<%= movie.identifier %>"<% if (forms.movieIdentifier === movie.identifier) { %> selected<% } %>><%= movie.name %></option>
+            <% } %>
+        </select>
+    </div>
+</div>
+<div class="form-group">
+    <label for="nameJa" class="col-sm-3 control-label label-title">
+        イベント名<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <input class="form-control" name="nameJa" id="nameJa" placeholder="" maxlength=64 value="<%= forms.nameJa %>">
+        <p class="message">
+        全角64文字以内でご入力ください。
+        </p>
+        <p class="error message text-danger">
+        <% if (errors && errors.nameJa) { %>
+        <%- errors.nameJa.msg %>
+        <% } %>
+        </p>
+    </div>
+</div>
+<div class="form-group">
+    <label for="kanaName" class="col-sm-3 control-label label-title">
+        イベント名カナ<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <input class="form-control" name="kanaName" id="kanaName" placeholder="" maxlength=64 value="<%= forms.kanaName %>">
+        <p class="message">
+        全角64文字以内でご入力ください。
+        </p>
+        <p class="error message text-danger">
+        <% if (errors && errors.kanaName) { %>
+        <%- errors.kanaName.msg %>
+        <% } %>
+        </p>
+    </div>
+</div>
+<div class="form-group">
+    <label for="nameEn" class="col-sm-3 control-label label-title">
+        イベント名英
+    </label>
+    <div class="col-sm-9">
+        <input class="form-control" name="nameEn" id="nameEn" placeholder="" maxlength=128 value="<%- forms.nameEn %>">
+        <p class="message">
+        半角128文字以内でご入力ください。
+        </p>
+        <p class="error message text-danger">
+        <% if (errors && errors.nameEn) { %>
+        <%- errors.nameEn.msg %>
+        <% } %>
+        </p>
+    </div>
+</div>
+<div class="form-group">
+    <label for="startDate" class="col-sm-3 control-label label-title">
+        上映開始日
+    </label>
+    <div class="col-sm-9">
+        <input class="form-control datepicker" style="width:30%;display:inline-block;" name="startDate" id="startDate" placeholder="" maxlength=10 value="<%= forms.startDate %>">
+        <p class="error message text-danger">
+        <% if (errors && errors.startDate) { %>
+        <%- errors.startDate.msg %>
+        <% } %>
+        </p>  
+    </div>
+</div>
+<div class="form-group">
+    <label for="endDate" class="col-sm-3 control-label label-title">
+        上映終了日
+    </label>    
+    <div class="col-sm-9">
+        <input class="form-control datepicker" style="width:30%;display:inline-block;" name="endDate" id="endDate" placeholder="" maxlength=10 value="<%= forms.endDate %>">
+        <p class="error message text-danger">
+        <% if (errors && errors.endDate) { %>
+        <%- errors.endDate.msg %>
+        <% } %>
+        </p>  
+    </div>
+</div>
+<div class="form-group">
+    <label for="contentRating" class="col-sm-3 control-label label-title">
+        レイティング<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <%
+            let ratings = [
+                {code: 'G', name: {ja: 'なし', en:'General Audience'}},
+                {code: 'PG12', name: {ja: 'PG-12指定', en:'PG-12'}},
+                {code: 'R15+', name: {ja: 'R-15指定', en:'R-15'}},
+                {code: 'R18+', name: {ja: 'R-18指定', en:'R-18'}}
+            ];
+        %>
+        <select name="contentRating" id="contentRating" class="form-control">
+            <option value="">---</option>
+            <% for (let rating of ratings) { %>
+            <option value="<%= rating.code %>"<% if (forms.contentRating === rating.code) { %> selected="selected"<% } %>><%- rating.name.ja %></option>
+            <% } %>
+        </select>
+        <p class="error message text-danger">
+        <% if (errors && errors.contentRating) { %>
+        <%- errors.contentRating.msg %>
+        <% } %>
+        </p>
+    </div>
+</div>
+<div class="form-group">
+    <label for="nameEn" class="col-sm-3 control-label label-title">
+        字幕言語
+    </label>
+    <div class="col-sm-9">
+        <input class="form-control" name="subtitleLanguage" id="subtitleLanguage" placeholder="" maxlength=128 value="<%- forms.subtitleLanguage %>">
+        <p class="message">
+        </p>
+        <p class="error message text-danger">
+        <% if (errors && errors.subtitleLanguage) { %>
+        <%- errors.subtitleLanguage.msg %>
+        <% } %>
+        </p>
+    </div>
+</div>
+<div class="form-group">
+    <label for="videoFormat" class="col-sm-3 control-label label-title">
+        上映形態<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <%
+            let screens = [
+                {code: 'normal', name: {ja: '通常上映', en:'normal'}},
+                {code: 'ATMOS', name: {ja: 'ATMOS', en:'ATMOS'}},
+                {code: 'IMAX', name: {ja: 'IMAX', en:'IMAX'}},
+                {code: 'MX4D', name: {ja: 'MX4D', en:'MX4D'}},
+                {code: 'TCX', name: {ja: 'TCX', en:'TCX'}}
+            ];
+        %>
+        <select name="videoFormat" id="videoFormat" class="form-control">
+            <option value="">---</option>
+            <% for (let screen of screens) { %>
+            <option value="<%= screen.code %>"<% if (forms.videoFormat === screen.code) { %> selected="selected"<% } %>><%- screen.name.ja %></option>
+            <% } %>
+        </select>
+        <p class="error message text-danger">
+        <% if (errors && errors.videoFormat) { %>
+        <%- errors.videoFormat.msg %>
+        <% } %>
+        </p>
+    </div>
+</div>

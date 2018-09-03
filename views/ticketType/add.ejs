@@ -1,0 +1,57 @@
+<%- contentFor('title') %>
+券種マスタ新規登録
+<%- contentFor('displayId') %>
+Aa-5
+<%- contentFor('styles') %>
+<link href="/css/bootstrap.colorpickersliders.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="/js/tinycolor-min.js"></script>
+<script src="/js/bootstrap.colorpickersliders.js"></script>
+<script src="/js/master/ticketTypeAdd.js"></script>
+<%- contentFor('body') %>
+<div class="col-sm-12 form-container">
+    <% /* フォーム */ %>
+    <form method="post" class="form-horizontal" >
+        <div class="menu-group">
+            <% /* メッセージ */ %>
+            <% if (message !== '') { %>
+            <p class="error message text-danger panel-body bg-danger"><%= message %></p>
+            <% } %>
+        </div>
+
+        <% /* 券種コード */ %>
+        <div class="form-group ">
+            <label for="id" class="col-sm-3 control-label label-title">
+                券種コード<font color="red">＊</font>
+            </label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="id" id="id" placeholder="" maxlength=64 value=<%= forms.id %>>
+                <p class="message">
+                    半角64文字以内でご入力ください。
+                </p>
+                <p class="error message text-danger">
+                <% if (errors && errors.id) { %>
+                    <%- errors.id.msg %>
+                <% } %>
+                </p>
+            </div>
+        </div>
+        
+        <%- include('form', { forms: forms }) %>
+
+        <% /* 登録ボタン */ %>
+        <div class="form-group">
+            <div class="btn-area panel-body">
+                <a class="btn btn-ok btn-primary">登録する</a>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+$(function(){
+    $('.btn-ok').on('click', function(){
+        $('form').submit();
+    });
+});
+</script>
+

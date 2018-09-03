@@ -1,0 +1,107 @@
+{
+  "author": {
+    "name": "Motionpicture co.,ltd."
+  },
+  "contributors": [
+    {
+      "name": "Akito Hataguchi",
+      "email": "hataguchi@motionpicture.jp"
+    },
+    {
+      "name": "Mariko Kusunose",
+      "email": "kusunose@motionpicture.jp"
+    },
+    {
+      "name": "Tetsu Yamazaki",
+      "email": "yamazaki@motionpicture.jp"
+    }
+  ],
+  "dependencies": {
+    "@toei-jp/chevre-api-nodejs-client": "^1.0.0-alpha.0",
+    "body-parser": "^1.17.2",
+    "connect-redis": "^3.3.0",
+    "cookie-parser": "^1.4.1",
+    "cors": "^2.8.3",
+    "debug": "^2.6.8",
+    "ejs": "^2.5.2",
+    "express": "^4.15.3",
+    "express-ejs-layouts": "^2.5.0",
+    "express-session": "^1.15.3",
+    "express-validator": "^3.1.3",
+    "helmet": "^3.6.1",
+    "http-status": "^1.0.1",
+    "moment": "^2.18.1",
+    "moment-timezone": "^0.5.21",
+    "multer": "^1.1.0",
+    "redis": "^2.7.1",
+    "serve-favicon": "^2.4.3",
+    "underscore": "^1.8.3",
+    "validator": "^7.0.0"
+  },
+  "description": "Chevre Backend Application",
+  "devDependencies": {
+    "@types/body-parser": "0.0.34",
+    "@types/connect-redis": "0.0.5",
+    "@types/cookie-parser": "^1.3.30",
+    "@types/cors": "^2.8.1",
+    "@types/debug": "0.0.29",
+    "@types/express": "^4.16.0",
+    "@types/express-partials": "0.0.30",
+    "@types/helmet": "0.0.34",
+    "@types/http-status": "^0.2.29",
+    "@types/jquery": "^2.0.45",
+    "@types/mime": "0.0.29",
+    "@types/mocha": "^5.2.5",
+    "@types/moment-timezone": "^0.5.8",
+    "@types/multer": "0.0.33",
+    "@types/redis": "^0.12.36",
+    "@types/serve-favicon": "^2.2.28",
+    "@types/sinon": "^5.0.2",
+    "@types/supertest": "^2.0.0",
+    "@types/underscore": "^1.8.9",
+    "@types/validator": "^6.2.0",
+    "ink-docstrap": "^1.3.0",
+    "jsdoc": "^3.5.5",
+    "mocha": "^5.2.0",
+    "node-sass": "^4.9.3",
+    "nsp": "^3.2.1",
+    "nyc": "^12.0.2",
+    "rimraf": "^2.6.1",
+    "sinon": "^6.1.5",
+    "snyk": "^1.94.0",
+    "supertest": "^3.0.0",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-microsoft-contrib": "^5.2.1",
+    "typescript": "^3.0.3"
+  },
+  "engines": {
+    "node": ">=6.9.1",
+    "npm": ">=3.10.8"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "main": "server.js",
+  "name": "toei-chevre-backend",
+  "private": true,
+  "repository": {},
+  "scripts": {
+    "build": "tsc",
+    "check": "npm run tslint && nsp check",
+    "clean": "rimraf ./dst ./docs ./coverage \"npm-debug.log*\" ./.nyc_output",
+    "doc": "jsdoc -c jsdoc.json",
+    "mocha": "mocha",
+    "nyc": "nyc mocha",
+    "coverage": "npm run nyc -- \"src/**/*.spec.ts\"",
+    "start": "node ./dst/bin/www",
+    "start:development": "node ./dst/bin/ssl",
+    "test": "npm run check && npm run coverage",
+    "tslint": "tslint --project tsconfig.json -c tslint.json --exclude \"**/*.spec.ts\" \"src/**/*.ts\"",
+    "preversion": "npm run clean && npm run build && npm test && npm run doc",
+    "version": "git add -A",
+    "postversion": "git push origin --tags",
+    "scss": "node-sass public/scss/import.scss public/css/style.css",
+    "public-ts": "webpack --progress --colors --config ./public/webpack.config.js --watch"
+  },
+  "version": "1.0.0"
+}
