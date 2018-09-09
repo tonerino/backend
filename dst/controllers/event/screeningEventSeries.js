@@ -171,7 +171,13 @@ function createEventFromBody(body, movie, movieTheater) {
         },
         kanaName: body.kanaName,
         alternativeHeadline: body.nameJa,
-        location: movieTheater,
+        location: {
+            id: movieTheater.id,
+            typeOf: movieTheater.typeOf,
+            branchCode: movieTheater.branchCode,
+            name: movieTheater.name,
+            kanaName: movieTheater.kanaName
+        },
         // organizer: {
         //     typeOf: OrganizationType.MovieTheater,
         //     identifier: params.movieTheater.identifier,

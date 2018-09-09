@@ -156,7 +156,9 @@ export async function update(req: Request, res: Response): Promise<void> {
  * リクエストボディからイベントオブジェクトを作成する
  */
 function createEventFromBody(
-    body: any, movie: chevre.factory.creativeWork.movie.ICreativeWork, movieTheater: any
+    body: any,
+    movie: chevre.factory.creativeWork.movie.ICreativeWork,
+    movieTheater: chevre.factory.place.movieTheater.IPlace
 ): chevre.factory.event.screeningEventSeries.IAttributes {
     return {
         typeOf: chevre.factory.eventType.ScreeningEventSeries,
@@ -166,7 +168,13 @@ function createEventFromBody(
         },
         kanaName: body.kanaName,
         alternativeHeadline: body.nameJa,
-        location: movieTheater,
+        location: {
+            id: movieTheater.id,
+            typeOf: movieTheater.typeOf,
+            branchCode: movieTheater.branchCode,
+            name: movieTheater.name,
+            kanaName: movieTheater.kanaName
+        },
         // organizer: {
         //     typeOf: OrganizationType.MovieTheater,
         //     identifier: params.movieTheater.identifier,
