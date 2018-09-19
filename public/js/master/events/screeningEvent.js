@@ -321,6 +321,9 @@ function add() {
     modal.find('select[name=endTimeMinutes]').val('00');
     modal.find('select[name=screen]').val('');
     modal.find('select[name=ticketTypeGroup]').val('');
+    modal.find('input[name=releaseDate]').val('');
+    modal.find('select[name=releaseDateHour]').val('00');
+    modal.find('select[name=releaseDateMinutes]').val('00');
     $('#newModal').modal();
 }
 
