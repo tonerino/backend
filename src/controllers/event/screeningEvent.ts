@@ -195,6 +195,12 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         throw new Error('上映スクリーン名が見つかりません');
     }
 
+    //発売開始日
+    let releaseTime: any;
+    if (body.releaseDate !== '') {
+        releaseTime = moment(`${body.releaseDate}T${body.releaseTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate();
+    }
+
     return {
         typeOf: chevre.factory.eventType.ScreeningEvent,
         doorTime: moment(`${body.day}T${body.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
@@ -209,7 +215,8 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         },
         superEvent: screeningEventSeries,
         name: screeningEventSeries.name,
-        eventStatus: chevre.factory.eventStatusType.EventScheduled
+        eventStatus: chevre.factory.eventStatusType.EventScheduled,
+        releaseTime: releaseTime
     };
 }
 /**

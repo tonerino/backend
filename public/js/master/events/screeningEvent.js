@@ -75,6 +75,8 @@ function regist() {
     var startTime = modal.find('select[name=startTimeHour]').val() + modal.find('select[name=startTimeMinutes]').val();
     var endTime = modal.find('select[name=endTimeHour]').val() + modal.find('select[name=endTimeMinutes]').val();
     var ticketTypeGroup = modal.find('select[name=ticketTypeGroup]').val();
+    var releaseDate = modal.find('input[name=releaseDate]').val();
+    var releaseTime = modal.find('select[name=releaseDateHour]').val() + modal.find('select[name=releaseDateMinutes]').val();
     if (theater === ''
         || screen === ''
         || day === ''
@@ -99,7 +101,9 @@ function regist() {
             doorTime: doorTime,
             startTime: startTime,
             endTime: endTime,
-            ticketTypeGroup: ticketTypeGroup
+            ticketTypeGroup: ticketTypeGroup,
+            releaseDate: releaseDate,
+            releaseTime: releaseTime
         }
     }).done(function (data) {
         if (!data.error) {
@@ -130,6 +134,8 @@ function update() {
     var startTime = modal.find('select[name=startTimeHour]').val() + modal.find('select[name=startTimeMinutes]').val();
     var endTime = modal.find('select[name=endTimeHour]').val() + modal.find('select[name=endTimeMinutes]').val();
     var ticketTypeGroup = modal.find('select[name=ticketTypeGroup]').val();
+    var releaseDate = modal.find('input[name=releaseDate]').val();
+    var releaseTime = modal.find('select[name=releaseDateHour]').val() + modal.find('select[name=releaseDateMinutes]').val();
     if (performance === ''
         || screen === ''
         || doorTime === ''
@@ -151,7 +157,9 @@ function update() {
             doorTime: doorTime,
             startTime: startTime,
             endTime: endTime,
-            ticketTypeGroup: ticketTypeGroup
+            ticketTypeGroup: ticketTypeGroup,
+            releaseDate: releaseDate,
+            releaseTime: releaseTime
         }
     }).done(function (data) {
         if (!data.error) {
@@ -333,6 +341,8 @@ function edit(target) {
     var film = target.attr('data-film');
     var filmName = target.text();
     var ticketTypeGroup = target.attr('data-ticketTypeGroup');
+    var releaseDate = target.attr('data-releaseDate') ? target.attr('data-releaseDate') : '';
+    var releaseTime = target.attr('data-releaseTime') ? target.attr('data-releaseTime') : '';
     var modal = $('#editModal');
     modal.find('input[name=performance]').val(performance);
     modal.find('input[name=theater]').val(theater);
@@ -347,6 +357,13 @@ function edit(target) {
     modal.find('select[name=endTimeMinutes]').val(endTime.slice(2, 4));
     modal.find('select[name=screen]').val(screen);
     modal.find('select[name=ticketTypeGroup]').val(ticketTypeGroup);
+    
+    // 発売開始日
+    if (releaseDate) {
+        modal.find('input[name=releaseDate]').val(releaseDate);
+        modal.find('select[name=releaseDateHour]').val(releaseTime.slice(0, 2));
+        modal.find('select[name=releaseDateMinutes]').val(releaseTime.slice(2, 4));
+    }
 
     modal.find('.film span').text(filmName);
     modal.modal();
@@ -448,6 +465,14 @@ function createScreen(performances) {
             height: height + 'px',
             width: width + '%'
         };
+        // 発売開始日
+        if (performance.releaseTime) {
+            var releaseDate = moment(performance.releaseTime).tz('Asia/Tokyo').format('YYYY/MM/DD');
+            var releaseTime = moment(performance.releaseTime).tz('Asia/Tokyo').format('HHmm');
+        } else {
+            var releaseDate = '';
+            var releaseTime = '';
+        }
 
         var performanceDom = $('<div class="performance">' +
             '<div ' +
@@ -460,6 +485,8 @@ function createScreen(performances) {
             'data-theater="' + performance.superEvent.location.branchCode + '" ' +
             'data-film="' + performance.superEvent.id + '" ' +
             'data-ticketTypeGroup="' + performance.ticketTypeGroup + '" ' +
+            'data-releaseDate="' + releaseDate + '" ' +
+            'data-releaseTime="' + releaseTime + '" ' +
             'role="button" class="inner">' + performance.name.ja + '</div>' +
             '</div>');
         performanceDom.css(style);
@@ -467,3 +494,10 @@ function createScreen(performances) {
     }
     return dom;
 }
+
+$(function () {
+    // datepickerセット
+    $('.datepicker').datepicker({
+        language: 'ja'
+    })
+});

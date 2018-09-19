@@ -111,6 +111,31 @@
                                 <select class="form-control" name="ticketTypeGroup"></select>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label" for="releaseDate">発売開始日</label>
+                            <div class="col-sm-9 form-inline">
+                                <input class="form-control datepicker" style="width:30%;display:inline-block;" name="releaseDate" placeholder="" maxlength=10>
+                                日 
+                                <select class="form-control" name="releaseDateHour">
+                                    <% for (let i = 0; i < 24; i++) { %>
+                                        <% let hour = ('00' + String(i)).slice(-2); %>
+                                            <option value="<%= hour %>">
+                                                <%= hour %>
+                                            </option>
+                                            <% } %>
+                                </select>
+                                時
+                                <select class="form-control" name="releaseDateMinutes">
+                                    <% for (let i = 0; i < 60; i++) { %>
+                                        <% let minutes = ('00' + String(i)).slice(-2); %>
+                                            <option value="<%= minutes %>">
+                                                <%= minutes %>
+                                            </option>
+                                            <% } %>
+                                </select>
+                                分
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
