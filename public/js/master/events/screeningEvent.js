@@ -20,7 +20,7 @@ $(function () {
     $(document).on('click', '.search-button', function (event) {
         event.preventDefault();
         var theater = $('.search select[name=theater]').val();
-        var day = $('.search select[name=day]').val();
+        var day = $('.search input[name=day]').val();
         search(theater, day);
     });
     // 新規作成
@@ -304,7 +304,7 @@ function filmSelect() {
  */
 function add() {
     var theater = $('select[name=theater]').val();
-    var day = $('select[name=day]').val();
+    var day = $('input[name=day]').val();
     if (!theater || !day) {
         alert('劇場、上映日を選択してください');
         return;
@@ -499,8 +499,11 @@ function createScreen(performances) {
 }
 
 $(function () {
+    //上映日
+    $('input[name=day]').val(moment().tz('Asia/Tokyo').format('YYYY/MM/DD'));
+
     // datepickerセット
     $('.datepicker').datepicker({
         language: 'ja'
-    })
+    });
 });
