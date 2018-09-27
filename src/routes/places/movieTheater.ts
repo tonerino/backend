@@ -46,7 +46,7 @@ movieTheaterRouter.get('/getScreenListByTheaterBranchCode', async (req, res) => 
         });
         const results = place.containsPlace.map((screen) => ({
             branchCode: screen.branchCode,
-            name: screen.name ? screen.name.ja : ''
+            name: screen.name !== undefined ? screen.name.ja : ''
         }));
         results.sort((screen1, screen2) => {
             if (screen1.name > screen2.name) {
