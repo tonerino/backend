@@ -12,8 +12,12 @@ export namespace Common {
     export const invalidDateFormat = '$fieldName$は日付を入力してください';
     export const unexpectedError = 'システムエラーが発生しました。ご不便をおかけして申し訳ありませんがしばらく経ってから再度お試しください。';
     export const maxLength = '$fieldName$は$maxLength$文字以内で入力してください';
+    export const maxLengthHalfByte = '$fieldName$は半角$maxLength$文字以内で入力してください';
     // メッセージ編集
     export function getMaxLength(fieldName: string, max: number): string {
         return maxLength.replace(field, fieldName).replace(maxLen, max.toString());
+    }
+    export function getMaxLengthHalfByte(fieldName: string, max: number): string {
+        return maxLengthHalfByte.replace(field, fieldName).replace(maxLen, max.toString());
     }
 }

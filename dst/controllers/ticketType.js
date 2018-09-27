@@ -187,7 +187,8 @@ function validateFormAdd(req) {
     // 券種コード
     let colName = '券種コード';
     req.checkBody('id', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('id', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_CODE });
+    req.checkBody('id', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_CODE))
+        .isAlphanumeric().len({ max: NAME_MAX_LENGTH_CODE });
     // サイト表示用券種名
     colName = 'サイト表示用券種名';
     req.checkBody('name.ja', Message.Common.required.replace('$fieldName$', colName)).notEmpty();

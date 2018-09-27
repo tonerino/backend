@@ -15,9 +15,14 @@ var Common;
     Common.invalidDateFormat = '$fieldName$は日付を入力してください';
     Common.unexpectedError = 'システムエラーが発生しました。ご不便をおかけして申し訳ありませんがしばらく経ってから再度お試しください。';
     Common.maxLength = '$fieldName$は$maxLength$文字以内で入力してください';
+    Common.maxLengthHalfByte = '$fieldName$は半角$maxLength$文字以内で入力してください';
     // メッセージ編集
     function getMaxLength(fieldName, max) {
         return Common.maxLength.replace(field, fieldName).replace(maxLen, max.toString());
     }
     Common.getMaxLength = getMaxLength;
+    function getMaxLengthHalfByte(fieldName, max) {
+        return Common.maxLengthHalfByte.replace(field, fieldName).replace(maxLen, max.toString());
+    }
+    Common.getMaxLengthHalfByte = getMaxLengthHalfByte;
 })(Common = exports.Common || (exports.Common = {}));
