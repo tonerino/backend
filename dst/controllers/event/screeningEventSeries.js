@@ -193,6 +193,66 @@ function createEventFromBody(body, movie, movieTheater) {
     };
 }
 /**
+ * 検索API
+ */
+function search(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const eventService = new chevre.service.Event({
+                endpoint: process.env.API_ENDPOINT,
+                auth: req.user.authClient
+            });
+            const branchCode = req.query.branchCode;
+            const date = req.query.date;
+            if (branchCode === undefined || date === undefined) {
+                throw new Error();
+            }
+            const { totalCount, data } = yield eventService.searchScreeningEventSeries({
+                startThrough: moment(`${date}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
+                endFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
+                location: {
+                    branchCodes: branchCode
+                }
+            });
+            const results = data.map((event) => {
+                return {
+                    id: event.id,
+                    movieIdentifier: event.workPerformed.identifier,
+                    filmNameJa: event.name.ja,
+                    filmNameEn: event.name.en,
+                    kanaName: event.kanaName,
+                    duration: moment.duration(event.duration).humanize(),
+                    contentRating: event.workPerformed.contentRating,
+                    subtitleLanguage: event.subtitleLanguage,
+                    videoFormat: event.videoFormat
+                };
+            });
+            results.sort((event1, event2) => {
+                if (event1.filmNameJa > event2.filmNameJa) {
+                    return 1;
+                }
+                if (event1.filmNameJa < event2.filmNameJa) {
+                    return -1;
+                }
+                return 0;
+            });
+            res.json({
+                success: true,
+                count: totalCount,
+                results: results
+            });
+        }
+        catch (_) {
+            res.json({
+                success: false,
+                count: 0,
+                results: []
+            });
+        }
+    });
+}
+exports.search = search;
+/**
  * 一覧データ取得API
  */
 function getList(req, res) {

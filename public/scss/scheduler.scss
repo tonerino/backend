@@ -6,15 +6,28 @@
     margin: 0 auto;
     overflow: auto;
     width: 100%;
-    height: 500px;
+    overflow-x: auto;
+    border: 2px solid #ccc;
+    .scrollable-body {
+        height: 480px;
+        overflow: auto;
+        width: max-content;
+        min-width: 100%;
+    }
     table {
         min-width: 100%;
         border-collapse: collapse;
-        border: 2px solid #ccc;
+        // border: 2px solid #ccc;
     }
     td {
         border-right: 1px solid #ccc;
         border-left: 1px solid #ccc;
+        &:first-child {
+            border-left: 0px;
+        }
+        &:last-child {
+            border-right: 0px;
+        }
     }
     .header {
         text-align: center;
@@ -35,21 +48,31 @@
     .performance {
         position: absolute;
         padding: 0px 2px;
+        .inner {
+            cursor: pointer;
+            border-radius: 3px;
+            padding: 5px;
+            border: 1px solid #a7dbff;
+            background-color: #d5eeff;
+            height: 100%;
+            word-wrap: break-word;
+            font-size: 11px;
+            overflow: hidden;
+            &:hover {
+                transition: all 0.2s;
+                background-color: #a7dbff;
+            }
+        }
+        &.overlap {
             .inner {
-                cursor: pointer;
-                border-radius: 3px;
-                padding: 5px;
-                border: 1px solid #a7dbff;
-                background-color: #d5eeff;
-                height: 100%;
-                word-wrap: break-word;
-                font-size: 11px;
-                overflow: hidden;
+                border: 1px solid #ffa7a7;
+                background-color: #ffd5d5;
                 &:hover {
                     transition: all 0.2s;
-                    background-color: #a7dbff;
+                    background-color: #ffa7a7;
                 }
             }
+        }
     }
 }
 
@@ -63,5 +86,11 @@
             display: inline-block;
             width: auto;
         }
+    }
+}
+
+.search {
+    .form-group {
+        margin-right: 20px;
     }
 }

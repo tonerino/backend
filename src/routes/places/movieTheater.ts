@@ -34,4 +34,39 @@ movieTheaterRouter.get('/search', async (req, res) => {
         });
     }
 });
+movieTheaterRouter.get('/getScreenListByTheaterBranchCode', async (req, res) => {
+    try {
+        const placeService = new chevre.service.Place({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        const branchCode = req.query.branchCode;
+        const place = await placeService.findMovieTheaterByBranchCode({
+            branchCode
+        });
+        const results = place.containsPlace.map((screen) => ({
+            branchCode: screen.branchCode,
+            name: screen.name ? screen.name.ja : ''
+        }));
+        results.sort((screen1, screen2) => {
+            if (screen1.name > screen2.name) {
+                return 1;
+            }
+            if (screen1.name < screen2.name) {
+                return -1;
+            }
+
+            return 0;
+        });
+        res.json({
+            success: true,
+            results
+        });
+    } catch (err) {
+        res.json({
+            success: false,
+            results: []
+        });
+    }
+});
 export default movieTheaterRouter;

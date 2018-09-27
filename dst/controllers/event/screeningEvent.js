@@ -13,11 +13,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const chevre = require("@toei-jp/chevre-api-nodejs-client");
 const createDebug = require("debug");
+const http_status_1 = require("http-status");
 const moment = require("moment");
 const debug = createDebug('chevre-backend:controllers');
 function index(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            const ticketTypeService = new chevre.service.TicketType({
+                endpoint: process.env.API_ENDPOINT,
+                auth: req.user.authClient
+            });
             const placeService = new chevre.service.Place({
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
@@ -26,9 +31,11 @@ function index(req, res, next) {
             if (searchMovieTheatersResult.totalCount === 0) {
                 throw new Error('劇場が見つかりません');
             }
+            const searchTicketTypeGroupsResult = yield ticketTypeService.searchTicketTypeGroups({});
             res.render('events/screeningEvent/index', {
                 movieTheaters: searchMovieTheatersResult.data,
-                moment: moment
+                moment: moment,
+                ticketGroups: searchTicketTypeGroupsResult.data
             });
         }
         catch (err) {
@@ -52,21 +59,33 @@ function search(req, res) {
             auth: req.user.authClient
         });
         try {
-            const day = req.query.day;
+            const date = req.query.date;
+            const days = req.query.days;
+            const screen = req.query.screen;
             const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: req.query.theater });
             const searchResult = yield eventService.searchScreeningEvents({
-                inSessionFrom: moment(`${day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
-                inSessionThrough: moment(`${day}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').add(1, 'day').toDate(),
+                inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
+                inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').add(days, 'day').toDate(),
                 superEvent: {
                     locationBranchCodes: [movieTheater.branchCode]
                 }
             });
+            let data;
+            let screens;
+            if (screen !== undefined) {
+                data = searchResult.data.filter((event) => event.location.branchCode === screen);
+                screens = movieTheater.containsPlace.filter((place) => place.branchCode === screen);
+            }
+            else {
+                data = searchResult.data;
+                screens = movieTheater.containsPlace;
+            }
             const searchTicketTypeGroupsResult = yield ticketTypeService.searchTicketTypeGroups({});
             res.json({
                 validation: null,
                 error: null,
-                performances: searchResult.data,
-                screens: movieTheater.containsPlace,
+                performances: data,
+                screens,
                 ticketGroups: searchTicketTypeGroupsResult.data
             });
         }
@@ -135,8 +154,8 @@ function regist(req, res) {
                 return;
             }
             debug('saving screening event...', req.body);
-            const attributes = yield createEventFromBody(req.body, req.user);
-            yield eventService.createScreeningEvent(attributes);
+            const attributes = yield createMultipleEventFromBody(req.body, req.user);
+            yield eventService.createMultipleScreeningEvent(attributes);
             res.json({
                 validation: null,
                 error: null
@@ -144,10 +163,16 @@ function regist(req, res) {
         }
         catch (err) {
             debug('regist error', err);
-            res.json({
+            const obj = {
                 validation: null,
                 error: err.message
-            });
+            };
+            if (err.code === http_status_1.BAD_REQUEST) {
+                res.status(err.code).json(obj);
+            }
+            else {
+                res.json(obj);
+            }
         }
     });
 }
@@ -242,16 +267,80 @@ function createEventFromBody(body, user) {
     });
 }
 /**
+ * リクエストボディからイベントオブジェクトを作成する
+ */
+function createMultipleEventFromBody(body, user) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const eventService = new chevre.service.Event({
+            endpoint: process.env.API_ENDPOINT,
+            auth: user.authClient
+        });
+        const placeService = new chevre.service.Place({
+            endpoint: process.env.API_ENDPOINT,
+            auth: user.authClient
+        });
+        const screeningEventSeries = yield eventService.findScreeningEventSeriesById({
+            id: body.screeningEventId
+        });
+        const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: body.theater });
+        const screeningRoom = movieTheater.containsPlace.find((p) => p.branchCode === body.screen);
+        if (screeningRoom === undefined) {
+            throw new Error('上映スクリーンが見つかりません');
+        }
+        if (screeningRoom.name === undefined) {
+            throw new Error('上映スクリーン名が見つかりません');
+        }
+        const startDate = moment(`${body.startDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ').tz('Asia/Tokyo');
+        const toDate = moment(`${body.toDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ').tz('Asia/Tokyo');
+        const weekDays = body.weekDayData;
+        const ticketTypes = body.ticketData;
+        const timeData = body.timeData;
+        const attributes = [];
+        //発売開始日
+        let releaseTime;
+        if (body.releaseDate !== '') {
+            releaseTime = moment(`${body.releaseDate}T${body.releaseTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate();
+        }
+        for (let date = startDate; date <= toDate; date = date.add(1, 'day')) {
+            const formattedDate = date.format('YYYY/MM/DD');
+            const day = date.get('day').toString();
+            if (weekDays.indexOf(day) >= 0) {
+                timeData.forEach((data, i) => {
+                    attributes.push({
+                        typeOf: chevre.factory.eventType.ScreeningEvent,
+                        doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
+                        startDate: moment(`${formattedDate}T${data.startTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
+                        endDate: moment(`${formattedDate}T${data.endTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
+                        ticketTypeGroup: ticketTypes[i],
+                        workPerformed: screeningEventSeries.workPerformed,
+                        location: {
+                            typeOf: screeningRoom.typeOf,
+                            branchCode: screeningRoom.branchCode,
+                            name: screeningRoom.name === undefined ? { en: '', ja: '' } : screeningRoom.name
+                        },
+                        superEvent: screeningEventSeries,
+                        name: screeningEventSeries.name,
+                        eventStatus: chevre.factory.eventStatusType.EventScheduled,
+                        releaseTime: releaseTime
+                    });
+                });
+            }
+        }
+        return attributes;
+    });
+}
+/**
  * 新規登録バリデーション
  */
 function addValidation(req) {
     req.checkBody('screeningEventId', '上映イベントシリーズが未選択です').notEmpty();
-    req.checkBody('day', '上映日が未選択です').notEmpty();
-    req.checkBody('doorTime', '開場時間が未選択です').notEmpty();
-    req.checkBody('startTime', '開始時間が未選択です').notEmpty();
-    req.checkBody('endTime', '終了時間が未選択です').notEmpty();
+    req.checkBody('startDate', '上映日が未選択です').notEmpty();
+    req.checkBody('toDate', '上映日が未選択です').notEmpty();
+    req.checkBody('weekDayData', '曜日が未選択です').notEmpty();
     req.checkBody('screen', 'スクリーンが未選択です').notEmpty();
-    req.checkBody('ticketTypeGroup', '券種グループが未選択です').notEmpty();
+    req.checkBody('theater', '劇場が未選択です').notEmpty();
+    req.checkBody('timeData', '時間情報が未選択です').notEmpty();
+    req.checkBody('ticketData', '券種グループが未選択です').notEmpty();
 }
 /**
  * 編集バリデーション
@@ -265,4 +354,3 @@ function updateValidation(req) {
     req.checkBody('screen', 'スクリーンが未選択です').notEmpty();
     req.checkBody('ticketTypeGroup', '券種グループが未選択です').notEmpty();
 }
-//# sourceMappingURL=screeningEvent.js.map

@@ -190,6 +190,63 @@ function createEventFromBody(
     };
 }
 /**
+ * 検索API
+ */
+export async function search(req: Request, res: Response): Promise<void> {
+    try {
+        const eventService = new chevre.service.Event({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        const branchCode = req.query.branchCode;
+        const date = req.query.date;
+        if (branchCode === undefined || date === undefined) {
+            throw new Error();
+        }
+        const { totalCount, data } = await eventService.searchScreeningEventSeries({
+            startThrough: moment(`${date}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
+            endFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
+            location: {
+                branchCodes: branchCode
+            }
+        });
+        const results = data.map((event) => {
+            return {
+                id: event.id,
+                movieIdentifier: event.workPerformed.identifier,
+                filmNameJa: event.name.ja,
+                filmNameEn: event.name.en,
+                kanaName: event.kanaName,
+                duration: moment.duration(event.duration).humanize(),
+                contentRating: event.workPerformed.contentRating,
+                subtitleLanguage: event.subtitleLanguage,
+                videoFormat: event.videoFormat
+            };
+        });
+        results.sort((event1, event2) => {
+            if (event1.filmNameJa > event2.filmNameJa) {
+                return 1;
+            }
+            if (event1.filmNameJa < event2.filmNameJa) {
+                return -1;
+            }
+
+            return 0;
+        });
+        res.json({
+            success: true,
+            count: totalCount,
+            results: results
+        });
+    } catch (_) {
+        res.json({
+            success: false,
+            count: 0,
+            results: []
+        });
+    }
+}
+/**
  * 一覧データ取得API
  */
 export async function getList(req: Request, res: Response): Promise<void> {
