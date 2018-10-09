@@ -13,5 +13,6 @@ ticketTypeMasterRouter.all('/:id/update', ticketTypeController.update);
 // 券種一覧
 ticketTypeMasterRouter.get('', ticketTypeController.index);
 ticketTypeMasterRouter.get('/getlist', ticketTypeController.getList);
+ticketTypeMasterRouter.get('/getTicketTypeGroupList/:ticketTypeId', ticketTypeController.getTicketTypeGroupList);
 
 export default ticketTypeMasterRouter;

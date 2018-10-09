@@ -34,6 +34,16 @@ Aa-10
                     <input class="form-control" name="name" id="name" placeholder="" maxlength=64 value="<%= filmModel.name %>">
                 </div>
             </div>
+            <div class="form-group">
+                <label for="datePublishedTo" class="col-sm-3 control-label label-title">
+                    公開日（From - To）
+                </label>
+                <div class="col-sm-9">
+                    <input class="form-control datepicker" style="width:30%;display:inline-block;" placeholder="" maxlength=10 name="datePublishedFrom" id="datePublishedFrom" value="<%= filmModel.datePublishedFrom %>" />
+                     ～ 
+                    <input class="form-control datepicker" style="width:30%;display:inline-block;" placeholder="" maxlength=10 name="datePublishedTo" id="datePublishedTo" value="<%= filmModel.datePublishedTo %>" />
+                </div>
+            </div>
         <div class="form-group">
             <div class="panel-body">
                 <a class="btn btn-ok search btn-primary"><span>検索する</span></a>

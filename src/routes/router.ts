@@ -6,6 +6,7 @@ import * as express from 'express';
 import authentication from '../middlewares/authentication';
 
 import authRouter from './auth';
+import commonRouter from './common';
 import movieRouter from './creativeWork/movie';
 import screeningEventRouter from './event/screeningEvent';
 import screeningEventSeriesRouter from './event/screeningEventSeries';
@@ -24,6 +25,7 @@ router.use('/places/movieTheater', movieTheaterRouter);
 router.use('/reservations', reservationsRouter);
 router.use('/ticketTypes', ticketTypeMasterRouter);
 router.use('/ticketTypeGroups', ticketTypeGroupMasterRouter);
+router.use(commonRouter);
 
 router.get('/', (req, res, next) => {
     if (req.query.next !== undefined) {

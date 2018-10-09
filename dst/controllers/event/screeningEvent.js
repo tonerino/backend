@@ -262,7 +262,8 @@ function createEventFromBody(body, user) {
             superEvent: screeningEventSeries,
             name: screeningEventSeries.name,
             eventStatus: chevre.factory.eventStatusType.EventScheduled,
-            releaseTime: releaseTime
+            releaseTime: releaseTime,
+            mvtkExcludeFlg: '0'
         };
     });
 }
@@ -316,12 +317,13 @@ function createMultipleEventFromBody(body, user) {
                         location: {
                             typeOf: screeningRoom.typeOf,
                             branchCode: screeningRoom.branchCode,
-                            name: screeningRoom.name === undefined ? { en: '', ja: '' } : screeningRoom.name
+                            name: screeningRoom.name === undefined ? { en: '', ja: '', kr: '' } : screeningRoom.name
                         },
                         superEvent: screeningEventSeries,
                         name: screeningEventSeries.name,
                         eventStatus: chevre.factory.eventStatusType.EventScheduled,
-                        releaseTime: releaseTime
+                        releaseTime: releaseTime,
+                        mvtkExcludeFlg: '1'
                     });
                 });
             }

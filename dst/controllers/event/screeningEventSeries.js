@@ -34,15 +34,17 @@ function add(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const eventService = new chevre.service.Event({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient
-        });
+        // const eventService = new chevre.service.Event({
+        //     endpoint: <string>process.env.API_ENDPOINT,
+        //     auth: req.user.authClient
+        // });
         const placeService = new chevre.service.Place({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const searchMoviesResult = yield creativeWorkService.searchMovies({});
+        const searchMoviesResult = yield creativeWorkService.searchMovies({
+            checkScheduleEndDate: true
+        });
         const movies = searchMoviesResult.data;
         const searchMovieTheatersResult = yield placeService.searchMovieTheaters({});
         let message = '';
@@ -57,10 +59,12 @@ function add(req, res) {
                 try {
                     const movie = yield creativeWorkService.findMovieByIdentifier({ identifier: req.body.movieIdentifier });
                     const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: req.body.locationBranchCode });
+                    req.body.contentRating = movie.contentRating;
                     const attributes = createEventFromBody(req.body, movie, movieTheater);
                     debug('saving an event...', attributes);
-                    const event = yield eventService.createScreeningEventSeries(attributes);
-                    res.redirect(`/events/screeningEventSeries/${event.id}/update`);
+                    // const event = await eventService.createScreeningEventSeries(attributes);
+                    res.redirect('/complete');
+                    // res.redirect(`/events/screeningEventSeries/${event.id}/update`);
                     return;
                 }
                 catch (error) {
@@ -98,7 +102,9 @@ function update(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const searchMoviesResult = yield creativeWorkService.searchMovies({});
+        const searchMoviesResult = yield creativeWorkService.searchMovies({
+            checkScheduleEndDate: true
+        });
         const searchMovieTheatersResult = yield placeService.searchMovieTheaters({});
         let message = '';
         let errors = {};
@@ -116,6 +122,7 @@ function update(req, res) {
                 try {
                     const movie = yield creativeWorkService.findMovieByIdentifier({ identifier: req.body.movieIdentifier });
                     const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: req.body.locationBranchCode });
+                    req.body.contentRating = movie.contentRating;
                     const attributes = createEventFromBody(req.body, movie, movieTheater);
                     debug('saving an event...', attributes);
                     yield eventService.updateScreeningEventSeries({
@@ -145,7 +152,14 @@ function update(req, res) {
                 req.body.startDate,
             endDate: (_.isEmpty(req.body.endDate)) ?
                 (event.endDate !== null) ? moment(event.endDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
-                req.body.endDate
+                req.body.endDate,
+            movieSubtitleName: (_.isEmpty(req.body.movieSubtitleName)) ? event.movieSubtitleName : req.body.movieSubtitleName,
+            signageDisplayName: (_.isEmpty(req.body.signageDisplayName)) ? event.signageDisplayName : req.body.signageDisplayName,
+            signageDislaySubtitleName: (_.isEmpty(req.body.signageDislaySubtitleName)) ?
+                event.signageDislaySubtitleName : req.body.signageDislaySubtitleName,
+            summaryStartDay: (_.isEmpty(req.body.summaryStartDay)) ? event.summaryStartDay : req.body.summaryStartDay,
+            mvtkFlg: (_.isEmpty(req.body.mvtkFlg)) ? event.mvtkFlg : req.body.mvtkFlg,
+            description: (_.isEmpty(req.body.description)) ? event.description : req.body.description
         };
         // 作品マスタ画面遷移
         debug('errors:', errors);
@@ -160,6 +174,34 @@ function update(req, res) {
 }
 exports.update = update;
 /**
+ * 作品 - レイティング
+ */
+function getRating(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const creativeWorkService = new chevre.service.CreativeWork({
+                endpoint: process.env.API_ENDPOINT,
+                auth: req.user.authClient
+            });
+            const data = yield creativeWorkService.getMovieRatingByIdentifier({
+                identifier: req.query.identifier
+            });
+            res.json({
+                success: true,
+                results: data
+            });
+        }
+        catch (error) {
+            res.json({
+                success: false,
+                count: 0,
+                results: []
+            });
+        }
+    });
+}
+exports.getRating = getRating;
+/**
  * リクエストボディからイベントオブジェクトを作成する
  */
 function createEventFromBody(body, movie, movieTheater) {
@@ -167,7 +209,8 @@ function createEventFromBody(body, movie, movieTheater) {
         typeOf: chevre.factory.eventType.ScreeningEventSeries,
         name: {
             ja: body.nameJa,
-            en: body.nameEn
+            en: body.nameEn,
+            kr: ''
         },
         kanaName: body.kanaName,
         alternativeHeadline: body.nameJa,
@@ -189,7 +232,17 @@ function createEventFromBody(body, movie, movieTheater) {
         duration: movie.duration,
         startDate: (!_.isEmpty(body.startDate)) ? moment(`${body.startDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
         endDate: (!_.isEmpty(body.endDate)) ? moment(`${body.endDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
-        eventStatus: chevre.factory.eventStatusType.EventScheduled
+        eventStatus: chevre.factory.eventStatusType.EventScheduled,
+        movieSubtitleName: body.movieSubtitleName,
+        signageDisplayName: body.signageDisplayName,
+        signageDislaySubtitleName: body.signageDislaySubtitleName,
+        summaryStartDay: body.summaryStartDay,
+        mvtkFlg: body.mvtkFlg,
+        description: {
+            ja: body.description,
+            en: '',
+            kr: ''
+        }
     };
 }
 /**
@@ -266,6 +319,7 @@ function getList(req, res) {
                 limit: req.query.limit,
                 page: req.query.page,
                 name: req.query.name,
+                endFrom: moment(new Date()).toDate(),
                 location: {
                     branchCodes: (req.query.locationBranchCode !== '') ? [req.query.locationBranchCode] : undefined
                 },
@@ -280,10 +334,12 @@ function getList(req, res) {
                     filmNameJa: event.name.ja,
                     filmNameEn: event.name.en,
                     kanaName: event.kanaName,
-                    duration: moment.duration(event.duration).humanize(),
+                    // duration: moment.duration(event.duration).humanize(),
+                    duration: event.duration,
                     contentRating: event.workPerformed.contentRating,
-                    subtitleLanguage: event.subtitleLanguage,
-                    videoFormat: event.videoFormat
+                    subtitleLanguage: ((event.subtitleLanguage === 1) ? '吹替' : (event.subtitleLanguage === 0) ? '字幕' : ''),
+                    videoFormat: event.videoFormat,
+                    movieSubtitleName: (_.isEmpty(event.movieSubtitleName)) ? '' : event.movieSubtitleName
                 };
             });
             res.json({
@@ -296,7 +352,7 @@ function getList(req, res) {
             res.json({
                 success: false,
                 count: 0,
-                results: []
+                results: error
             });
         }
     });
@@ -353,9 +409,15 @@ function validate(req) {
         req.checkBody('endDate', Message.Common.invalidDateFormat.replace('$fieldName$', colName)).isDate();
     }
     // レイティング
-    colName = 'レイティング';
-    req.checkBody('contentRating', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    // colName = 'レイティング';
+    // req.checkBody('contentRating', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     // 上映形態
     colName = '上映形態';
     req.checkBody('videoFormat', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    // 上映作品サブタイトル名
+    colName = '上映作品サブタイトル名';
+    req.checkBody('movieSubtitleName', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_NAME_JA });
+    // 集計開始曜日
+    colName = '集計開始曜日';
+    req.checkBody('summaryStartDay', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 }

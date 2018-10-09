@@ -25,7 +25,8 @@ function index(__, res) {
     return __awaiter(this, void 0, void 0, function* () {
         // 券種グループマスタ画面遷移
         res.render('ticketTypeGroup/index', {
-            message: ''
+            message: '',
+            ticketTypes: undefined
         });
     });
 }
@@ -57,7 +58,8 @@ function add(req, res) {
                     };
                     yield ticketTypeService.createTicketTypeGroup(ticketTypeGroup);
                     message = '登録完了';
-                    res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
+                    res.redirect('/complete');
+                    // res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
                     return;
                 }
                 catch (error) {
@@ -178,6 +180,40 @@ function getList(req, res) {
     });
 }
 exports.getList = getList;
+/**
+ * 関連券種
+ */
+function getTicketTypeList(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const ticketTypeService = new chevre.service.TicketType({
+                endpoint: process.env.API_ENDPOINT,
+                auth: req.user.authClient
+            });
+            // 券種グループ取得
+            const ticketGroup = yield ticketTypeService.findTicketTypeGroupById({ id: req.query.id });
+            // 券種
+            const ticketTypeNameList = [];
+            for (const ticketType of ticketGroup.ticketTypes) {
+                // console.log(ticketType);
+                const ticketTypeData = yield ticketTypeService.findTicketTypeById({ id: ticketType });
+                ticketTypeNameList.push(ticketTypeData.name.ja);
+            }
+            res.json({
+                success: true,
+                count: ticketGroup.ticketTypes.length,
+                results: ticketTypeNameList
+            });
+        }
+        catch (err) {
+            res.json({
+                success: false,
+                results: err
+            });
+        }
+    });
+}
+exports.getTicketTypeList = getTicketTypeList;
 /**
  * 券種グループマスタ新規登録画面検証
  */

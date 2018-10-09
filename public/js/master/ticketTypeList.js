@@ -64,4 +64,45 @@ $(function () {
             $('.loading').modal('hide');
         });
     }
+
+    // 関連券種グループ button
+    $(document).on('click', '.popupListTicketTypeGroup', function (event) {
+        event.preventDefault();
+        var target = $(this).find('a:first').attr('href');
+        list(target);
+    });
+
+    /**
+     * 関連券種グループのpopupを表示
+     */
+    function list(url) {
+        $.ajax({
+            dataType: 'json',
+            url: url,
+            cache: false,
+            type: 'GET',
+            // data: conditions,
+            beforeSend: function () {
+                $('.loading').modal();
+            }
+        }).done(function (data) {
+            if (data.success) {
+                var modal = $('#listModal');
+                var listTicketTypeGroup = modal.find('#listTicketTypeGroup');
+                listTicketTypeGroup.empty();
+                if (data.results.length > 0) {
+                    for (let i = 0; i < data.results.length; i++) {
+                        listTicketTypeGroup.append(`<tr><td>${data.results[i].name.ja}</td></tr>`);
+                    }
+                } else {
+                    listTicketTypeGroup.append(`<tr><td>データがありません。</td></tr>`);
+                }
+                modal.modal();
+            }
+        }).fail(function (jqxhr, textStatus, error) {
+            alert(error);
+        }).always(function (data) {
+            $('.loading').modal('hide');
+        });
+    }
 });

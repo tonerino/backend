@@ -10,6 +10,7 @@ const screeningEventSeriesRouter = Router();
 screeningEventSeriesRouter.all('/add', ScreeningEventSeriesController.add);
 screeningEventSeriesRouter.all('', ScreeningEventSeriesController.index);
 screeningEventSeriesRouter.all('/getlist', ScreeningEventSeriesController.getList);
+screeningEventSeriesRouter.all('/getrating', ScreeningEventSeriesController.getRating);
 screeningEventSeriesRouter.get('/search', ScreeningEventSeriesController.search);
 screeningEventSeriesRouter.all('/:eventId/update', ScreeningEventSeriesController.update);
 

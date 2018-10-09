@@ -242,7 +242,8 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         superEvent: screeningEventSeries,
         name: screeningEventSeries.name,
         eventStatus: chevre.factory.eventStatusType.EventScheduled,
-        releaseTime: releaseTime
+        releaseTime: releaseTime,
+        mvtkExcludeFlg: '0'
     };
 }
 /**
@@ -295,12 +296,13 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                     location: {
                         typeOf: screeningRoom.typeOf,
                         branchCode: <string>screeningRoom.branchCode,
-                        name: screeningRoom.name === undefined ? { en: '', ja: ''} : screeningRoom.name
+                        name: screeningRoom.name === undefined ? { en: '', ja: '', kr: ''} : screeningRoom.name
                     },
                     superEvent: screeningEventSeries,
                     name: screeningEventSeries.name,
                     eventStatus: chevre.factory.eventStatusType.EventScheduled,
-                    releaseTime: releaseTime
+                    releaseTime: releaseTime,
+                    mvtkExcludeFlg: '1'
                 });
             });
         }

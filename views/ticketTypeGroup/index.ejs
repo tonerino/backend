@@ -62,6 +62,7 @@ Aa-8
           <th>券種グループコード</th>
           <th>券種グループ名</th>
           <th></th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -78,11 +79,19 @@ Aa-8
               </a>
             </div>
           </td>
+          <td name="popup" class="center popupListTicketType">
+            <div class="btn-area">
+              <a href="/ticketTypeGroups/ticketTypeList?id=$id$" class="btn btn-list edit">
+                <span>関連券種</span>
+              </a>
+            </div>
+          </td>
         </tr>
       </tbody>
     </table>
   </div>
   <div id="pager" class="div_pager_parent"></div>  
 </div>
+<%- include('_listTicketTypes') %>
 <% /* 共通Loading */ %>
 <%- include('../common/master/_loading') %>

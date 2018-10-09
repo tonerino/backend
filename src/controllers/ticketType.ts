@@ -39,7 +39,12 @@ export async function add(req: Request, res: Response): Promise<void> {
                     name: req.body.name,
                     description: req.body.description,
                     notes: req.body.notes,
-                    charge: req.body.charge
+                    charge: req.body.charge,
+                    boxOnly: true,
+                    nameForManagementSite: '0',
+                    nameForPrinting: '0',
+                    seatReservationUnit: 1,
+                    subject: 1
                 };
                 await ticketTypeService.createTicketType(ticketType);
                 message = '登録完了';
@@ -91,7 +96,12 @@ export async function update(req: Request, res: Response): Promise<void> {
                     name: req.body.name,
                     description: req.body.description,
                     notes: req.body.notes,
-                    charge: req.body.charge
+                    charge: req.body.charge,
+                    boxOnly: true,
+                    nameForManagementSite: '0',
+                    nameForPrinting: '0',
+                    seatReservationUnit: 1,
+                    subject: 1
                 };
                 await ticketTypeService.updateTicketType(ticketType);
                 message = '編集完了';
@@ -126,10 +136,25 @@ export async function getList(req: Request, res: Response): Promise<void> {
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
+        // 券種グループ取得
+        // let ticketTypeIds: any = [];
+        // if (req.query.ticketTypeGroups !== undefined) {
+        //     const ticketTypeGroup = await ticketTypeService.findTicketTypeGroupById({ id: req.query.ticketTypeGroups });
+        //     ticketTypeIds = ticketTypeGroup.ticketTypes;
+        //     if (ticketTypeIds.length === 0) {
+        //         ticketTypeIds.push(req.query.id);
+        //     }
+        //     if (!ticketTypeIds.indexOf(req.query.id)) {
+        //         ticketTypeIds.push(req.query.id);
+        //     }
+        // }
+        // ticketTypeIds.push(req.query.id);
+        const ticketTypeIds: any = req.query.id;
+
         const result = await ticketTypeService.searchTicketTypes({
             limit: req.query.limit,
             page: req.query.page,
-            id: req.query.id,
+            id: ticketTypeIds,
             name: req.query.name
         });
         res.json({
@@ -155,11 +180,41 @@ export async function getList(req: Request, res: Response): Promise<void> {
 /**
  * 一覧
  */
-export async function index(__: Request, res: Response): Promise<void> {
+export async function index(req: Request, res: Response): Promise<void> {
+    const ticketTypeService = new chevre.service.TicketType({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient
+    });
+    const ticketTypeGroupsList = await ticketTypeService.searchTicketTypeGroups({});
     // 券種マスタ画面遷移
     res.render('ticketType/index', {
-        message: ''
+        message: '',
+        ticketTypeGroupsList: ticketTypeGroupsList.data
     });
+}
+/**
+ * 関連券種グループリスト
+ */
+export async function getTicketTypeGroupList(req: Request, res: Response): Promise<void> {
+    try {
+        const ticketTypeService = new chevre.service.TicketType({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        // const ticketType = await ticketTypeService.findTicketTypeById({ id: req.params.id });
+        const ticketTypeGroups = await ticketTypeService.getTicketTypeGroupList({ ticketTypeId: req.params.ticketTypeId });
+        res.json({
+            success: true,
+            count: ticketTypeGroups.length,
+            results: ticketTypeGroups
+        });
+    } catch (err) {
+        res.json({
+            success: false,
+            count: 0,
+            results: []
+        });
+    }
 }
 /**
  * 券種マスタ新規登録画面検証

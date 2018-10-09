@@ -18,7 +18,8 @@ const NAME_MAX_LENGTH_NAME_JA: number = 64;
 export async function index(__: Request, res: Response): Promise<void> {
     // 券種グループマスタ画面遷移
     res.render('ticketTypeGroup/index', {
-        message: ''
+        message: '',
+        ticketTypes: undefined
     });
 }
 /**
@@ -47,7 +48,8 @@ export async function add(req: Request, res: Response): Promise<void> {
                 };
                 await ticketTypeService.createTicketTypeGroup(ticketTypeGroup);
                 message = '登録完了';
-                res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
+                res.redirect('/complete');
+                // res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
 
                 return;
             } catch (error) {
@@ -156,6 +158,36 @@ export async function getList(req: Request, res: Response): Promise<void> {
             success: false,
             count: 0,
             results: []
+        });
+    }
+}
+/**
+ * 関連券種
+ */
+export async function getTicketTypeList(req: Request, res: Response): Promise<void> {
+    try {
+        const ticketTypeService = new chevre.service.TicketType({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        // 券種グループ取得
+        const ticketGroup = await ticketTypeService.findTicketTypeGroupById({ id: req.query.id });
+        // 券種
+        const ticketTypeNameList: any = [];
+        for (const ticketType of ticketGroup.ticketTypes) {
+            // console.log(ticketType);
+            const ticketTypeData = await ticketTypeService.findTicketTypeById({ id: ticketType });
+            ticketTypeNameList.push(ticketTypeData.name.ja);
+        }
+        res.json({
+            success: true,
+            count: ticketGroup.ticketTypes.length,
+            results: ticketTypeNameList
+        });
+    } catch (err) {
+        res.json({
+            success: false,
+            results: err
         });
     }
 }

@@ -107,7 +107,7 @@ function getEventSeries(theater, date) {
         }
     }).done(function (data) {
         if (data && data.success) {
-            console.log(data);
+            // console.log(data);
             var modal = $('#newModal');
             var screeningEventSeries = data.results;
             var options = screeningEventSeries.map(function (e) {
@@ -396,7 +396,7 @@ function search(theater, date, days, screen) {
             for (var i = 0; i < days; i++) {
                 dates.push(moment(date).add(i, 'days').format('MM/DD'));
             }
-            create(data.screens, data.performances, dates);
+            create(data.screens, data.performances, dates, data.ticketGroups);
             modalInit(theater, date, data.screens, data.ticketGroups);
             // スケジューラーのスクロール位置を変更
             var scheduler = $('.scheduler');
@@ -528,14 +528,14 @@ function edit(target) {
  * @param {*} performances
  * @returns {void} 
  */
-function create(screens, performances, dates) {
+function create(screens, performances, dates, ticketGroups) {
     var scheduler = $('.scheduler');
     scheduler.html('');
     var header = $('<div>').addClass('fixed-header').append(
         $('<table>').append(createHeader(screens, dates))
     );
     var body = $('<div>').addClass('scrollable-body').append(
-        $('<table>').css({borderTop: 0}).append(createBody(screens, performances, dates))
+        $('<table>').css({borderTop: 0}).append(createBody(screens, performances, dates, ticketGroups))
     );
     scheduler.append(header).append(body);
 }
@@ -574,7 +574,7 @@ function createHeader(screens, dates) {
  * @param {*} performances 
  * @returns {JQuery} 
  */
-function createBody(screens, performances, dates) {
+function createBody(screens, performances, dates, ticketGroups) {
     var dom = $('<tbody><tr></tr></tbody>');
     dom.find('tr').append(createTime());
     for (var j = 0; j < dates.length; j++) {
@@ -586,7 +586,7 @@ function createBody(screens, performances, dates) {
                     moment(performance.doorTime).tz('Asia/Tokyo').format('MM/DD') === dates[j]
                 );
             });
-            dom.find('tr').append(createScreen(target));
+            dom.find('tr').append(createScreen(target, ticketGroups));
         }
     }
     return dom;
@@ -612,7 +612,7 @@ function createTime() {
  * @param {*} performances 
  * @returns {JQuery} 
  */
-function createScreen(performances) {
+function createScreen(performances, ticketGroups) {
     var dom = $('<td class="screen"></td>').css({minWidth: SCREEN_WIDTH});
     var sortedPerformance = performances.sort((p1, p2) => {
         if (p1.doorTime > p2.doorTime) return 1;
@@ -651,7 +651,17 @@ function createScreen(performances) {
             var releaseDate = '';
             var releaseTime = '';
         }
-
+        var ticketTypeGroupName = '';
+        for (var i = 0; i < ticketGroups.length; i++) {
+            if (ticketGroups[i]['id'] == performance.ticketTypeGroup) {
+                ticketTypeGroupName = ticketGroups[i]['name'].ja;
+            }
+        }
+         /**
+         * 劇場上映作品名
+         * 興行区分名
+         * 券種グループ
+         */
         var performanceDom = $('<div class="performance">' +
             '<div ' +
             'data-performance="' + performance._id + '" ' +
@@ -665,7 +675,8 @@ function createScreen(performances) {
             'data-ticketTypeGroup="' + performance.ticketTypeGroup + '" ' +
             'data-releaseDate="' + releaseDate + '" ' +
             'data-releaseTime="' + releaseTime + '" ' +
-            'role="button" class="inner">' + performance.name.ja + '</div>' +
+            'role="button" class="inner">' + performance.name.ja + '<br />' + 
+            performance.location.name.ja + '<br />' + ticketTypeGroupName + '</div>' +
             '</div>');
         if (top < prevBtm) performanceDom.addClass('overlap');
         prevBtm = top + height;

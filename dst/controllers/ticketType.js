@@ -47,7 +47,12 @@ function add(req, res) {
                         name: req.body.name,
                         description: req.body.description,
                         notes: req.body.notes,
-                        charge: req.body.charge
+                        charge: req.body.charge,
+                        boxOnly: true,
+                        nameForManagementSite: '0',
+                        nameForPrinting: '0',
+                        seatReservationUnit: 1,
+                        subject: 1
                     };
                     yield ticketTypeService.createTicketType(ticketType);
                     message = '登録完了';
@@ -101,7 +106,12 @@ function update(req, res) {
                         name: req.body.name,
                         description: req.body.description,
                         notes: req.body.notes,
-                        charge: req.body.charge
+                        charge: req.body.charge,
+                        boxOnly: true,
+                        nameForManagementSite: '0',
+                        nameForPrinting: '0',
+                        seatReservationUnit: 1,
+                        subject: 1
                     };
                     yield ticketTypeService.updateTicketType(ticketType);
                     message = '編集完了';
@@ -139,10 +149,24 @@ function getList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
+            // 券種グループ取得
+            // let ticketTypeIds: any = [];
+            // if (req.query.ticketTypeGroups !== undefined) {
+            //     const ticketTypeGroup = await ticketTypeService.findTicketTypeGroupById({ id: req.query.ticketTypeGroups });
+            //     ticketTypeIds = ticketTypeGroup.ticketTypes;
+            //     if (ticketTypeIds.length === 0) {
+            //         ticketTypeIds.push(req.query.id);
+            //     }
+            //     if (!ticketTypeIds.indexOf(req.query.id)) {
+            //         ticketTypeIds.push(req.query.id);
+            //     }
+            // }
+            // ticketTypeIds.push(req.query.id);
+            const ticketTypeIds = req.query.id;
             const result = yield ticketTypeService.searchTicketTypes({
                 limit: req.query.limit,
                 page: req.query.page,
-                id: req.query.id,
+                id: ticketTypeIds,
                 name: req.query.name
             });
             res.json({
@@ -171,15 +195,49 @@ exports.getList = getList;
 /**
  * 一覧
  */
-function index(__, res) {
+function index(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
+        const ticketTypeService = new chevre.service.TicketType({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        const ticketTypeGroupsList = yield ticketTypeService.searchTicketTypeGroups({});
         // 券種マスタ画面遷移
         res.render('ticketType/index', {
-            message: ''
+            message: '',
+            ticketTypeGroupsList: ticketTypeGroupsList.data
         });
     });
 }
 exports.index = index;
+/**
+ * 関連券種グループリスト
+ */
+function getTicketTypeGroupList(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const ticketTypeService = new chevre.service.TicketType({
+                endpoint: process.env.API_ENDPOINT,
+                auth: req.user.authClient
+            });
+            // const ticketType = await ticketTypeService.findTicketTypeById({ id: req.params.id });
+            const ticketTypeGroups = yield ticketTypeService.getTicketTypeGroupList({ ticketTypeId: req.params.ticketTypeId });
+            res.json({
+                success: true,
+                count: ticketTypeGroups.length,
+                results: ticketTypeGroups
+            });
+        }
+        catch (err) {
+            res.json({
+                success: false,
+                count: 0,
+                results: []
+            });
+        }
+    });
+}
+exports.getTicketTypeGroupList = getTicketTypeGroupList;
 /**
  * 券種マスタ新規登録画面検証
  */

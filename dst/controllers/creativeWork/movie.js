@@ -46,7 +46,8 @@ function add(req, res) {
                         auth: req.user.authClient
                     });
                     yield creativeWorkService.createMovie(movie);
-                    res.redirect(`/creativeWorks/movie/${movie.identifier}/update`);
+                    res.redirect('/complete');
+                    // res.redirect(`/creativeWorks/movie/${movie.identifier}/update`);
                     return;
                 }
                 catch (error) {
@@ -54,12 +55,19 @@ function add(req, res) {
                 }
             }
         }
+        // 配給
+        const distributionsService = new chevre.service.Distributions({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        const distributions = yield distributionsService.getDistributionsList();
         const forms = req.body;
         // 作品マスタ画面遷移
         res.render('creativeWorks/movie/add', {
             message: message,
             errors: errors,
-            forms: forms
+            forms: forms,
+            distributions: distributions
         });
     });
 }
@@ -97,18 +105,33 @@ function update(req, res) {
                 }
             }
         }
+        // 配給
+        const distributionsService = new chevre.service.Distributions({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        const distributions = yield distributionsService.getDistributionsList();
         const forms = {
             identifier: (_.isEmpty(req.body.identifier)) ? movie.identifier : req.body.identifier,
             name: (_.isEmpty(req.body.nameJa)) ? movie.name : req.body.name,
             duration: (_.isEmpty(req.body.duration)) ? moment.duration(movie.duration).asMinutes() : req.body.duration,
-            contentRating: movie.contentRating
+            contentRating: movie.contentRating,
+            subtitle: (_.isEmpty(req.body.subtitle)) ? movie.subtitle : req.body.subtitle,
+            datePublished: (_.isEmpty(req.body.datePublished)) ?
+                (movie.datePublished !== null) ? moment(movie.datePublished).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
+                req.body.datePublished,
+            scheduleEndDate: (_.isEmpty(req.body.scheduleEndDate)) ?
+                (movie.scheduleEndDate !== null) ? moment(movie.scheduleEndDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
+                req.body.scheduleEndDate,
+            distribution: (_.isEmpty(req.body.distribution)) ? movie.distribution : req.body.distribution
         };
         // 作品マスタ画面遷移
         debug('errors:', errors);
         res.render('creativeWorks/movie/edit', {
             message: message,
             errors: errors,
-            forms: forms
+            forms: forms,
+            distributions: distributions
         });
     });
 }
@@ -119,7 +142,13 @@ function createMovieFromBody(body) {
         identifier: body.identifier,
         name: body.name,
         duration: moment.duration(Number(body.duration), 'm').toISOString(),
-        contentRating: body.contentRating
+        contentRating: body.contentRating,
+        subtitle: body.subtitle,
+        datePublished: (!_.isEmpty(body.datePublished)) ?
+            moment(`${body.datePublished}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
+        scheduleEndDate: (!_.isEmpty(body.scheduleEndDate)) ?
+            moment(`${body.scheduleEndDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
+        distribution: body.distribution
     };
 }
 /**
@@ -136,7 +165,11 @@ function getList(req, res) {
                 limit: req.query.limit,
                 page: req.query.page,
                 identifier: req.query.identifier,
-                name: req.query.name
+                name: req.query.name,
+                datePublishedFrom: (!_.isEmpty(req.query.datePublishedFrom)) ?
+                    moment(`${req.query.datePublishedFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
+                datePublishedTo: (!_.isEmpty(req.query.datePublishedTo)) ?
+                    moment(`${req.query.datePublishedTo}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined
             });
             res.json({
                 success: true,
@@ -188,4 +221,12 @@ function validate(req, checkType) {
     // レイティング
     colName = 'レイティング';
     req.checkBody('contentRating', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    // サブタイトル
+    colName = 'サブタイトル';
+    req.checkBody('subtitle', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_NAME_JA });
+    // 公開日
+    // 興行終了予定日
+    // 配給
+    colName = '配給';
+    req.checkBody('distribution', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 }

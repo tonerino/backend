@@ -1,15 +1,16 @@
 <%- contentFor('title') %>
-作品マスタ編集
+劇場上映作品編集
 <%- contentFor('displayId') %>
 Aa-2
 <%- contentFor('styles') %>
 
 <%- contentFor('scripts') %>
+<script src="/js/master/events/screeningEventSeriesAddEdit.js"></script>
 
 <%- contentFor('body') %>
 <div class="col-sm-12 form-container">
     <% /* フォーム */ %>
-    <form method="post" class="form-horizontal" >
+    <form method="post" class="form-horizontal" id="movie_product">
         <div class="menu-group">
             <% /* メッセージ */ %>
             <% if (message !== '') { %>
@@ -27,14 +28,3 @@ Aa-2
         </div>
     </form>
 </div>
-<script>
-$(function(){
-    $('.btn-ok').on('click', function(){
-        $('form').submit();
-    });
-    // datepickerセット
-    $('.datepicker').datepicker({
-        language: 'ja'
-    })
-});
-</script>
