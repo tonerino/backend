@@ -49,10 +49,12 @@ function add(req, res) {
                         notes: req.body.notes,
                         charge: req.body.charge,
                         boxOnly: true,
+                        onlineOnly: true,
                         nameForManagementSite: '0',
                         nameForPrinting: '0',
                         seatReservationUnit: 1,
-                        subject: 1
+                        subject: 1,
+                        typeOfNote: 1
                     };
                     yield ticketTypeService.createTicketType(ticketType);
                     message = '登録完了';
@@ -108,10 +110,12 @@ function update(req, res) {
                         notes: req.body.notes,
                         charge: req.body.charge,
                         boxOnly: true,
+                        onlineOnly: true,
                         nameForManagementSite: '0',
                         nameForPrinting: '0',
                         seatReservationUnit: 1,
-                        subject: 1
+                        subject: 1,
+                        typeOfNote: 1
                     };
                     yield ticketTypeService.updateTicketType(ticketType);
                     message = '編集完了';
@@ -267,3 +271,4 @@ function validateFormAdd(req) {
     req.checkBody('charge', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     req.checkBody('charge', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_EN)).len({ max: CHAGE_MAX_LENGTH });
 }
+//# sourceMappingURL=ticketType.js.map

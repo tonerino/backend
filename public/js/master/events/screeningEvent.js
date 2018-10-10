@@ -66,7 +66,14 @@ $(function () {
         var theater = $(this).val();
         var date = $('.search input[name=date]').val();
         getScreens(theater);
-        getEventSeries(theater, date);
+    }, 500));
+    
+    $(document).on('change', '#newModal select[name="theater"]', _.debounce(function() {
+        var theater = $(this).val();
+        var fromDate = $('#newModal input[name=screeningDateStart]').val();
+        var toDate = $('#newModal input[name=screeningDateThrough]').val();
+        getScreens(theater, true);
+        getEventSeries(theater, fromDate, toDate);
     }, 500));
     
     $(document).on('change', 'form.search input[name="date"]', _.debounce(function() {
@@ -99,8 +106,8 @@ $(function () {
  * @param {date}
  * @returns {void}
  */
-function getEventSeries(theater, date) {
-    if (!date || !theater) {
+function getEventSeries(theater, fromDate, toDate) {
+    if (!fromDate || !theater || !toDate) {
         return;
     }
     $.ajax({
@@ -108,7 +115,8 @@ function getEventSeries(theater, date) {
         url: '/events/screeningEventSeries/search',
         type: 'GET',
         data: {
-            date: date,
+            fromDate: fromDate,
+            toDate: toDate,
             branchCode: theater
         }
     }).done(function (data) {
@@ -131,9 +139,10 @@ function getEventSeries(theater, date) {
  * スクリーン取得
  * @function getScreens
  * @param {theater}
+ * @param {addModal}
  * @returns {void}
  */
-function getScreens(theater) {
+function getScreens(theater, addModal = false) {
     function resetScreenList() {
         var o = $('<option></option>');
         o.html('劇場を選択してください');
@@ -153,18 +162,19 @@ function getScreens(theater) {
         }
     }).done(function (data) {
         if (data && data.success) {
-            var selectScreen = $('select[name="screen"]');
-            selectScreen.html('<option value="">-----</option>');
+            if (!addModal) {
+                var selectScreen = $('.search select[name="screen"]');
+                selectScreen.html('<option value="">-----</option>');
+            } else {
+                var selectScreen = $('#newModal select[name="screen"]');
+                selectScreen.html('<option value="" disabled selected>選択してください</option>');
+            }
             $.each(data.results, function(_, screen) {
                 var o = $('<option></option>');
                 o.html(screen.name);
                 o.val(screen.branchCode);
                 o.appendTo(selectScreen);
             });
-            $('#newModal select[name="screen"] option[value=""]')
-                .html('選択してください')
-                .attr('disabled', true)
-                .attr('selected', true);
         } else {
             resetScreenList();
         }
@@ -499,11 +509,8 @@ function modalInit(theater, date, screens, ticketGroups) {
 function add() {
     var theater = $('select[name=theater]').val();
     var date = $('input[name=date]').val();
-    if (!theater || !date) {
-        alert('劇場、上映日を選択してください');
-        return;
-    }
     var modal = $('#newModal');
+    modal.find('select[name=theater]').val('');
     modal.find('input[name=weekDay]').prop('checked', true);
     modal.find('select[name=screeningEventSeriesId]').val('');
     modal.find('select[name=doorTimeHour]').val('');
@@ -737,9 +744,9 @@ function createScreen(performances, ticketGroups) {
             var releaseTime = '';
         }
         var ticketTypeGroupName = '';
-        for (var i = 0; i < ticketGroups.length; i++) {
-            if (ticketGroups[i]['id'] == performance.ticketTypeGroup) {
-                ticketTypeGroupName = ticketGroups[i]['name'].ja;
+        for (var j = 0; j < ticketGroups.length; j++) {
+            if (ticketGroups[j]['id'] == performance.ticketTypeGroup) {
+                ticketTypeGroupName = ticketGroups[j]['name'].ja;
             }
         }
         var saleStartDate = (performance.saleStartDate) ? moment(performance.saleStartDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '';

@@ -41,10 +41,12 @@ export async function add(req: Request, res: Response): Promise<void> {
                     notes: req.body.notes,
                     charge: req.body.charge,
                     boxOnly: true,
+                    onlineOnly: true,
                     nameForManagementSite: '0',
                     nameForPrinting: '0',
                     seatReservationUnit: 1,
-                    subject: 1
+                    subject: 1,
+                    typeOfNote: 1
                 };
                 await ticketTypeService.createTicketType(ticketType);
                 message = '登録完了';
@@ -98,10 +100,12 @@ export async function update(req: Request, res: Response): Promise<void> {
                     notes: req.body.notes,
                     charge: req.body.charge,
                     boxOnly: true,
+                    onlineOnly: true,
                     nameForManagementSite: '0',
                     nameForPrinting: '0',
                     seatReservationUnit: 1,
-                    subject: 1
+                    subject: 1,
+                    typeOfNote: 1
                 };
                 await ticketTypeService.updateTicketType(ticketType);
                 message = '編集完了';

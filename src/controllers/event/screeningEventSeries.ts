@@ -247,13 +247,14 @@ export async function search(req: Request, res: Response): Promise<void> {
             auth: req.user.authClient
         });
         const branchCode = req.query.branchCode;
-        const date = req.query.date;
-        if (branchCode === undefined || date === undefined) {
+        const fromDate = req.query.fromDate;
+        const toDate = req.query.toDate;
+        if (branchCode === undefined || fromDate === undefined || toDate === undefined) {
             throw new Error();
         }
         const { totalCount, data } = await eventService.searchScreeningEventSeries({
-            startThrough: moment(`${date}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
-            endFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
+            startThrough: moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
+            endFrom: moment(`${toDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
             location: {
                 branchCodes: branchCode
             }

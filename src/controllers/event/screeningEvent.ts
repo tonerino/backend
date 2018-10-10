@@ -253,29 +253,6 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         throw new Error('上映スクリーン名が見つかりません');
     }
 
-    //発売開始日
-    let releaseTime: any;
-    if (body.releaseDate !== '') {
-        releaseTime = moment(`${body.releaseDate}T${body.releaseTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate();
-    }
-
-    let saleStartDate: any;
-    if (body.saleStartDate !== '') {
-        saleStartDate = moment(`${body.saleStartDate}+09:00`, 'YYYYMMDD').toDate();
-    }
-    let onlineDisplayStartDate: any;
-    if (body.onlineDisplayStartDate !== '') {
-        onlineDisplayStartDate = moment(`${body.onlineDisplayStartDate}+09:00`, 'YYYYMMDD').toDate();
-    }
-    let maxSheetNumber: any;
-    if (body.maxSheetNumber !== '') {
-        maxSheetNumber = body.maxSheetNumber;
-    }
-    let precedingSaleFlg: any;
-    if (body.precedingSaleFlg !== '') {
-        precedingSaleFlg = body.precedingSaleFlg;
-    }
-
     return {
         typeOf: chevre.factory.eventType.ScreeningEvent,
         doorTime: moment(`${body.day}T${body.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
@@ -291,12 +268,11 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         superEvent: screeningEventSeries,
         name: screeningEventSeries.name,
         eventStatus: chevre.factory.eventStatusType.EventScheduled,
-        releaseTime: releaseTime,
-        mvtkExcludeFlg: '0',
-        saleStartDate: saleStartDate,
-        onlineDisplayStartDate: onlineDisplayStartDate,
-        maxSheetNumber: maxSheetNumber,
-        precedingSaleFlg: precedingSaleFlg
+        mvtkExcludeFlg: body.mvtkExcludeFlg,
+        saleStartDate: moment(`${body.saleStartDate}+09:00`, 'YYYYMMDD').toDate(),
+        onlineDisplayStartDate: moment(`${body.onlineDisplayStartDate}+09:00`, 'YYYYMMDD').toDate(),
+        maxSeatNumber: body.maxSeatNumber,
+        preSaleFlg: body.preSaleFlg
     };
 }
 /**
@@ -327,13 +303,9 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
     const toDate = moment(`${body.toDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ').tz('Asia/Tokyo');
     const weekDays: string[] = body.weekDayData;
     const ticketTypes: string[] = body.ticketData;
+    const mvtkExcludeFlgs: string[] = body.mvtkExcludeFlgData;
     const timeData: { doorTime: string; startTime: string; endTime: string }[] = body.timeData;
     const attributes: chevre.factory.event.screeningEvent.IAttributes[] = [];
-    //発売開始日
-    let releaseTime: any;
-    if (body.releaseDate !== '') {
-        releaseTime = moment(`${body.releaseDate}T${body.releaseTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate();
-    }
     for (let date = startDate; date <= toDate; date = date.add(1, 'day')) {
         const formattedDate = date.format('YYYY/MM/DD');
         const day = date.get('day').toString();
@@ -354,8 +326,12 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                     superEvent: screeningEventSeries,
                     name: screeningEventSeries.name,
                     eventStatus: chevre.factory.eventStatusType.EventScheduled,
-                    releaseTime: releaseTime,
-                    mvtkExcludeFlg: '1'
+                    maxSeatNumber: body.maxSeatNumber,
+                    preSaleFlg: 0,
+                    saleStartDate: moment(`${formattedDate}T${data.startTime}+09:00`, 'YYYYMMDD')
+                        .add(body.saleStartDate * -1, 'days').toDate(),
+                    onlineDisplayStartDate: moment(`${body.onlineDisplayStartDate}+09:00`, 'YYYYMMDD').toDate(),
+                    mvtkExcludeFlg: mvtkExcludeFlgs[i]
                 });
             });
         }

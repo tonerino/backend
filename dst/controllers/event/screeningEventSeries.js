@@ -256,13 +256,14 @@ function search(req, res) {
                 auth: req.user.authClient
             });
             const branchCode = req.query.branchCode;
-            const date = req.query.date;
-            if (branchCode === undefined || date === undefined) {
+            const fromDate = req.query.fromDate;
+            const toDate = req.query.toDate;
+            if (branchCode === undefined || fromDate === undefined || toDate === undefined) {
                 throw new Error();
             }
             const { totalCount, data } = yield eventService.searchScreeningEventSeries({
-                startThrough: moment(`${date}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
-                endFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
+                startThrough: moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
+                endFrom: moment(`${toDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
                 location: {
                     branchCodes: branchCode
                 }
@@ -421,3 +422,4 @@ function validate(req) {
     colName = '集計開始曜日';
     req.checkBody('summaryStartDay', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 }
+//# sourceMappingURL=screeningEventSeries.js.map
