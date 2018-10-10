@@ -228,7 +228,7 @@
             ];
         %>
         <select name="videoFormat" id="videoFormat" class="form-control">
-            <option value="">---</option>
+            <!-- <option value="">---</option> -->
             <% for (let screen of screens) { %>
                 <% if (forms.videoFormat == '' || forms.videoFormat == undefined) { %>
                     <option value="<%= screen.code %>"<% if (screen.code === 'normal') { %> selected="selected"<% } %>><%- screen.name.ja %></option>
@@ -249,7 +249,7 @@
         ムビチケ利用
     </label>
     <div class="col-sm-9 form-inline">
-        <label class="checkbox-inline"><input type="checkbox" <% if (forms.mvtkFlg == 1) { %> checked <% } %> value="1" name="mvtkFlg"></label>
+        <input type="checkbox" <% if (forms.mvtkFlg == 1) { %> checked <% } %> value="1" name="mvtkFlg">
     </div>
 </div>
 <div class="form-group">

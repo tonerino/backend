@@ -58,16 +58,40 @@
                             </div>
                         </div>
                         <div class="form-group">
-                                <label class="col-sm-3 control-label" for="releaseDate">発売開始日</label>
-                                <div class="col-sm-9 form-inline">
-                                    <input class="form-control datepicker" name="releaseDate" placeholder="YYYY/MM/DD" maxlength=10>
-                                    日 
-                                    <%- include('../../common/part/_timeSelector', {
-                                        hourName: 'releaseDateHour',
-                                        minuteName: 'releaseDateMinutes'
-                                    }) %>
-                                </div>
+                            <label class="col-sm-3 control-label" for="releaseDate">発売開始日</label>
+                            <div class="col-sm-9 form-inline">
+                                <input class="form-control datepicker" name="releaseDate" placeholder="YYYY/MM/DD" maxlength=10>
+                                日 
+                                <%- include('../../common/part/_timeSelector', {
+                                    hourName: 'releaseDateHour',
+                                    minuteName: 'releaseDateMinutes'
+                                }) %>
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label" for="saleStartDate">販売開始日</label>
+                            <div class="col-sm-9 form-inline">
+                                <input class="form-control datepicker" name="saleStartDate" placeholder="YYYY/MM/DD" maxlength=10>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label" for="onlineDisplayStartDate">オンライン表示開始日</label>
+                            <div class="col-sm-9 form-inline">
+                                <input class="form-control datepicker" name="onlineDisplayStartDate" placeholder="YYYY/MM/DD" maxlength=10>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label" for="maxSheetNumber">上限枚数</label>
+                            <div class="col-sm-9 form-inline">
+                                <input class="form-control" type="number" name="maxSheetNumber" maxlength=10>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label" for="precedingSaleFlg">先行販売フラグ</label>
+                            <div class="col-sm-9 form-inline">
+                                <input type="checkbox" value="1" name="precedingSaleFlg">
+                            </div>
+                        </div>
                     </form>
                 </div>
 			</div>
@@ -78,7 +102,10 @@
             <input type="hidden" name="day" value="">
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
-				<button type="button" class="btn btn-primary update-button">パフォーマンスを更新</button>
+                <button type="button" class="btn btn-primary update-button">パフォーマンスを更新</button>
+                
+                <button type="button" class="btn btn-danger delete-button">削除</button>
+                
 			</div>
 		</div>
 	</div>

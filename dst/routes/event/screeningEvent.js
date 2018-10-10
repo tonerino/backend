@@ -11,4 +11,5 @@ screeningEventRouter.get('/search', ScreeningEventController.search);
 screeningEventRouter.get('/searchScreeningEventSeries', ScreeningEventController.searchScreeningEventSeries);
 screeningEventRouter.post('/regist', ScreeningEventController.regist);
 screeningEventRouter.post('/:eventId/update', ScreeningEventController.update);
+screeningEventRouter.delete('/:eventId', ScreeningEventController.deletePerformance);
 exports.default = screeningEventRouter;

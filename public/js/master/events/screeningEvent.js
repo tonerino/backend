@@ -56,6 +56,12 @@ $(function () {
         update();
     });
 
+    // 削除ボタンの処理
+    $(document).on('click', '.delete-button', function (event) {
+        event.preventDefault();
+        deletePerformance();
+    });
+
     $(document).on('change', 'form.search select[name="theater"]', _.debounce(function() {
         var theater = $(this).val();
         var date = $('.search input[name=date]').val();
@@ -321,6 +327,15 @@ function update() {
     var ticketTypeGroup = modal.find('select[name=ticketTypeGroup]').val();
     var releaseDate = modal.find('input[name=releaseDate]').val();
     var releaseTime = modal.find('select[name=releaseDateHour]').val() + modal.find('select[name=releaseDateMinutes]').val();
+    var saleStartDate = modal.find('input[name=saleStartDate]').val();
+    var onlineDisplayStartDate = modal.find('input[name=onlineDisplayStartDate]').val();
+    var maxSheetNumber = modal.find('input[name=maxSheetNumber]').val();
+    if (modal.find('input[name=precedingSaleFlg]').is(':checked')) {
+        var precedingSaleFlg = 1;
+    } else {
+        var precedingSaleFlg = 0;
+    }
+
     if (performance === ''
         || screen === ''
         || doorTime === ''
@@ -344,7 +359,11 @@ function update() {
             endTime: endTime,
             ticketTypeGroup: ticketTypeGroup,
             releaseDate: releaseDate,
-            releaseTime: releaseTime
+            releaseTime: releaseTime,
+            saleStartDate: saleStartDate,
+            onlineDisplayStartDate: onlineDisplayStartDate,
+            maxSheetNumber: maxSheetNumber,
+            precedingSaleFlg: precedingSaleFlg
         }
     }).done(function (data) {
         if (!data.error) {
@@ -416,6 +435,40 @@ function search(theater, date, days, screen) {
 }
 
 /**
+ * 削除の処理
+ * @function deletePerformance
+ * @returns {void}
+ */
+function deletePerformance() {
+    var modal = $('#editModal');
+    var theater = $('form.search select[name="theater"]').val();
+    var performance = modal.find('input[name=performance]').val();
+    if (performance === '') {
+        alert('情報が足りません');
+        return;
+    }
+    $.ajax({
+        dataType: 'json',
+        url: '/events/screeningEvent/' + performance,
+        type: 'DELETE',
+    }).done(function (data) {
+        if (!data.error) {
+            modal.modal('hide');
+            search(
+                theater,
+                $('.search input[name=date]').val(),
+                $('.search input[name=days]').val()
+            );
+            return;
+        }
+        alert('削除に失敗しました');
+    }).fail(function (jqxhr, textStatus, error) {
+        console.error(jqxhr, textStatus, error);
+        alert('削除に失敗しました');
+    });
+}
+
+/**
  * モーダル初期化
  */
 function modalInit(theater, date, screens, ticketGroups) {
@@ -466,6 +519,11 @@ function add() {
     modal.find('select[name=releaseDateMinute]').val('');
     modal.find('input[name=screeningDateStart]').datepicker('update', date);
     modal.find('input[name=screeningDateThrough]').datepicker('update', date);
+    // modal.find('input[name=saleStartDate]').val('');
+    // modal.find('input[name=onlineDisplayStartDate]').val('');
+    // modal.find('input[name=maxSheetNumber]').val('');
+    // modal.find('input[name=precedingSaleFlg]').val('');
+
     $('#newModal').modal();
 }
 
@@ -488,9 +546,20 @@ function edit(target) {
     var ticketTypeGroup = target.attr('data-ticketTypeGroup');
     var releaseDate = target.attr('data-releaseDate') ? target.attr('data-releaseDate') : '';
     var releaseTime = target.attr('data-releaseTime') ? target.attr('data-releaseTime') : '';
+    var saleStartDate = target.attr('data-saleStartDate') ? target.attr('data-saleStartDate') : '';
+    var onlineDisplayStartDate = target.attr('data-onlineDisplayStartDate') ? target.attr('data-onlineDisplayStartDate') : '';
+    var maxSheetNumber = target.attr('data-maxSheetNumber');
+    var precedingSaleFlg = target.attr('data-precedingSaleFlg');
+    console.log(maxSheetNumber);
     var modal = $('#editModal');
     modal.find('.day span').text(moment(day).format('YYYY年MM月DD日(ddd)'));
-
+    // チェックstartTime削除ボタン表示
+    if (moment(day).isSameOrAfter(moment(new Date()), 'day')) {
+        modal.find('.delete-button').show();
+    } else {
+        modal.find('.delete-button').hide();
+    }
+    
     modal.find('input[name=performance]').val(performance);
     modal.find('input[name=theater]').val(theater);
     modal.find('input[name=day]').val(day);
@@ -515,6 +584,22 @@ function edit(target) {
         modal.find('input[name=releaseDate]').val('');
         modal.find('select[name=releaseDateHour]').val('');
         modal.find('select[name=releaseDateMinutes]').val('');
+    }
+    if (saleStartDate) {
+        modal.find('input[name=saleStartDate]').datepicker('update', saleStartDate);
+    } else {
+        modal.find('input[name=saleStartDate]').val('');
+    }
+    if (onlineDisplayStartDate) {
+        modal.find('input[name=onlineDisplayStartDate]').datepicker('update', onlineDisplayStartDate);
+    } else {
+        modal.find('input[name=onlineDisplayStartDate]').val('');
+    }
+    modal.find('input[name=maxSheetNumber]').val(maxSheetNumber);
+    if (precedingSaleFlg == 1) {
+        modal.find('input[name=precedingSaleFlg]').prop('checked', true);
+    } else {
+        modal.find('input[name=precedingSaleFlg]').prop('checked', false);
     }
 
     modal.find('.film span').text(filmName);
@@ -657,6 +742,10 @@ function createScreen(performances, ticketGroups) {
                 ticketTypeGroupName = ticketGroups[i]['name'].ja;
             }
         }
+        var saleStartDate = (performance.saleStartDate) ? moment(performance.saleStartDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '';
+        var onlineDisplayStartDate = (performance.onlineDisplayStartDate) ? moment(performance.onlineDisplayStartDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '';
+        var maxSheetNumber = (performance.maxSheetNumber) ? performance.maxSheetNumber : '';
+        var precedingSaleFlg = (performance.precedingSaleFlg) ? performance.precedingSaleFlg : 0;
          /**
          * 劇場上映作品名
          * 興行区分名
@@ -675,6 +764,10 @@ function createScreen(performances, ticketGroups) {
             'data-ticketTypeGroup="' + performance.ticketTypeGroup + '" ' +
             'data-releaseDate="' + releaseDate + '" ' +
             'data-releaseTime="' + releaseTime + '" ' +
+            'data-saleStartDate="' + saleStartDate + '" ' +
+            'data-onlineDisplayStartDate="' + onlineDisplayStartDate + '" ' +
+            'data-maxSheetNumber="' + maxSheetNumber + '" ' +
+            'data-precedingSaleFlg="' + precedingSaleFlg + '" ' +
             'role="button" class="inner">' + performance.name.ja + '<br />' + 
             performance.location.name.ja + '<br />' + ticketTypeGroupName + '</div>' +
             '</div>');

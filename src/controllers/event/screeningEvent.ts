@@ -198,6 +198,38 @@ export async function update(req: Request, res: Response): Promise<void> {
     }
 }
 /**
+ * 削除
+ */
+export async function deletePerformance(req: Request, res: Response): Promise<void> {
+    try {
+        const eventService = new chevre.service.Event({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        const event = await eventService.findScreeningEventById({ id: req.params.eventId });
+        if (!moment(event.startDate).isSameOrAfter(moment(new Date()), 'day')) {
+            res.json({
+                validation: null,
+                error: '開始日時'
+            });
+        }
+        debug('delete screening event...', req.params.eventId);
+        await eventService.deleteScreeningEvent({
+            id: req.params.eventId
+        });
+        res.json({
+            validation: null,
+            error: null
+        });
+    } catch (err) {
+        debug('delete error', err);
+        res.json({
+            validation: null,
+            error: err.message
+        });
+    }
+}
+/**
  * リクエストボディからイベントオブジェクトを作成する
  */
 async function createEventFromBody(body: any, user: User): Promise<chevre.factory.event.screeningEvent.IAttributes> {
@@ -227,6 +259,23 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         releaseTime = moment(`${body.releaseDate}T${body.releaseTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate();
     }
 
+    let saleStartDate: any;
+    if (body.saleStartDate !== '') {
+        saleStartDate = moment(`${body.saleStartDate}+09:00`, 'YYYYMMDD').toDate();
+    }
+    let onlineDisplayStartDate: any;
+    if (body.onlineDisplayStartDate !== '') {
+        onlineDisplayStartDate = moment(`${body.onlineDisplayStartDate}+09:00`, 'YYYYMMDD').toDate();
+    }
+    let maxSheetNumber: any;
+    if (body.maxSheetNumber !== '') {
+        maxSheetNumber = body.maxSheetNumber;
+    }
+    let precedingSaleFlg: any;
+    if (body.precedingSaleFlg !== '') {
+        precedingSaleFlg = body.precedingSaleFlg;
+    }
+
     return {
         typeOf: chevre.factory.eventType.ScreeningEvent,
         doorTime: moment(`${body.day}T${body.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
@@ -243,7 +292,11 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         name: screeningEventSeries.name,
         eventStatus: chevre.factory.eventStatusType.EventScheduled,
         releaseTime: releaseTime,
-        mvtkExcludeFlg: '0'
+        mvtkExcludeFlg: '0',
+        saleStartDate: saleStartDate,
+        onlineDisplayStartDate: onlineDisplayStartDate,
+        maxSheetNumber: maxSheetNumber,
+        precedingSaleFlg: precedingSaleFlg
     };
 }
 /**

@@ -219,6 +219,42 @@ function update(req, res) {
 }
 exports.update = update;
 /**
+ * 削除
+ */
+function deletePerformance(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const eventService = new chevre.service.Event({
+                endpoint: process.env.API_ENDPOINT,
+                auth: req.user.authClient
+            });
+            const event = yield eventService.findScreeningEventById({ id: req.params.eventId });
+            if (!moment(event.startDate).isSameOrAfter(moment(new Date()), 'day')) {
+                res.json({
+                    validation: null,
+                    error: '開始日時'
+                });
+            }
+            debug('delete screening event...', req.params.eventId);
+            yield eventService.deleteScreeningEvent({
+                id: req.params.eventId
+            });
+            res.json({
+                validation: null,
+                error: null
+            });
+        }
+        catch (err) {
+            debug('delete error', err);
+            res.json({
+                validation: null,
+                error: err.message
+            });
+        }
+    });
+}
+exports.deletePerformance = deletePerformance;
+/**
  * リクエストボディからイベントオブジェクトを作成する
  */
 function createEventFromBody(body, user) {
@@ -247,6 +283,22 @@ function createEventFromBody(body, user) {
         if (body.releaseDate !== '') {
             releaseTime = moment(`${body.releaseDate}T${body.releaseTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate();
         }
+        let saleStartDate;
+        if (body.saleStartDate !== '') {
+            saleStartDate = moment(`${body.saleStartDate}+09:00`, 'YYYYMMDD').toDate();
+        }
+        let onlineDisplayStartDate;
+        if (body.onlineDisplayStartDate !== '') {
+            onlineDisplayStartDate = moment(`${body.onlineDisplayStartDate}+09:00`, 'YYYYMMDD').toDate();
+        }
+        let maxSheetNumber;
+        if (body.maxSheetNumber !== '') {
+            maxSheetNumber = body.maxSheetNumber;
+        }
+        let precedingSaleFlg;
+        if (body.precedingSaleFlg !== '') {
+            precedingSaleFlg = body.precedingSaleFlg;
+        }
         return {
             typeOf: chevre.factory.eventType.ScreeningEvent,
             doorTime: moment(`${body.day}T${body.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
@@ -263,7 +315,11 @@ function createEventFromBody(body, user) {
             name: screeningEventSeries.name,
             eventStatus: chevre.factory.eventStatusType.EventScheduled,
             releaseTime: releaseTime,
-            mvtkExcludeFlg: '0'
+            mvtkExcludeFlg: '0',
+            saleStartDate: saleStartDate,
+            onlineDisplayStartDate: onlineDisplayStartDate,
+            maxSheetNumber: maxSheetNumber,
+            precedingSaleFlg: precedingSaleFlg
         };
     });
 }

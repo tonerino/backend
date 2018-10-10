@@ -216,8 +216,8 @@ function validate(req, checkType) {
     req.checkBody('name', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_NAME_JA });
     // 上映時間
     colName = '上映時間';
-    req.checkBody('duration', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_MINUTES))
-        .len({ max: NAME_MAX_LENGTH_NAME_EN });
+    req.checkBody('duration', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('duration', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_MINUTES)).len({ max: NAME_MAX_LENGTH_NAME_EN });
     // レイティング
     colName = 'レイティング';
     req.checkBody('contentRating', Message.Common.required.replace('$fieldName$', colName)).notEmpty();

@@ -137,19 +137,18 @@ export async function getList(req: Request, res: Response): Promise<void> {
             auth: req.user.authClient
         });
         // 券種グループ取得
-        // let ticketTypeIds: any = [];
-        // if (req.query.ticketTypeGroups !== undefined) {
-        //     const ticketTypeGroup = await ticketTypeService.findTicketTypeGroupById({ id: req.query.ticketTypeGroups });
-        //     ticketTypeIds = ticketTypeGroup.ticketTypes;
-        //     if (ticketTypeIds.length === 0) {
-        //         ticketTypeIds.push(req.query.id);
-        //     }
-        //     if (!ticketTypeIds.indexOf(req.query.id)) {
-        //         ticketTypeIds.push(req.query.id);
-        //     }
-        // }
-        // ticketTypeIds.push(req.query.id);
-        const ticketTypeIds: any = req.query.id;
+        let ticketTypeIds: any = [];
+        if (req.query.ticketTypeGroups !== undefined && req.query.ticketTypeGroups !== '') {
+            const ticketTypeGroup = await ticketTypeService.findTicketTypeGroupById({ id: req.query.ticketTypeGroups });
+            ticketTypeIds = ticketTypeGroup.ticketTypes;
+            if (ticketTypeIds.indexOf(req.query.id) && req.query.id !== '' && req.query.id !== undefined) {
+                ticketTypeIds.push(req.query.id);
+            }
+        }  else {
+            if (req.query.id !== '' && req.query.id !== undefined) {
+                ticketTypeIds.push(req.query.id);
+            }
+        }
 
         const result = await ticketTypeService.searchTicketTypes({
             limit: req.query.limit,
