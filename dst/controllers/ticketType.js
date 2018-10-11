@@ -271,4 +271,3 @@ function validateFormAdd(req) {
     req.checkBody('charge', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     req.checkBody('charge', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_EN)).len({ max: CHAGE_MAX_LENGTH });
 }
-//# sourceMappingURL=ticketType.js.map
