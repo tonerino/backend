@@ -269,7 +269,8 @@ export async function search(req: Request, res: Response): Promise<void> {
                 duration: moment.duration(event.duration).humanize(),
                 contentRating: event.workPerformed.contentRating,
                 subtitleLanguage: event.subtitleLanguage,
-                videoFormat: event.videoFormat
+                videoFormat: event.videoFormat,
+                mvtkFlg: event.mvtkFlg
             };
         });
         results.sort((event1, event2) => {

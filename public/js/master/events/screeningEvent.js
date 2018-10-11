@@ -68,6 +68,16 @@ $(function () {
         getScreens(theater, 'none');
     }, 500));
     
+    $(document).on('change', '#newModal select[name="screeningEventSeriesId"]', function() {
+        var mvtkFlg = $(this).find('option:selected').attr('data-mvtk-flag');
+        if (mvtkFlg != 1) {
+            $('#newModal input[name=mvtkExcludeFlg]').removeAttr('checked');
+            $('#newModal .mvtk').hide();
+        } else {
+            $('#newModal .mvtk').show();
+        }
+    });
+    
     $(document).on('change', '#newModal select[name="theater"]', _.debounce(function() {
         var theater = $(this).val();
         var fromDate = $('#newModal input[name=screeningDateStart]').val();
@@ -125,7 +135,7 @@ function getEventSeries(theater, fromDate, toDate) {
             var modal = $('#newModal');
             var screeningEventSeries = data.results;
             var options = screeningEventSeries.map(function (e) {
-                return '<option value="' + e.id + '">' + e.filmNameJa + '</option>';
+                return '<option value="' + e.id + '" data-mvtk-flag="' + e.mvtkFlg +'">' + e.filmNameJa + '</option>';
             });
             options.unshift('<option value="" disabled selected>選択してください</option>')
             modal.find('select[name="screeningEventSeriesId"]').html(options);
