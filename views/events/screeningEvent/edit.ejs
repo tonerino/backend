@@ -58,20 +58,14 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label" for="releaseDate">発売開始日</label>
-                            <div class="col-sm-9 form-inline">
-                                <input class="form-control datepicker" name="releaseDate" placeholder="YYYY/MM/DD" maxlength=10>
-                                日 
-                                <%- include('../../common/part/_timeSelector', {
-                                    hourName: 'releaseDateHour',
-                                    minuteName: 'releaseDateMinutes'
-                                }) %>
-                            </div>
-                        </div>
-                        <div class="form-group">
                             <label class="col-sm-3 control-label" for="saleStartDate">販売開始日</label>
                             <div class="col-sm-9 form-inline">
                                 <input class="form-control datepicker" name="saleStartDate" placeholder="YYYY/MM/DD" maxlength=10>
+                                日 
+                                <%- include('../../common/part/_timeSelector', {
+                                    hourName: 'saleStartDateHour',
+                                    minuteName: 'saleStartDateMinutes'
+                                }) %>
                             </div>
                         </div>
                         <div class="form-group">
@@ -81,15 +75,15 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label" for="maxSheetNumber">上限枚数</label>
+                            <label class="col-sm-3 control-label" for="maxSeatNumber">上限枚数</label>
                             <div class="col-sm-9 form-inline">
-                                <input class="form-control" type="number" name="maxSheetNumber" maxlength=10>
+                                <input class="form-control" type="number" name="maxSeatNumber" maxlength=10>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label" for="precedingSaleFlg">先行販売フラグ</label>
+                            <label class="col-sm-3 control-label" for="preSaleFlg">先行販売フラグ</label>
                             <div class="col-sm-9 form-inline">
-                                <input type="checkbox" value="1" name="precedingSaleFlg">
+                                <input type="checkbox" value="1" name="preSaleFlg">
                             </div>
                         </div>
                     </form>

@@ -207,7 +207,7 @@ export async function deletePerformance(req: Request, res: Response): Promise<vo
             auth: req.user.authClient
         });
         const event = await eventService.findScreeningEventById({ id: req.params.eventId });
-        if (!moment(event.startDate).isSameOrAfter(moment(new Date()), 'day')) {
+        if (moment(event.startDate).isSameOrAfter(moment().tz('Asia/Tokyo'), 'day')) {
             res.json({
                 validation: null,
                 error: '開始日時'
@@ -269,7 +269,7 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         name: screeningEventSeries.name,
         eventStatus: chevre.factory.eventStatusType.EventScheduled,
         mvtkExcludeFlg: body.mvtkExcludeFlg,
-        saleStartDate: moment(`${body.saleStartDate}+09:00`, 'YYYYMMDD').toDate(),
+        saleStartDate: moment(`${body.saleStartDate}T${body.saleStartTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
         onlineDisplayStartDate: moment(`${body.onlineDisplayStartDate}+09:00`, 'YYYYMMDD').toDate(),
         maxSeatNumber: body.maxSeatNumber,
         preSaleFlg: body.preSaleFlg

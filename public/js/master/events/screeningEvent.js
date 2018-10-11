@@ -367,15 +367,15 @@ function update() {
     var startTime = modal.find('select[name=startTimeHour]').val() + modal.find('select[name=startTimeMinutes]').val();
     var endTime = modal.find('select[name=endTimeHour]').val() + modal.find('select[name=endTimeMinutes]').val();
     var ticketTypeGroup = modal.find('select[name=ticketTypeGroup]').val();
-    var releaseDate = modal.find('input[name=releaseDate]').val();
-    var releaseTime = modal.find('select[name=releaseDateHour]').val() + modal.find('select[name=releaseDateMinutes]').val();
     var saleStartDate = modal.find('input[name=saleStartDate]').val();
+    var saleStartTime = modal.find('select[name=saleStartDateHour]').val() + modal.find('select[name=saleStartDateMinutes]').val();
+    // var saleStartDate = modal.find('input[name=saleStartDate]').val();
     var onlineDisplayStartDate = modal.find('input[name=onlineDisplayStartDate]').val();
-    var maxSheetNumber = modal.find('input[name=maxSheetNumber]').val();
-    if (modal.find('input[name=precedingSaleFlg]').is(':checked')) {
-        var precedingSaleFlg = 1;
+    var maxSeatNumber = modal.find('input[name=maxSeatNumber]').val();
+    if (modal.find('input[name=preSaleFlg]').is(':checked')) {
+        var preSaleFlg = 1;
     } else {
-        var precedingSaleFlg = 0;
+        var preSaleFlg = 0;
     }
 
     if (performance === ''
@@ -400,12 +400,11 @@ function update() {
             startTime: startTime,
             endTime: endTime,
             ticketTypeGroup: ticketTypeGroup,
-            releaseDate: releaseDate,
-            releaseTime: releaseTime,
             saleStartDate: saleStartDate,
+            saleStartTime: saleStartTime,
             onlineDisplayStartDate: onlineDisplayStartDate,
-            maxSheetNumber: maxSheetNumber,
-            precedingSaleFlg: precedingSaleFlg
+            maxSeatNumber: maxSeatNumber,
+            preSaleFlg: preSaleFlg
         }
     }).done(function (data) {
         if (!data.error) {
@@ -562,8 +561,8 @@ function add() {
     modal.find('input[name=screeningDateThrough]').datepicker('update', new Date());
     // modal.find('input[name=saleStartDate]').val('');
     // modal.find('input[name=onlineDisplayStartDate]').val('');
-    // modal.find('input[name=maxSheetNumber]').val('');
-    // modal.find('input[name=precedingSaleFlg]').val('');
+    // modal.find('input[name=maxSeatNumber]').val('');
+    // modal.find('input[name=preSaleFlg]').val('');
 
     $('#newModal').modal();
 }
@@ -585,17 +584,16 @@ function edit(target) {
     var film = target.attr('data-film');
     var filmName = target.text();
     var ticketTypeGroup = target.attr('data-ticketTypeGroup');
-    var releaseDate = target.attr('data-releaseDate') ? target.attr('data-releaseDate') : '';
-    var releaseTime = target.attr('data-releaseTime') ? target.attr('data-releaseTime') : '';
     var saleStartDate = target.attr('data-saleStartDate') ? target.attr('data-saleStartDate') : '';
+    var saleStartTime = target.attr('data-saleStartTime') ? target.attr('data-saleStartTime') : '';
+    // var saleStartDate = target.attr('data-saleStartDate') ? target.attr('data-saleStartDate') : '';
     var onlineDisplayStartDate = target.attr('data-onlineDisplayStartDate') ? target.attr('data-onlineDisplayStartDate') : '';
-    var maxSheetNumber = target.attr('data-maxSheetNumber');
-    var precedingSaleFlg = target.attr('data-precedingSaleFlg');
-    console.log(maxSheetNumber);
+    var maxSeatNumber = target.attr('data-maxSeatNumber');
+    var preSaleFlg = target.attr('data-preSaleFlg');
     var modal = $('#editModal');
     modal.find('.day span').text(moment(day).format('YYYY年MM月DD日(ddd)'));
     // チェックstartTime削除ボタン表示
-    if (moment(day).isSameOrAfter(moment(new Date()), 'day')) {
+    if (moment(day).isSameOrAfter(moment().tz('Asia/Tokyo'), 'day')) {
         modal.find('.delete-button').show();
     } else {
         modal.find('.delete-button').hide();
@@ -616,31 +614,31 @@ function edit(target) {
     modal.find('select[name=screen]').val(screen);
     modal.find('select[name=ticketTypeGroup]').val(ticketTypeGroup);
     
-    // 発売開始日
-    if (releaseDate) {
-        modal.find('input[name=releaseDate]').val(releaseDate);
-        modal.find('select[name=releaseDateHour]').val(releaseTime.slice(0, 2));
-        modal.find('select[name=releaseDateMinutes]').val(fix(releaseTime.slice(2, 4)));
-    } else {
-        modal.find('input[name=releaseDate]').val('');
-        modal.find('select[name=releaseDateHour]').val('');
-        modal.find('select[name=releaseDateMinutes]').val('');
-    }
+    // 販売開始日
     if (saleStartDate) {
-        modal.find('input[name=saleStartDate]').datepicker('update', saleStartDate);
+        modal.find('input[name=saleStartDate]').val(saleStartDate);
+        modal.find('select[name=saleStartDateHour]').val(saleStartTime.slice(0, 2));
+        modal.find('select[name=saleStartDateMinutes]').val(fix(saleStartTime.slice(2, 4)));
     } else {
         modal.find('input[name=saleStartDate]').val('');
+        modal.find('select[name=saleStartDateHour]').val('');
+        modal.find('select[name=saleStartDateMinutes]').val('');
     }
+    // if (saleStartDate) {
+    //     modal.find('input[name=saleStartDate]').datepicker('update', saleStartDate);
+    // } else {
+    //     modal.find('input[name=saleStartDate]').val('');
+    // }
     if (onlineDisplayStartDate) {
         modal.find('input[name=onlineDisplayStartDate]').datepicker('update', onlineDisplayStartDate);
     } else {
         modal.find('input[name=onlineDisplayStartDate]').val('');
     }
-    modal.find('input[name=maxSheetNumber]').val(maxSheetNumber);
-    if (precedingSaleFlg == 1) {
-        modal.find('input[name=precedingSaleFlg]').prop('checked', true);
+    modal.find('input[name=maxSeatNumber]').val(maxSeatNumber);
+    if (preSaleFlg == 1) {
+        modal.find('input[name=preSaleFlg]').prop('checked', true);
     } else {
-        modal.find('input[name=precedingSaleFlg]').prop('checked', false);
+        modal.find('input[name=preSaleFlg]').prop('checked', false);
     }
 
     modal.find('.film span').text(filmName);
@@ -769,13 +767,13 @@ function createScreen(performances, ticketGroups) {
             height: height + 'px',
             width: width + '%'
         };
-        // 発売開始日
-        if (performance.releaseTime) {
-            var releaseDate = moment(performance.releaseTime).tz('Asia/Tokyo').format('YYYY/MM/DD');
-            var releaseTime = moment(performance.releaseTime).tz('Asia/Tokyo').format('HHmm');
+        // 販売開始日
+        if (performance.saleStartDate) {
+            var saleStartDate = moment(performance.saleStartDate).tz('Asia/Tokyo').format('YYYY/MM/DD');
+            var saleStartTime = moment(performance.saleStartDate).tz('Asia/Tokyo').format('HHmm');
         } else {
-            var releaseDate = '';
-            var releaseTime = '';
+            var saleStartDate = '';
+            var saleStartTime = '';
         }
         var ticketTypeGroupName = '';
         for (var j = 0; j < ticketGroups.length; j++) {
@@ -783,10 +781,10 @@ function createScreen(performances, ticketGroups) {
                 ticketTypeGroupName = ticketGroups[j]['name'].ja;
             }
         }
-        var saleStartDate = (performance.saleStartDate) ? moment(performance.saleStartDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '';
+        // var saleStartDate = (performance.saleStartDate) ? moment(performance.saleStartDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '';
         var onlineDisplayStartDate = (performance.onlineDisplayStartDate) ? moment(performance.onlineDisplayStartDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '';
-        var maxSheetNumber = (performance.maxSheetNumber) ? performance.maxSheetNumber : '';
-        var precedingSaleFlg = (performance.precedingSaleFlg) ? performance.precedingSaleFlg : 0;
+        var maxSeatNumber = (performance.maxSeatNumber) ? performance.maxSeatNumber : '';
+        var preSaleFlg = (performance.preSaleFlg) ? performance.preSaleFlg : 0;
          /**
          * 劇場上映作品名
          * 興行区分名
@@ -803,12 +801,11 @@ function createScreen(performances, ticketGroups) {
             'data-theater="' + performance.superEvent.location.branchCode + '" ' +
             'data-film="' + performance.superEvent.id + '" ' +
             'data-ticketTypeGroup="' + performance.ticketTypeGroup + '" ' +
-            'data-releaseDate="' + releaseDate + '" ' +
-            'data-releaseTime="' + releaseTime + '" ' +
             'data-saleStartDate="' + saleStartDate + '" ' +
+            'data-saleStartTime="' + saleStartTime + '" ' +
             'data-onlineDisplayStartDate="' + onlineDisplayStartDate + '" ' +
-            'data-maxSheetNumber="' + maxSheetNumber + '" ' +
-            'data-precedingSaleFlg="' + precedingSaleFlg + '" ' +
+            'data-maxSeatNumber="' + maxSeatNumber + '" ' +
+            'data-preSaleFlg="' + preSaleFlg + '" ' +
             'role="button" class="inner">' + performance.name.ja + '<br />' + 
             performance.location.name.ja + '<br />' + ticketTypeGroupName + '</div>' +
             '</div>');
