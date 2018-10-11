@@ -14,26 +14,36 @@
                                 <select class="form-control" name="theater">
                                     <option value="" disabled selected>選択してください</option>
                                     <% for (const movieTheater of movieTheaters) { %>
-                                    <option value="<%= movieTheater.branchCode %>"><%= movieTheater.name.ja %></option>
+                                    <option 
+                                        value="<%= movieTheater.branchCode %>"
+                                        data-max-seat-number="<%= movieTheater.maxSeatNumber %>"
+                                        data-sale-start-days="<%= movieTheater.saleStartDate %>"
+                                        data-end-sale-time="<%= movieTheater.endSaleTimeAfterScreening %>"
+                                    >
+                                        <%= movieTheater.name.ja %>
+                                    </option>
                                     <% } %>
                                 </select>
                             </div>
                         </div>
                         <div class="form-group form-inline">
-                            <label class="col-sm-3 control-label text-right" for="screen">イベントシリーズ<font color="red">＊</font></label>
+                            <label class="col-sm-3 control-label text-right" for="screen">作品<font color="red">＊</font></label>
                             <div class="col-sm-9 form-inline">
                                 <select class="form-control" name="screeningEventSeriesId">
+                                    <option value="">劇場を選択してください</option>
                                 </select>
                             </div>
                         </div>
                         <div class="form-group form-inline">
                             <label class="col-sm-3 control-label text-right" for="screen">スクリーン<font color="red">＊</font></label>
                             <div class="col-sm-9">
-                                <select class="form-control" name="screen"></select>
+                                <select class="form-control" name="screen">
+                                    <option value="">劇場を選択してください</option>
+                                </select>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label text-right">上映日<font color="red">＊</font></label>
+                            <label class="col-sm-3 control-label text-right">登録期間<font color="red">＊</font></label>
                             <div class="col-sm-9 form-inline">
                                 <input class="form-control datepicker" name="screeningDateStart" placeholder="YYYY/MM/DD" maxlength=10>
                                 〜
@@ -53,14 +63,9 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label text-right" for="releaseDate">発売開始日</label>
+                            <label class="col-sm-3 control-label text-right" for="onlineDisplayStartDate">オンライン表示開始日</label>
                             <div class="col-sm-9 form-inline">
-                                <input class="form-control datepicker" name="releaseDate" placeholder="YYYY/MM/DD" maxlength=10>
-                                日 
-                                <%- include('../../common/part/_timeSelector', {
-                                    hourName: 'releaseDateHour',
-                                    minuteName: 'releaseDateMinute'
-                                }) %>
+                                <input class="form-control datepicker" name="onlineDisplayStartDate" placeholder="YYYY/MM/DD" maxlength=10>
                             </div>
                         </div>
                         <table class="table table-bordered">
@@ -103,7 +108,7 @@
                                         </select>
                                     </td>
                                     <td class="form-inline text-center">
-                                        <input type="checkbox" name="mvtkExclude">
+                                        <input type="checkbox" name="mvtkExcludeFlg">
                                     </td>
                                 </tr>
                             <% } %>
@@ -133,9 +138,8 @@
                     </form>
                 </div>
             </div>
-            <input type="hidden" name="screeningEventId" value="">
-            <input type="hidden" name="theater" value="">
-            <input type="hidden" name="day" value="">
+            <input type="hidden" name="maxSeatNumber" value="">
+            <input type="hidden" name="saleStartDays" value="">
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
                 <button type="button" class="btn btn-primary regist-button">パフォーマンスを登録</button>

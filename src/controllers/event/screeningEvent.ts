@@ -328,10 +328,11 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                     eventStatus: chevre.factory.eventStatusType.EventScheduled,
                     maxSeatNumber: body.maxSeatNumber,
                     preSaleFlg: 0,
-                    saleStartDate: moment(`${formattedDate}T${data.startTime}+09:00`, 'YYYYMMDD')
-                        .add(body.saleStartDate * -1, 'days').toDate(),
-                    onlineDisplayStartDate: moment(`${body.onlineDisplayStartDate}+09:00`, 'YYYYMMDD').toDate(),
-                    mvtkExcludeFlg: mvtkExcludeFlgs[i]
+                    saleStartDate: moment(`${formattedDate}T0000+09:00`, 'YYYYMMDDTHHmmZ')
+                        .add(parseInt(body.saleStartDays, 10) * -1, 'day').toDate(),
+                    onlineDisplayStartDate: moment(`${body.onlineDisplayStartDate}T0000+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
+                    mvtkExcludeFlg: mvtkExcludeFlgs[i],
+                    endSaleTimeAfterScreening: body.endSaleTimeAfterScreening
                 });
             });
         }
