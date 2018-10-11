@@ -10,6 +10,8 @@ import * as Message from '../common/Const/Message';
 const NAME_MAX_LENGTH_CODE = 64;
 // 券種名・日本語 全角64
 const NAME_MAX_LENGTH_NAME_JA = 64;
+// 印刷用券種名・日本語 全角64
+const NAME_PRITING_MAX_LENGTH_NAME_JA = 30;
 // 券種名・英語 半角128
 const NAME_MAX_LENGTH_NAME_EN = 64;
 // 金額
@@ -40,17 +42,19 @@ export async function add(req: Request, res: Response): Promise<void> {
                     description: req.body.description,
                     notes: req.body.notes,
                     charge: req.body.charge,
-                    boxOnly: true,
-                    onlineOnly: true,
-                    nameForManagementSite: '0',
-                    nameForPrinting: '0',
-                    seatReservationUnit: 1,
+                    boxOnly: (req.body.boxOnly === '1') ? true : false,
+                    onlineOnly: (req.body.onlineOnly === '1') ? true : false,
+                    nameForManagementSite: req.body.nameForManagementSite,
+                    nameForPrinting: req.body.nameForPrinting,
+                    seatReservationUnit: req.body.seatReservationUnit,
                     subject: 1,
-                    typeOfNote: 1
+                    typeOfNote: req.body.typeOfNote,
+                    indicatorColor: req.body.indicatorColor
                 };
                 await ticketTypeService.createTicketType(ticketType);
                 message = '登録完了';
-                res.redirect(`/ticketTypes/${ticketType.id}/update`);
+                res.redirect('/complete');
+                // res.redirect(`/ticketTypes/${ticketType.id}/update`);
 
                 return;
             } catch (error) {
@@ -64,7 +68,14 @@ export async function add(req: Request, res: Response): Promise<void> {
         charge: (_.isEmpty(req.body.charge)) ? '' : req.body.charge,
         description: (_.isEmpty(req.body.description)) ? {} : req.body.description,
         notes: (_.isEmpty(req.body.notes)) ? {} : req.body.notes,
-        hiddenColor: (_.isEmpty(req.body.hiddenColor)) ? '' : req.body.hiddenColor
+        indicatorColor: (_.isEmpty(req.body.indicatorColor)) ? '' : req.body.indicatorColor,
+        boxOnly: (_.isEmpty(req.body.boxOnly)) ? '' : req.body.boxOnly,
+        onlineOnly: (_.isEmpty(req.body.onlineOnly)) ? '' : req.body.onlineOnly,
+        nameForManagementSite: (_.isEmpty(req.body.nameForManagementSite)) ? '' : req.body.nameForManagementSite,
+        nameForPrinting: (_.isEmpty(req.body.nameForPrinting)) ? '' : req.body.nameForPrinting,
+        seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? '' : req.body.seatReservationUnit,
+        subject: 1,
+        typeOfNote: (_.isEmpty(req.body.typeOfNote)) ? '' : req.body.typeOfNote
     };
     res.render('ticketType/add', {
         message: message,
@@ -99,13 +110,14 @@ export async function update(req: Request, res: Response): Promise<void> {
                     description: req.body.description,
                     notes: req.body.notes,
                     charge: req.body.charge,
-                    boxOnly: true,
-                    onlineOnly: true,
-                    nameForManagementSite: '0',
-                    nameForPrinting: '0',
-                    seatReservationUnit: 1,
+                    boxOnly: (req.body.boxOnly === '1') ? true : false,
+                    onlineOnly: (req.body.onlineOnly === '1') ? true : false,
+                    nameForManagementSite: req.body.nameForManagementSite,
+                    nameForPrinting: req.body.nameForPrinting,
+                    seatReservationUnit: req.body.seatReservationUnit,
                     subject: 1,
-                    typeOfNote: 1
+                    typeOfNote: req.body.typeOfNote,
+                    indicatorColor: req.body.indicatorColor
                 };
                 await ticketTypeService.updateTicketType(ticketType);
                 message = '編集完了';
@@ -123,7 +135,15 @@ export async function update(req: Request, res: Response): Promise<void> {
         charge: (_.isEmpty(req.body.charge)) ? ticketType.charge : req.body.charge,
         description: (_.isEmpty(req.body.description)) ? ticketType.description : req.body.description,
         notes: (_.isEmpty(req.body.notes)) ? ticketType.notes : req.body.notes,
-        hiddenColor: (_.isEmpty(req.body.hiddenColor)) ? '' : req.body.hiddenColor
+        indicatorColor: (_.isEmpty(req.body.indicatorColor)) ? ticketType.indicatorColor : req.body.indicatorColor,
+        boxOnly: (_.isEmpty(req.body.boxOnly)) ? ticketType.boxOnly : req.body.boxOnly,
+        onlineOnly: (_.isEmpty(req.body.onlineOnly)) ? ticketType.onlineOnly : req.body.onlineOnly,
+        nameForManagementSite: (_.isEmpty(req.body.nameForManagementSite)) ?
+                                    ticketType.nameForManagementSite : req.body.nameForManagementSite,
+        nameForPrinting: (_.isEmpty(req.body.nameForPrinting)) ? ticketType.nameForPrinting : req.body.nameForPrinting,
+        seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? ticketType.seatReservationUnit : req.body.seatReservationUnit,
+        subject: 1,
+        typeOfNote: (_.isEmpty(req.body.typeOfNote)) ? ticketType.typeOfNote : req.body.typeOfNote
     };
     res.render('ticketType/update', {
         message: message,
@@ -236,6 +256,19 @@ function validateFormAdd(req: Request): void {
     colName = 'サイト表示用券種名英';
     req.checkBody('name.en', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     req.checkBody('name.en', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_EN)).len({ max: NAME_MAX_LENGTH_NAME_EN });
+    // サイト管理用券種名
+    colName = 'サイト管理用券種名';
+    req.checkBody('nameForManagementSite', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('nameForManagementSite', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_JA))
+        .len({ max: NAME_MAX_LENGTH_NAME_JA });
+    // 印刷用券種名
+    colName = '印刷用券種名';
+    req.checkBody('nameForPrinting', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('nameForPrinting', Message.Common.getMaxLength(colName, NAME_PRITING_MAX_LENGTH_NAME_JA))
+        .len({ max: NAME_PRITING_MAX_LENGTH_NAME_JA });
+    // 購入席単位追加
+    colName = '購入席単位追加';
+    req.checkBody('seatReservationUnit', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     // 管理用券種名
     // colName = '管理用券種名';
     // req.checkBody('managementTypeName', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
