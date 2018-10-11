@@ -390,4 +390,3 @@ function updateValidation(req) {
     req.checkBody('screen', 'スクリーンが未選択です').notEmpty();
     req.checkBody('ticketTypeGroup', '券種グループが未選択です').notEmpty();
 }
-//# sourceMappingURL=screeningEvent.js.map
