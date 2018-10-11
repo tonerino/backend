@@ -28,10 +28,10 @@ export async function add(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    // const eventService = new chevre.service.Event({
-    //     endpoint: <string>process.env.API_ENDPOINT,
-    //     auth: req.user.authClient
-    // });
+    const eventService = new chevre.service.Event({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient
+    });
     const placeService = new chevre.service.Place({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
@@ -56,7 +56,7 @@ export async function add(req: Request, res: Response): Promise<void> {
                 req.body.contentRating = movie.contentRating;
                 const attributes = createEventFromBody(req.body, movie, movieTheater);
                 debug('saving an event...', attributes);
-                // const event = await eventService.createScreeningEventSeries(attributes);
+                await eventService.createScreeningEventSeries(attributes);
                 res.redirect('/complete');
                 // res.redirect(`/events/screeningEventSeries/${event.id}/update`);
 

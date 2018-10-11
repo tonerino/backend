@@ -34,10 +34,10 @@ function add(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        // const eventService = new chevre.service.Event({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient
-        // });
+        const eventService = new chevre.service.Event({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
         const placeService = new chevre.service.Place({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
@@ -62,7 +62,7 @@ function add(req, res) {
                     req.body.contentRating = movie.contentRating;
                     const attributes = createEventFromBody(req.body, movie, movieTheater);
                     debug('saving an event...', attributes);
-                    // const event = await eventService.createScreeningEventSeries(attributes);
+                    yield eventService.createScreeningEventSeries(attributes);
                     res.redirect('/complete');
                     // res.redirect(`/events/screeningEventSeries/${event.id}/update`);
                     return;
@@ -422,4 +422,3 @@ function validate(req) {
     colName = '集計開始曜日';
     req.checkBody('summaryStartDay', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 }
-//# sourceMappingURL=screeningEventSeries.js.map
