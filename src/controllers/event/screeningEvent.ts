@@ -303,7 +303,7 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
     const toDate = moment(`${body.toDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ').tz('Asia/Tokyo');
     const weekDays: string[] = body.weekDayData;
     const ticketTypes: string[] = body.ticketData;
-    const mvtkExcludeFlgs: string[] = body.mvtkExcludeFlgData;
+    const mvtkExcludeFlgs: number[] = body.mvtkExcludeFlgData;
     const timeData: { doorTime: string; startTime: string; endTime: string }[] = body.timeData;
     const attributes: chevre.factory.event.screeningEvent.IAttributes[] = [];
     for (let date = startDate; date <= toDate; date = date.add(1, 'day')) {
