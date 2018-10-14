@@ -49,7 +49,7 @@ function add(req, res) {
                         name: req.body.name,
                         description: req.body.description,
                         notes: req.body.notes,
-                        charge: req.body.charge,
+                        price: req.body.price,
                         boxOnly: (req.body.boxOnly === '1') ? true : false,
                         onlineOnly: (req.body.onlineOnly === '1') ? true : false,
                         nameForManagementSite: req.body.nameForManagementSite,
@@ -73,7 +73,7 @@ function add(req, res) {
         const forms = {
             id: (_.isEmpty(req.body.id)) ? '' : req.body.id,
             name: (_.isEmpty(req.body.name)) ? {} : req.body.name,
-            charge: (_.isEmpty(req.body.charge)) ? '' : req.body.charge,
+            price: (_.isEmpty(req.body.price)) ? '' : req.body.price,
             description: (_.isEmpty(req.body.description)) ? {} : req.body.description,
             notes: (_.isEmpty(req.body.notes)) ? {} : req.body.notes,
             indicatorColor: (_.isEmpty(req.body.indicatorColor)) ? '' : req.body.indicatorColor,
@@ -119,7 +119,7 @@ function update(req, res) {
                         name: req.body.name,
                         description: req.body.description,
                         notes: req.body.notes,
-                        charge: req.body.charge,
+                        price: req.body.price,
                         boxOnly: (req.body.boxOnly === '1') ? true : false,
                         onlineOnly: (req.body.onlineOnly === '1') ? true : false,
                         nameForManagementSite: req.body.nameForManagementSite,
@@ -142,7 +142,7 @@ function update(req, res) {
         const forms = {
             id: (_.isEmpty(req.body.id)) ? ticketType.id : req.body.id,
             name: (_.isEmpty(req.body.name)) ? ticketType.name : req.body.name,
-            charge: (_.isEmpty(req.body.charge)) ? ticketType.charge : req.body.charge,
+            price: (_.isEmpty(req.body.price)) ? ticketType.price : req.body.price,
             description: (_.isEmpty(req.body.description)) ? ticketType.description : req.body.description,
             notes: (_.isEmpty(req.body.notes)) ? ticketType.notes : req.body.notes,
             indicatorColor: (_.isEmpty(req.body.indicatorColor)) ? ticketType.indicatorColor : req.body.indicatorColor,
@@ -190,7 +190,7 @@ function getList(req, res) {
             const result = yield ticketTypeService.searchTicketTypes({
                 limit: req.query.limit,
                 page: req.query.page,
-                id: ticketTypeIds,
+                id: req.query.id,
                 name: req.query.name
             });
             res.json({
@@ -201,7 +201,7 @@ function getList(req, res) {
                         id: t.id,
                         ticketCode: t.id,
                         managementTypeName: t.name.ja,
-                        ticketCharge: t.charge
+                        ticketPrice: t.price
                     };
                 })
             });
@@ -301,6 +301,6 @@ function validateFormAdd(req) {
     //     );
     // 金額
     colName = '金額';
-    req.checkBody('charge', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('charge', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_EN)).len({ max: CHAGE_MAX_LENGTH });
+    req.checkBody('price', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('price', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_EN)).len({ max: CHAGE_MAX_LENGTH });
 }

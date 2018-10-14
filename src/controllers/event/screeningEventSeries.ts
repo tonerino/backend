@@ -67,7 +67,10 @@ export async function add(req: Request, res: Response): Promise<void> {
         }
     }
 
-    const forms = req.body;
+    const forms = {
+        videoFormatType: [],
+        ...req.body
+    };
 
     // 作品マスタ画面遷移
     debug('errors:', errors);
@@ -76,7 +79,8 @@ export async function add(req: Request, res: Response): Promise<void> {
         errors: errors,
         forms: forms,
         movies: movies,
-        movieTheaters: searchMovieTheatersResult.data
+        movieTheaters: searchMovieTheatersResult.data,
+        VideoFormatType: chevre.factory.videoFormatType
     });
 }
 /**
@@ -140,7 +144,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         locationBranchCode: event.location.branchCode,
         contentRating: event.workPerformed.contentRating,
         subtitleLanguage: event.subtitleLanguage,
-        videoFormat: event.videoFormat,
+        videoFormatType: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf) : [],
         startDate: (_.isEmpty(req.body.startDate)) ?
             (event.startDate !== null) ? moment(event.startDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
             req.body.startDate,
@@ -150,7 +154,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         movieSubtitleName: (_.isEmpty(req.body.movieSubtitleName)) ? event.movieSubtitleName : req.body.movieSubtitleName,
         signageDisplayName: (_.isEmpty(req.body.signageDisplayName)) ? event.signageDisplayName : req.body.signageDisplayName,
         signageDislaySubtitleName: (_.isEmpty(req.body.signageDislaySubtitleName)) ?
-                                    event.signageDislaySubtitleName : req.body.signageDislaySubtitleName,
+            event.signageDislaySubtitleName : req.body.signageDislaySubtitleName,
         summaryStartDay: (_.isEmpty(req.body.summaryStartDay)) ? event.summaryStartDay : req.body.summaryStartDay,
         mvtkFlg: (_.isEmpty(req.body.mvtkFlg)) ? event.mvtkFlg : req.body.mvtkFlg,
         description: (_.isEmpty(req.body.description)) ? event.description : req.body.description
@@ -162,7 +166,8 @@ export async function update(req: Request, res: Response): Promise<void> {
         errors: errors,
         forms: forms,
         movies: searchMoviesResult.data,
-        movieTheaters: searchMovieTheatersResult.data
+        movieTheaters: searchMovieTheatersResult.data,
+        VideoFormatType: chevre.factory.videoFormatType
     });
 }
 /**
@@ -189,6 +194,7 @@ export async function getRating(req: Request, res: Response): Promise<void> {
         });
     }
 }
+
 /**
  * リクエストボディからイベントオブジェクトを作成する
  */
@@ -197,6 +203,13 @@ function createEventFromBody(
     movie: chevre.factory.creativeWork.movie.ICreativeWork,
     movieTheater: chevre.factory.place.movieTheater.IPlace
 ): chevre.factory.event.screeningEventSeries.IAttributes {
+    const videoFormat = (Array.isArray(body.videoFormatType)) ? body.videoFormatType.map((f: string) => {
+        return { typeOf: f, name: f };
+    }) : [];
+    const soundFormat = (Array.isArray(body.soundFormatType)) ? body.soundFormatType.map((f: string) => {
+        return { typeOf: f, name: f };
+    }) : [];
+
     return {
         typeOf: chevre.factory.eventType.ScreeningEventSeries,
         name: {
@@ -218,7 +231,8 @@ function createEventFromBody(
         //     identifier: params.movieTheater.identifier,
         //     name: params.movieTheater.name
         // },
-        videoFormat: body.videoFormat,
+        videoFormat: videoFormat,
+        soundFormat: soundFormat,
         subtitleLanguage: body.subtitleLanguage,
         workPerformed: movie,
         duration: movie.duration,
@@ -327,8 +341,8 @@ export async function getList(req: Request, res: Response): Promise<void> {
                 // duration: moment.duration(event.duration).humanize(),
                 duration: event.duration,
                 contentRating: event.workPerformed.contentRating,
-                subtitleLanguage: ((event.subtitleLanguage === 1) ? '吹替' : (event.subtitleLanguage === 0) ? '字幕' : ''),
-                videoFormat: event.videoFormat,
+                subtitleLanguage: event.subtitleLanguage,
+                videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : '',
                 movieSubtitleName: (_.isEmpty(event.movieSubtitleName)) ? '' : event.movieSubtitleName
             };
         });
@@ -395,9 +409,6 @@ function validate(req: Request): void {
     // レイティング
     // colName = 'レイティング';
     // req.checkBody('contentRating', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    // 上映形態
-    colName = '上映形態';
-    req.checkBody('videoFormat', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     // 上映作品サブタイトル名
     colName = '上映作品サブタイトル名';
     req.checkBody('movieSubtitleName', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_NAME_JA });

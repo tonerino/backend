@@ -41,7 +41,7 @@ export async function add(req: Request, res: Response): Promise<void> {
                     name: req.body.name,
                     description: req.body.description,
                     notes: req.body.notes,
-                    charge: req.body.charge,
+                    price: req.body.price,
                     boxOnly: (req.body.boxOnly === '1') ? true : false,
                     onlineOnly: (req.body.onlineOnly === '1') ? true : false,
                     nameForManagementSite: req.body.nameForManagementSite,
@@ -65,7 +65,7 @@ export async function add(req: Request, res: Response): Promise<void> {
     const forms = {
         id: (_.isEmpty(req.body.id)) ? '' : req.body.id,
         name: (_.isEmpty(req.body.name)) ? {} : req.body.name,
-        charge: (_.isEmpty(req.body.charge)) ? '' : req.body.charge,
+        price: (_.isEmpty(req.body.price)) ? '' : req.body.price,
         description: (_.isEmpty(req.body.description)) ? {} : req.body.description,
         notes: (_.isEmpty(req.body.notes)) ? {} : req.body.notes,
         indicatorColor: (_.isEmpty(req.body.indicatorColor)) ? '' : req.body.indicatorColor,
@@ -109,7 +109,7 @@ export async function update(req: Request, res: Response): Promise<void> {
                     name: req.body.name,
                     description: req.body.description,
                     notes: req.body.notes,
-                    charge: req.body.charge,
+                    price: req.body.price,
                     boxOnly: (req.body.boxOnly === '1') ? true : false,
                     onlineOnly: (req.body.onlineOnly === '1') ? true : false,
                     nameForManagementSite: req.body.nameForManagementSite,
@@ -132,14 +132,14 @@ export async function update(req: Request, res: Response): Promise<void> {
     const forms = {
         id: (_.isEmpty(req.body.id)) ? ticketType.id : req.body.id,
         name: (_.isEmpty(req.body.name)) ? ticketType.name : req.body.name,
-        charge: (_.isEmpty(req.body.charge)) ? ticketType.charge : req.body.charge,
+        price: (_.isEmpty(req.body.price)) ? ticketType.price : req.body.price,
         description: (_.isEmpty(req.body.description)) ? ticketType.description : req.body.description,
         notes: (_.isEmpty(req.body.notes)) ? ticketType.notes : req.body.notes,
         indicatorColor: (_.isEmpty(req.body.indicatorColor)) ? ticketType.indicatorColor : req.body.indicatorColor,
         boxOnly: (_.isEmpty(req.body.boxOnly)) ? ticketType.boxOnly : req.body.boxOnly,
         onlineOnly: (_.isEmpty(req.body.onlineOnly)) ? ticketType.onlineOnly : req.body.onlineOnly,
         nameForManagementSite: (_.isEmpty(req.body.nameForManagementSite)) ?
-                                    ticketType.nameForManagementSite : req.body.nameForManagementSite,
+            ticketType.nameForManagementSite : req.body.nameForManagementSite,
         nameForPrinting: (_.isEmpty(req.body.nameForPrinting)) ? ticketType.nameForPrinting : req.body.nameForPrinting,
         seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? ticketType.seatReservationUnit : req.body.seatReservationUnit,
         subject: 1,
@@ -168,7 +168,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
             if (ticketTypeIds.indexOf(req.query.id) && req.query.id !== '' && req.query.id !== undefined) {
                 ticketTypeIds.push(req.query.id);
             }
-        }  else {
+        } else {
             if (req.query.id !== '' && req.query.id !== undefined) {
                 ticketTypeIds.push(req.query.id);
             }
@@ -177,7 +177,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
         const result = await ticketTypeService.searchTicketTypes({
             limit: req.query.limit,
             page: req.query.page,
-            id: ticketTypeIds,
+            id: req.query.id,
             name: req.query.name
         });
         res.json({
@@ -188,7 +188,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
                     id: t.id,
                     ticketCode: t.id,
                     managementTypeName: t.name.ja,
-                    ticketCharge: t.charge
+                    ticketPrice: t.price
                 };
             })
         });
@@ -278,6 +278,6 @@ function validateFormAdd(req: Request): void {
     //     );
     // 金額
     colName = '金額';
-    req.checkBody('charge', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('charge', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_EN)).len({ max: CHAGE_MAX_LENGTH });
+    req.checkBody('price', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('price', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_EN)).len({ max: CHAGE_MAX_LENGTH });
 }

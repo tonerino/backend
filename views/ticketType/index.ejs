@@ -12,19 +12,21 @@ Aa-6
 <%- contentFor('body') %>
 <% /* フォーム */ %>
 <div class="col-sm-12 form-container search">
-  <form method="post" class="form-horizontal" >
+  <form method="post" class="form-horizontal">
     <% /* 共通Hiddenコントロール */ %>
     <%- include('../common/master/_hidden') %>
     <div class="menu-group">
       <% /* メッセージ */ %>
       <% if (message !== '') { %>
-      <p class="error message text-danger panel-body bg-danger"><%= message %></p>
+      <p class="error message text-danger panel-body bg-danger">
+        <%= message %>
+      </p>
       <% } %>
     </div>
     <% /* 券種コード */ %>
     <div class="form-group ">
       <label for="id" class="col-sm-3 control-label label-title">
-      券種コード
+        券種コード
       </label>
       <div class="col-sm-9">
         <input type="text" class="form-control" name="id" id="id" placeholder="" maxlength=64>
@@ -33,7 +35,7 @@ Aa-6
     <% /* 管理用券種名 */ %>
     <div class="form-group ">
       <label for="name" class="col-sm-3 control-label label-title">
-      管理用券種名
+        管理用券種名
       </label>
       <div class="col-sm-9">
         <input type="text" class="form-control" name="name" id="name" placeholder="" maxlength=64>
@@ -41,15 +43,17 @@ Aa-6
     </div>
     <div class="form-group ">
       <label for="ticketTypeGroups" class="col-sm-3 control-label label-title">
-      券種グループ
+        券種グループ
       </label>
       <div class="col-sm-9">
         <select name="ticketTypeGroups" id="ticketTypeGroups" class="form-control">
           <option value="">---</option>
           <% for (let ticketTypeGroupList of ticketTypeGroupsList) { %>
-          <option value="<%- ticketTypeGroupList.id %>"><%- ticketTypeGroupList.name.ja %></option>
+          <option value="<%- ticketTypeGroupList.id %>">
+            <%- ticketTypeGroupList.name.ja %>
+          </option>
           <% } %>
-      </select>
+        </select>
       </div>
     </div>
     <% /* 検索ボタン */ %>
@@ -65,7 +69,7 @@ Aa-6
 <div class="col-sm-12 form-container search">
   <div>
     <p id="searchedCount" style="display:none;">
-      検索結果$searched_count$件 
+      検索結果$searched_count$件
     </p>
   </div>
   <div id="list" class="table-responsive" style="display:none;">
@@ -89,7 +93,7 @@ Aa-6
           <% /* 管理用券種名 */ %>
           <td name="managementTypeName">$managementTypeName$</td>
           <% /* 金額(円) */ %>
-          <td name="ticketCharge" style="text-align:right;">$ticketCharge$</td>
+          <td name="ticketPrice" style="text-align:right;">$ticketPrice$</td>
           <% /* 編集ボタン */ %>
           <td name="edit" class="center">
             <div class="btn-area">
@@ -109,7 +113,7 @@ Aa-6
       </tbody>
     </table>
   </div>
-  <div id="pager" class="div_pager_parent"></div>  
+  <div id="pager" class="div_pager_parent"></div>
 </div>
 <% /* 共通Loading */ %>
 <%- include('../common/master/_loading') %>

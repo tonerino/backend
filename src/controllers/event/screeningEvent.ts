@@ -321,7 +321,7 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                     location: {
                         typeOf: screeningRoom.typeOf,
                         branchCode: <string>screeningRoom.branchCode,
-                        name: screeningRoom.name === undefined ? { en: '', ja: '', kr: ''} : screeningRoom.name
+                        name: screeningRoom.name === undefined ? { en: '', ja: '', kr: '' } : screeningRoom.name
                     },
                     superEvent: screeningEventSeries,
                     name: screeningEventSeries.name,

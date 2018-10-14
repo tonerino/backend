@@ -97,10 +97,6 @@ $(function () {
                             var id = $.fn.getStringValue(data, "id", "");
                             temp = temp.replace("\$id\$", id);
                         }
-                        if (fieldId === 'popup') {
-                            var id = $.fn.getStringValue(data, "id", "");
-                            temp = temp.replace("\$id\$", id);
-                        }
                     });
                     tempRow[cntCol++] = temp;
                 });

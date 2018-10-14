@@ -15,17 +15,17 @@ Aa-11
         <%- include('../common/master/_hidden') %>
         <div class="menu-group">
             <% if (message !== '') { %>
-                <p class="error message text-danger panel-body bg-danger">
-                    <%= message %>
-                </p>
-                <% } %>
+            <p class="error message text-danger panel-body bg-danger">
+                <%= message %>
+            </p>
+            <% } %>
         </div>
         <div class="form-group form-inline">
             <label for="modifiedFrom" class="col-sm-3 control-label label-title">
                 更新日
             </label>
             <div class="col-sm-9">
-                <input type="text" class="form-control datepicker" name="modifiedFrom" id="dateFrom" />                                        ～
+                <input type="text" class="form-control datepicker" name="modifiedFrom" id="dateFrom" /> ～
                 <input type="text" class="form-control datepicker" name="modifiedThrough" id="modifiedThrough" />
             </div>
         </div>
@@ -58,23 +58,24 @@ Aa-11
                 <tr id="templateRow" _id="$id$">
                     <td name="id__reservationNumber__reservationStatus__modifiedTime">
                         $id$<br> $reservationNumber$
-                        <br> $reservationStatus$
+                        <br> <span class="badge">$reservationStatus$</span>
                         <br> $modifiedTime$
                     </td>
                     <td name="reservationFor.typeOf__reservationFor.id__reservationFor.name.ja__reservationFor.startDate__reservationFor.superEvent.location.name.ja__reservationFor.location.name.ja">
-                        $reservationFor.typeOf$<br> $reservationFor.id$
+                        <span class="badge">$reservationFor.typeOf$</span><br> $reservationFor.id$
                         <br> $reservationFor.name.ja$
                         <br> $reservationFor.startDate$
                         <br> $reservationFor.superEvent.location.name.ja$
                         <br> $reservationFor.location.name.ja$
                         <br>
                     </td>
-                    <td name="reservedTicket.ticketType.name.ja__reservedTicket.ticketType.charge__reservedTicket.ticketedSeat.seatSection__reservedTicket.ticketedSeat.seatNumber">
-                        $reservedTicket.ticketType.name.ja$<br> $reservedTicket.ticketType.charge$ JPY<br>                                            $reservedTicket.ticketedSeat.seatSection$
+                    <td name="reservedTicket.ticketType.name.ja__reservedTicket.ticketType.price__reservedTicket.ticketedSeat.seatSection__reservedTicket.ticketedSeat.seatNumber">
+                        $reservedTicket.ticketType.name.ja$<br> $reservedTicket.ticketType.price$ JPY<br>
+                        $reservedTicket.ticketedSeat.seatSection$
                         <br> $reservedTicket.ticketedSeat.seatNumber$
                     </td>
                     <td name="underName.typeOf__underName.name">
-                        $underName.typeOf$<br> $underName.name$
+                        <span class="badge">$underName.typeOf$</span><br> $underName.name$
                     </td>
                 </tr>
             </tbody>

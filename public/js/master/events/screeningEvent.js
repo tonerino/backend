@@ -62,13 +62,13 @@ $(function () {
         deletePerformance();
     });
 
-    $(document).on('change', 'form.search select[name="theater"]', _.debounce(function() {
+    $(document).on('change', 'form.search select[name="theater"]', _.debounce(function () {
         var theater = $(this).val();
         var date = $('.search input[name=date]').val();
         getScreens(theater, 'none');
     }, 500));
-    
-    $(document).on('change', '#newModal select[name="screeningEventSeriesId"]', function() {
+
+    $(document).on('change', '#newModal select[name="screeningEventSeriesId"]', function () {
         var mvtkFlg = $(this).find('option:selected').attr('data-mvtk-flag');
         if (mvtkFlg != 1) {
             $('#newModal input[name=mvtkExcludeFlg]').removeAttr('checked');
@@ -77,16 +77,16 @@ $(function () {
             $('#newModal .mvtk').show();
         }
     });
-    
-    $(document).on('change', '#newModal select[name="theater"]', _.debounce(function() {
+
+    $(document).on('change', '#newModal select[name="theater"]', _.debounce(function () {
         var theater = $(this).val();
         var fromDate = $('#newModal input[name=screeningDateStart]').val();
         var toDate = $('#newModal input[name=screeningDateThrough]').val();
         getScreens(theater, 'add');
         getEventSeries(theater, fromDate, toDate);
     }, 500));
-    
-    $(document).on('change', 'form.search input[name="date"]', _.debounce(function() {
+
+    $(document).on('change', 'form.search input[name="date"]', _.debounce(function () {
         var theater = $('.search select[name=theater]').val();
         var date = $(this).val();
         getEventSeries(theater, date);
@@ -104,7 +104,7 @@ $(function () {
     $(document).on(
         'change',
         target.join(', '),
-        function() {
+        function () {
             $(this).parents('tr').attr('data-dirty', true);
         }
     );
@@ -135,7 +135,7 @@ function getEventSeries(theater, fromDate, toDate) {
             var modal = $('#newModal');
             var screeningEventSeries = data.results;
             var options = screeningEventSeries.map(function (e) {
-                return '<option value="' + e.id + '" data-mvtk-flag="' + e.mvtkFlg +'">' + e.filmNameJa + '</option>';
+                return '<option value="' + e.id + '" data-mvtk-flag="' + e.mvtkFlg + '">' + e.filmNameJa + '</option>';
             });
             options.unshift('<option value="" disabled selected>選択してください</option>')
             modal.find('select[name="screeningEventSeriesId"]').html(options);
@@ -184,7 +184,7 @@ function getScreens(theater, modal = 'none') {
                 var selectScreen = $('#newModal select[name="screen"]');
                 selectScreen.html('<option value="" disabled selected>選択してください</option>');
             }
-            $.each(data.results, function(_, screen) {
+            $.each(data.results, function (_, screen) {
                 var o = $('<option></option>');
                 o.html(screen.name);
                 o.val(screen.branchCode);
@@ -204,7 +204,7 @@ function getWeekDayData() {
         return [];
     }
     var result = [];
-    weekDayData.each(function() {
+    weekDayData.each(function () {
         result.push($(this).val());
     });
     return result;
@@ -222,7 +222,7 @@ function getTableData() {
         return [];
     }
     var tempData = [];
-    timeTableData.each(function(_, row) {
+    timeTableData.each(function (_, row) {
         const mvtkExcludeFlg = $(row).find('input[name="mvtkExcludeFlg"]:checked').val() === undefined ? 0 : 1;
         var o = {
             doorTimeHour: $(row).find('select[name="doorTimeHour"]').val(),
@@ -254,17 +254,17 @@ function getTableData() {
         }
         tempData.push(o);
     });
-    var timeData = tempData.map(function(data) {
+    var timeData = tempData.map(function (data) {
         return {
             doorTime: data.doorTimeHour + data.doorTimeMinute,
             startTime: data.startTimeHour + data.startTimeMinute,
             endTime: data.endTimeHour + data.endTimeMinute
         }
     });
-    var ticketData = tempData.map(function(data) {
+    var ticketData = tempData.map(function (data) {
         return data.ticketTypeGroup
     });
-    var mvtkExcludeFlgData = tempData.map(function(data) {
+    var mvtkExcludeFlgData = tempData.map(function (data) {
         return data.mvtkExcludeFlg
     });
     return {
@@ -608,13 +608,13 @@ function edit(target) {
     } else {
         modal.find('.delete-button').hide();
     }
-    
+
     modal.find('input[name=performance]').val(performance);
     modal.find('input[name=theater]').val(theater);
     modal.find('input[name=day]').val(day);
     modal.find('input[name=screeningEventId]').val(film);
 
-    var fix = function(time) { return ('0' + (parseInt(time/5) * 5)).slice(-2); };
+    var fix = function (time) { return ('0' + (parseInt(time / 5) * 5)).slice(-2); };
     modal.find('select[name=doorTimeHour]').val(doorTime.slice(0, 2));
     modal.find('select[name=doorTimeMinutes]').val(fix(doorTime.slice(2, 4)));
     modal.find('select[name=startTimeHour]').val(startTime.slice(0, 2));
@@ -623,7 +623,7 @@ function edit(target) {
     modal.find('select[name=endTimeMinutes]').val(fix(endTime.slice(2, 4)));
     modal.find('select[name=screen]').val(screen);
     modal.find('select[name=ticketTypeGroup]').val(ticketTypeGroup);
-    
+
     // 販売開始日
     if (saleStartDate) {
         modal.find('input[name=saleStartDate]').val(saleStartDate);
@@ -669,7 +669,7 @@ function create(screens, performances, dates, ticketGroups) {
         $('<table>').append(createHeader(screens, dates))
     );
     var body = $('<div>').addClass('scrollable-body').append(
-        $('<table>').css({borderTop: 0}).append(createBody(screens, performances, dates, ticketGroups))
+        $('<table>').css({ borderTop: 0 }).append(createBody(screens, performances, dates, ticketGroups))
     );
     scheduler.append(header).append(body);
 }
@@ -684,7 +684,7 @@ function create(screens, performances, dates, ticketGroups) {
 function createHeader(screens, dates) {
     var dom = $('<thead class="header"></thead>');
     var tr1 = $('<tr></tr>');
-    tr1.css({borderBottom: '1px solid #ccc'})
+    tr1.css({ borderBottom: '1px solid #ccc' })
     var tr2 = $('<tr></tr>');
     tr1.append('<td style="min-width: ' + HOUR_HEIGHT + 'px;" rowspan="2">時間</td>');
     for (var j = 0; j < dates.length; j++) {
@@ -732,7 +732,7 @@ function createBody(screens, performances, dates, ticketGroups) {
  * @returns {JQuery} 
  */
 function createTime() {
-    var dom = $('<td class="times"></td>').css({minWidth: HOUR_HEIGHT + 'px'});
+    var dom = $('<td class="times"></td>').css({ minWidth: HOUR_HEIGHT + 'px' });
     for (var i = 0; i < 24; i++) {
         var time = ('00' + String(i)).slice(-2) + ':00';
         dom.append('<div class="time" style="height: ' + HOUR_HEIGHT + 'px">' + time + '</div>');
@@ -747,7 +747,7 @@ function createTime() {
  * @returns {JQuery} 
  */
 function createScreen(performances, ticketGroups) {
-    var dom = $('<td class="screen"></td>').css({minWidth: SCREEN_WIDTH});
+    var dom = $('<td class="screen"></td>').css({ minWidth: SCREEN_WIDTH });
     var sortedPerformance = performances.sort((p1, p2) => {
         if (p1.doorTime > p2.doorTime) return 1;
         if (p1.doorTime < p2.doorTime) return -1;
@@ -795,11 +795,11 @@ function createScreen(performances, ticketGroups) {
         var onlineDisplayStartDate = (performance.onlineDisplayStartDate) ? moment(performance.onlineDisplayStartDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '';
         var maxSeatNumber = (performance.maxSeatNumber) ? performance.maxSeatNumber : '';
         var preSaleFlg = (performance.preSaleFlg) ? performance.preSaleFlg : 0;
-         /**
-         * 劇場上映作品名
-         * 興行区分名
-         * 券種グループ
-         */
+        /**
+        * 劇場上映作品名
+        * 興行区分名
+        * 券種グループ
+        */
         var performanceDom = $('<div class="performance">' +
             '<div ' +
             'data-performance="' + performance._id + '" ' +
@@ -816,7 +816,7 @@ function createScreen(performances, ticketGroups) {
             'data-onlineDisplayStartDate="' + onlineDisplayStartDate + '" ' +
             'data-maxSeatNumber="' + maxSeatNumber + '" ' +
             'data-preSaleFlg="' + preSaleFlg + '" ' +
-            'role="button" class="inner">' + performance.name.ja + '<br />' + 
+            'role="button" class="inner">' + performance.name.ja + '<br />' +
             performance.location.name.ja + '<br />' + ticketTypeGroupName + '</div>' +
             '</div>');
         if (top < prevBtm) performanceDom.addClass('overlap');

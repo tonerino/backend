@@ -37,7 +37,9 @@
         <div>
             <% ticketTypes.forEach((ticketType) => { %>
             <label class="btn btn-default mb-x-small">
-                <span><%= ticketType.name.ja %> (<%= ticketType.charge %>)</span>
+                <span>
+                    <%= ticketType.name.ja %> (
+                    <%= ticketType.price %>)</span>
                 <% if (forms.ticketTypes.indexOf(ticketType.id) > -1) { %>
                 <input checked type="checkbox" name="ticketTypes" value="<%= ticketType.id %>">
                 <% } else { %>
@@ -58,7 +60,8 @@
         補足説明
     </label>
     <div class="col-sm-9">
-        <input type="text" class="form-control" name="description[ja]" id="description.ja" placeholder="" maxlength=64 value="<%= forms.description.ja %>">
+        <input type="text" class="form-control" name="description[ja]" id="description.ja" placeholder="" maxlength=64
+            value="<%= forms.description.ja %>">
         <p class="message">
             全角64文字以内でご入力ください。
         </p>
@@ -74,7 +77,8 @@
         補足説明英
     </label>
     <div class="col-sm-9">
-        <input type="text" class="form-control" name="description[en]" id="description.en" placeholder="" maxlength=64 value="<%= forms.description.en %>">
+        <input type="text" class="form-control" name="description[en]" id="description.en" placeholder="" maxlength=64
+            value="<%= forms.description.en %>">
         <p class="message">
         </p>
         <p class="error message text-danger">

@@ -109,11 +109,11 @@ export async function update(req: Request, res: Response): Promise<void> {
         contentRating: movie.contentRating,
         subtitle: (_.isEmpty(req.body.subtitle)) ? movie.subtitle : req.body.subtitle,
         datePublished: (_.isEmpty(req.body.datePublished)) ?
-                    (movie.datePublished !== null) ? moment(movie.datePublished).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
-                    req.body.datePublished,
+            (movie.datePublished !== null) ? moment(movie.datePublished).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
+            req.body.datePublished,
         scheduleEndDate: (_.isEmpty(req.body.scheduleEndDate)) ?
-                    (movie.scheduleEndDate !== null) ? moment(movie.scheduleEndDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
-                    req.body.scheduleEndDate,
+            (movie.scheduleEndDate !== null) ? moment(movie.scheduleEndDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
+            req.body.scheduleEndDate,
         distribution: (_.isEmpty(req.body.distribution)) ? movie.distribution : req.body.distribution
     };
     // 作品マスタ画面遷移
@@ -134,9 +134,9 @@ function createMovieFromBody(body: any): chevre.factory.creativeWork.movie.ICrea
         contentRating: body.contentRating,
         subtitle: body.subtitle,
         datePublished: (!_.isEmpty(body.datePublished)) ?
-                        moment(`${body.datePublished}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
+            moment(`${body.datePublished}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
         scheduleEndDate: (!_.isEmpty(body.scheduleEndDate)) ?
-                        moment(`${body.scheduleEndDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
+            moment(`${body.scheduleEndDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
         distribution: body.distribution
     };
 }
@@ -155,9 +155,9 @@ export async function getList(req: Request, res: Response): Promise<void> {
             identifier: req.query.identifier,
             name: req.query.name,
             datePublishedFrom: (!_.isEmpty(req.query.datePublishedFrom)) ?
-                                moment(`${req.query.datePublishedFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
+                moment(`${req.query.datePublishedFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
             datePublishedTo: (!_.isEmpty(req.query.datePublishedTo)) ?
-                            moment(`${req.query.datePublishedTo}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined
+                moment(`${req.query.datePublishedTo}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined
         });
         res.json({
             success: true,
