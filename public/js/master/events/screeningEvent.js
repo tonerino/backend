@@ -7,13 +7,13 @@
  * 1時間の高さ
  * @const HOUR_HEIGHT
  */
-var HOUR_HEIGHT = 60;
+var HOUR_HEIGHT = 64;
 
 /**
  * スクリーンの幅
  * @const SCREEN_WIDTH
  */
-var SCREEN_WIDTH = 100;
+var SCREEN_WIDTH = 107;
 
 $(function () {
     // 検索

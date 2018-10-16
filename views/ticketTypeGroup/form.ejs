@@ -33,27 +33,36 @@
     <label for="ticketTypes" class="col-sm-3 control-label label-title">
         対象券種名<font color="red">＊</font>
     </label>
+    <div class="col-sm-9"></div>
+</div>
+<div class="form-group ">
+    <span for="price" class="col-sm-3  control-label label-title">
+        券種金額
+    </span>
     <div class="col-sm-9">
-        <div>
-            <% ticketTypes.forEach((ticketType) => { %>
-            <label class="btn btn-default mb-x-small">
-                <span>
-                    <%= ticketType.name.ja %> (
-                    <%= ticketType.price %>)</span>
-                <% if (forms.ticketTypes.indexOf(ticketType.id) > -1) { %>
-                <input checked type="checkbox" name="ticketTypes" value="<%= ticketType.id %>">
-                <% } else { %>
-                <input type="checkbox" name="ticketTypes" value="<%= ticketType.id %>">
-                <% } %>
-            </label>
-            <% }) %>
-        </div>
-        <p class="error message text-danger">
-            <% if (errors && errors.ticketTypes) { %>
-            <%- errors.ticketTypes.msg %>
-            <% } %>
-        </p>
+        <input type="number" class="form-control" name="price" id="price" placeholder="" maxlength=10>
     </div>
+    <div class="col-sm-3 control-label label-title"></div>
+    <div class="col-sm-9" id="price-list">
+        <ul id="sortable1" class="connectedSortable">
+            
+        </ul>
+            
+        <ul id="sortable2" class="connectedSortable">
+            <% if (ticketTypes.count > 0) { %>
+                <% for (let x in ticketTypes.data) { %>
+                    <li class="ui-state-highlight" uid="<%= ticketTypes.data[x].id %>">
+                        <%= ticketTypes.data[x].name.ja %> （<%= ticketTypes.data[x].price %>）
+                    </li>
+                <% } %>
+            <% } %>
+        </ul>
+    </div>
+    <p class="error message text-danger">
+        <% if (errors && errors.ticketTypes) { %>
+        <%- errors.ticketTypes.msg %>
+        <% } %>
+    </p>
 </div>
 <div class="form-group ">
     <label for="description.ja" class="col-sm-3 control-label label-title">
@@ -84,6 +93,24 @@
         <p class="error message text-danger">
             <% if (errors && errors['description.en']) { %>
             <%- errors['description.en'].msg %>
+            <% } %>
+        </p>
+    </div>
+</div>
+<div class="form-group ">
+    <label for="entertainmentType" class="col-sm-3 control-label label-title">
+        興行区分<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <select name="entertainmentType" id="entertainmentType" class="form-control">
+            <option value="" selected>通常興行</option>
+            <% for (let entertainment of entertainmentTypeList) { %>
+            <option value="<%= entertainment.id %>"  <% if (forms.entertainmentType == entertainment.id) { %> selected <% } %> ><%- entertainment.name.ja %></option>
+            <% } %>
+        </select>
+        <p class="error message text-danger">
+            <% if (errors && errors.entertainmentType) { %>
+            <%- errors.entertainmentType.msg %>
             <% } %>
         </p>
     </div>

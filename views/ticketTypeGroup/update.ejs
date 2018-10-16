@@ -2,10 +2,16 @@
 券種グループマスタ更新
 <%- contentFor('displayId') %>
 Aa-7
+<%- contentFor('styles') %>
+<link rel="stylesheet" href="/css/ticketTypeGroupAddEdit.css">
+<%- contentFor('scripts') %>
+<script src="/js/jquery-ui.js"></script>
+<script src="/js/master/ticketTypeGroup/ticketTypeGroupAddEdit.js"></script>
+
 <%- contentFor('body') %>
 <div class="col-sm-12 form-container">
     <% /* フォーム */ %>
-    <form method="post" class="form-horizontal" >
+    <form method="post" class="form-horizontal" id="ticketTypeGroupsForm" >
         <div class="menu-group">
             <% /* メッセージ */ %>
             <% if (message != '') { %>

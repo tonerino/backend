@@ -40,6 +40,10 @@ function add(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
+        const entertainmentTypeService = new chevre.service.EntertainmentType({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
         let message = '';
         let errors = {};
         if (req.method === 'POST') {
@@ -54,10 +58,11 @@ function add(req, res) {
                         name: req.body.name,
                         description: req.body.description,
                         notes: req.body.notes,
-                        ticketTypes: req.body.ticketTypes
+                        ticketTypes: req.body.ticketTypes,
+                        entertainmentType: req.body.entertainmentType
                     };
                     yield ticketTypeService.createTicketTypeGroup(ticketTypeGroup);
-                    message = '登録完了';
+                    // message = '登録完了';
                     res.redirect('/complete');
                     // res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
                     return;
@@ -67,20 +72,35 @@ function add(req, res) {
                 }
             }
         }
-        // 券種マスタから取得
-        const searchTicketTypesResult = yield ticketTypeService.searchTicketTypes({});
+        const entertainmentTypeList = yield entertainmentTypeService.getEntertainmentTypeList();
         const forms = {
             id: (_.isEmpty(req.body.id)) ? '' : req.body.id,
             name: (_.isEmpty(req.body.name)) ? '' : req.body.name,
             ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? [] : req.body.ticketTypes,
             description: (_.isEmpty(req.body.description)) ? {} : req.body.description,
-            notes: (_.isEmpty(req.body.notes)) ? {} : req.body.notes
+            notes: (_.isEmpty(req.body.notes)) ? {} : req.body.notes,
+            entertainmentType: (_.isEmpty(req.body.entertainmentType)) ? '' : req.body.entertainmentType
         };
+        // 券種マスタから取得
+        let searchTicketTypesResult = {
+            count: 0,
+            data: []
+        };
+        if (forms.ticketTypes !== '' && forms.ticketTypes !== undefined && forms.ticketTypes.length > 0) {
+            const ticketTypes = yield ticketTypeService.searchTicketTypes({
+                id: forms.ticketTypes
+            });
+            searchTicketTypesResult = {
+                count: ticketTypes.data.length,
+                data: ticketTypes.data
+            };
+        }
         res.render('ticketTypeGroup/add', {
             message: message,
             errors: errors,
             ticketTypes: searchTicketTypesResult.data,
-            forms: forms
+            forms: forms,
+            entertainmentTypeList: entertainmentTypeList
         });
     });
 }
@@ -94,6 +114,11 @@ function update(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
+        const entertainmentTypeService = new chevre.service.EntertainmentType({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        const entertainmentTypeList = yield entertainmentTypeService.getEntertainmentTypeList();
         let message = '';
         let errors = {};
         if (req.method === 'POST') {
@@ -110,10 +135,11 @@ function update(req, res) {
                         name: req.body.name,
                         description: req.body.description,
                         notes: req.body.notes,
-                        ticketTypes: req.body.ticketTypes
+                        ticketTypes: req.body.ticketTypes,
+                        entertainmentType: req.body.entertainmentType
                     };
                     yield ticketTypeService.updateTicketTypeGroup(ticketTypeGroup);
-                    message = '編集完了';
+                    // message = '編集完了';
                     res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
                     return;
                 }
@@ -122,8 +148,6 @@ function update(req, res) {
                 }
             }
         }
-        // 券種マスタから取得
-        const searchTicketTypesResult = yield ticketTypeService.searchTicketTypes({});
         // 券種グループ取得
         const ticketGroup = yield ticketTypeService.findTicketTypeGroupById({ id: req.params.id });
         const forms = {
@@ -131,13 +155,32 @@ function update(req, res) {
             name: (_.isEmpty(req.body.name)) ? ticketGroup.name : req.body.name,
             ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : req.body.ticketTypes,
             description: (_.isEmpty(req.body.description)) ? ticketGroup.description : req.body.description,
-            notes: (_.isEmpty(req.body.notes)) ? ticketGroup.notes : req.body.notes
+            notes: (_.isEmpty(req.body.notes)) ? ticketGroup.notes : req.body.notes,
+            entertainmentType: (_.isEmpty(req.body.entertainmentType)) ? ticketGroup.entertainmentType : req.body.entertainmentType
         };
+        // 券種マスタから取得
+        const searchTicketTypesResult = {
+            count: 0,
+            data: []
+        };
+        if (forms.ticketTypes !== '' && forms.ticketTypes !== undefined) {
+            if (forms.ticketTypes.length > 0) {
+                const ticketTypes = yield ticketTypeService.searchTicketTypes({
+                    id: forms.ticketTypes
+                });
+                for (let x = 0; x < forms.ticketTypes.length;) {
+                    searchTicketTypesResult.data[x] = ticketTypes.data.find((y) => y.id === forms.ticketTypes[x]);
+                    x = x + 1;
+                }
+                searchTicketTypesResult.count = forms.ticketTypes.length;
+            }
+        }
         res.render('ticketTypeGroup/update', {
             message: message,
             errors: errors,
-            ticketTypes: searchTicketTypesResult.data,
-            forms: forms
+            ticketTypes: searchTicketTypesResult,
+            forms: forms,
+            entertainmentTypeList: entertainmentTypeList
         });
     });
 }
@@ -195,7 +238,6 @@ function getTicketTypeList(req, res) {
             // 券種
             const ticketTypeNameList = [];
             for (const ticketType of ticketGroup.ticketTypes) {
-                // console.log(ticketType);
                 const ticketTypeData = yield ticketTypeService.findTicketTypeById({ id: ticketType });
                 ticketTypeNameList.push(ticketTypeData.name.ja);
             }
@@ -215,6 +257,36 @@ function getTicketTypeList(req, res) {
 }
 exports.getTicketTypeList = getTicketTypeList;
 /**
+ * 券種金額
+ */
+function getTicketTypePriceList(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const ticketTypeService = new chevre.service.TicketType({
+                endpoint: process.env.API_ENDPOINT,
+                auth: req.user.authClient
+            });
+            // 券種グループ取得
+            const searchTicketTypesResult = yield ticketTypeService.searchTicketTypes({
+                price: req.query.price,
+                idHasChoose: req.query.ticketTypeChoose
+            });
+            res.json({
+                success: true,
+                count: searchTicketTypesResult.totalCount,
+                results: searchTicketTypesResult.data
+            });
+        }
+        catch (err) {
+            res.json({
+                success: false,
+                results: err
+            });
+        }
+    });
+}
+exports.getTicketTypePriceList = getTicketTypePriceList;
+/**
  * 券種グループマスタ新規登録画面検証
  */
 function validate(req) {
@@ -229,4 +301,7 @@ function validate(req) {
     req.checkBody('name.en', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     // tslint:disable-next-line:no-magic-numbers
     req.checkBody('name.en', Message.Common.getMaxLength(colName, 128)).len({ max: 128 });
+    // 興行区分
+    colName = '興行区分';
+    req.checkBody('entertainmentType', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 }

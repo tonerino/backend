@@ -11,4 +11,5 @@ ticketTypeGroupMasterRouter.all('/:id/update', ticketTypeGroupsController.update
 ticketTypeGroupMasterRouter.get('/ticketTypeList', ticketTypeGroupsController.getTicketTypeList);
 ticketTypeGroupMasterRouter.get('', ticketTypeGroupsController.index);
 ticketTypeGroupMasterRouter.get('/getlist', ticketTypeGroupsController.getList);
+ticketTypeGroupMasterRouter.get('/getTicketTypePriceList', ticketTypeGroupsController.getTicketTypePriceList);
 exports.default = ticketTypeGroupMasterRouter;

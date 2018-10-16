@@ -30,6 +30,10 @@ export async function add(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
+    const entertainmentTypeService = new chevre.service.EntertainmentType({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient
+    });
     let message = '';
     let errors: any = {};
     if (req.method === 'POST') {
@@ -44,10 +48,11 @@ export async function add(req: Request, res: Response): Promise<void> {
                     name: req.body.name,
                     description: req.body.description,
                     notes: req.body.notes,
-                    ticketTypes: req.body.ticketTypes
+                    ticketTypes: req.body.ticketTypes,
+                    entertainmentType: req.body.entertainmentType
                 };
                 await ticketTypeService.createTicketTypeGroup(ticketTypeGroup);
-                message = '登録完了';
+                // message = '登録完了';
                 res.redirect('/complete');
                 // res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
 
@@ -57,20 +62,38 @@ export async function add(req: Request, res: Response): Promise<void> {
             }
         }
     }
-    // 券種マスタから取得
-    const searchTicketTypesResult = await ticketTypeService.searchTicketTypes({});
+    const entertainmentTypeList = await entertainmentTypeService.getEntertainmentTypeList();
     const forms = {
         id: (_.isEmpty(req.body.id)) ? '' : req.body.id,
         name: (_.isEmpty(req.body.name)) ? '' : req.body.name,
         ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? [] : req.body.ticketTypes,
         description: (_.isEmpty(req.body.description)) ? {} : req.body.description,
-        notes: (_.isEmpty(req.body.notes)) ? {} : req.body.notes
+        notes: (_.isEmpty(req.body.notes)) ? {} : req.body.notes,
+        entertainmentType: (_.isEmpty(req.body.entertainmentType)) ? '' : req.body.entertainmentType
     };
+    // 券種マスタから取得
+    let searchTicketTypesResult: {
+        count: number;
+        data: any;
+    } = {
+        count: 0,
+        data: []
+    };
+    if (forms.ticketTypes !== '' && forms.ticketTypes !== undefined && forms.ticketTypes.length > 0) {
+        const ticketTypes = await ticketTypeService.searchTicketTypes({
+            id: forms.ticketTypes
+        });
+        searchTicketTypesResult =  {
+            count: ticketTypes.data.length,
+            data: ticketTypes.data
+        };
+    }
     res.render('ticketTypeGroup/add', {
         message: message,
         errors: errors,
         ticketTypes: searchTicketTypesResult.data,
-        forms: forms
+        forms: forms,
+        entertainmentTypeList: entertainmentTypeList
     });
 }
 /**
@@ -81,6 +104,11 @@ export async function update(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
+    const entertainmentTypeService = new chevre.service.EntertainmentType({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient
+    });
+    const entertainmentTypeList = await entertainmentTypeService.getEntertainmentTypeList();
     let message = '';
     let errors: any = {};
     if (req.method === 'POST') {
@@ -97,10 +125,11 @@ export async function update(req: Request, res: Response): Promise<void> {
                     name: req.body.name,
                     description: req.body.description,
                     notes: req.body.notes,
-                    ticketTypes: req.body.ticketTypes
+                    ticketTypes: req.body.ticketTypes,
+                    entertainmentType: req.body.entertainmentType
                 };
                 await ticketTypeService.updateTicketTypeGroup(ticketTypeGroup);
-                message = '編集完了';
+                // message = '編集完了';
                 res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
 
                 return;
@@ -109,8 +138,6 @@ export async function update(req: Request, res: Response): Promise<void> {
             }
         }
     }
-    // 券種マスタから取得
-    const searchTicketTypesResult = await ticketTypeService.searchTicketTypes({});
     // 券種グループ取得
     const ticketGroup = await ticketTypeService.findTicketTypeGroupById({ id: req.params.id });
     const forms = {
@@ -118,13 +145,36 @@ export async function update(req: Request, res: Response): Promise<void> {
         name: (_.isEmpty(req.body.name)) ? ticketGroup.name : req.body.name,
         ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : req.body.ticketTypes,
         description: (_.isEmpty(req.body.description)) ? ticketGroup.description : req.body.description,
-        notes: (_.isEmpty(req.body.notes)) ? ticketGroup.notes : req.body.notes
+        notes: (_.isEmpty(req.body.notes)) ? ticketGroup.notes : req.body.notes,
+        entertainmentType: (_.isEmpty(req.body.entertainmentType)) ? ticketGroup.entertainmentType : req.body.entertainmentType
     };
+    // 券種マスタから取得
+    const searchTicketTypesResult: {
+        count: number;
+        data: any;
+    } = {
+        count: 0,
+        data: []
+    };
+    if (forms.ticketTypes !== '' && forms.ticketTypes !== undefined) {
+        if (forms.ticketTypes.length > 0) {
+            const ticketTypes = await ticketTypeService.searchTicketTypes({
+                id: forms.ticketTypes
+            });
+            for (let x = 0; x < forms.ticketTypes.length;) {
+                searchTicketTypesResult.data[x] = ticketTypes.data.find((y) => y.id === forms.ticketTypes[x]);
+                x = x + 1;
+            }
+            searchTicketTypesResult.count = forms.ticketTypes.length;
+        }
+    }
+
     res.render('ticketTypeGroup/update', {
         message: message,
         errors: errors,
-        ticketTypes: searchTicketTypesResult.data,
-        forms: forms
+        ticketTypes: searchTicketTypesResult,
+        forms: forms,
+        entertainmentTypeList: entertainmentTypeList
     });
 }
 /**
@@ -175,7 +225,6 @@ export async function getTicketTypeList(req: Request, res: Response): Promise<vo
         // 券種
         const ticketTypeNameList: any = [];
         for (const ticketType of ticketGroup.ticketTypes) {
-            // console.log(ticketType);
             const ticketTypeData = await ticketTypeService.findTicketTypeById({ id: ticketType });
             ticketTypeNameList.push(ticketTypeData.name.ja);
         }
@@ -183,6 +232,32 @@ export async function getTicketTypeList(req: Request, res: Response): Promise<vo
             success: true,
             count: ticketGroup.ticketTypes.length,
             results: ticketTypeNameList
+        });
+    } catch (err) {
+        res.json({
+            success: false,
+            results: err
+        });
+    }
+}
+/**
+ * 券種金額
+ */
+export async function getTicketTypePriceList(req: Request, res: Response): Promise<void> {
+    try {
+        const ticketTypeService = new chevre.service.TicketType({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        // 券種グループ取得
+        const searchTicketTypesResult = await ticketTypeService.searchTicketTypes({
+            price: req.query.price,
+            idHasChoose: req.query.ticketTypeChoose
+         });
+        res.json({
+            success: true,
+            count: searchTicketTypesResult.totalCount,
+            results: searchTicketTypesResult.data
         });
     } catch (err) {
         res.json({
@@ -206,4 +281,7 @@ function validate(req: Request): void {
     req.checkBody('name.en', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     // tslint:disable-next-line:no-magic-numbers
     req.checkBody('name.en', Message.Common.getMaxLength(colName, 128)).len({ max: 128 });
+    // 興行区分
+    colName = '興行区分';
+    req.checkBody('entertainmentType', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 }

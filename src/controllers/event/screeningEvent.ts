@@ -64,6 +64,21 @@ export async function search(req: Request, res: Response): Promise<void> {
         let screens: typeof movieTheater.containsPlace;
         if (screen !== undefined) {
             data = searchResult.data.filter((event) => event.location.branchCode === screen);
+            if (searchResult.data.length < searchResult.totalCount) {
+                let dataPage2: typeof searchResult.data;
+                const searchResultPage2 = await eventService.searchScreeningEvents({
+                    inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
+                    inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').add(days, 'day').toDate(),
+                    superEvent: {
+                        locationBranchCodes: [movieTheater.branchCode]
+                    },
+                    page: 2
+                });
+                dataPage2 = searchResultPage2.data.filter((event) => event.location.branchCode === screen);
+                for (const dataP2 of dataPage2) {
+                    data.push(dataP2);
+                }
+            }
             screens = (
                 <typeof movieTheater.containsPlace>
                 movieTheater.containsPlace.filter((place) => place.branchCode === screen)

@@ -51,7 +51,8 @@ header .title {
     height: 480px;
     overflow: auto;
     width: max-content;
-    min-width: 100%; }
+    min-width: 100%; 
+  }
   .scheduler table {
     min-width: 100%;
     border-collapse: collapse; }
