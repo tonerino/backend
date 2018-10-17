@@ -40,7 +40,7 @@ timeMeterRouter.get('/search', async (req, res) => {
             startThrough: (req.query.startThrough !== '')
                 ? moment(`${req.query.startThrough}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day').toDate()
                 : undefined,
-            id: req.query.screeningEventSeries || undefined
+            id: req.query.screeningEventSeries === '' ? undefined : req.query.screeningEventSeries
         });
         res.json({
             success: true,
