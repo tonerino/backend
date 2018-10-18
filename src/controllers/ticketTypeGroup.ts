@@ -63,35 +63,44 @@ export async function add(req: Request, res: Response): Promise<void> {
         }
     }
     const boxOfficeTypeList = await boxOfficeTypeService.getBoxOfficeTypeList();
+    let ticketTypeIds: string[] = [];
+    if (!_.isEmpty(req.body.ticketTypes)) {
+        if (_.isString(req.body.ticketTypes)) {
+            ticketTypeIds = [ req.body.ticketTypes ];
+        } else {
+            ticketTypeIds = req.body.ticketTypes;
+        }
+    }
     const forms = {
         id: (_.isEmpty(req.body.id)) ? '' : req.body.id,
         name: (_.isEmpty(req.body.name)) ? '' : req.body.name,
-        ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? [] : req.body.ticketTypes,
+        ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? [] : ticketTypeIds,
         description: (_.isEmpty(req.body.description)) ? {} : req.body.description,
         notes: (_.isEmpty(req.body.notes)) ? {} : req.body.notes,
         boxOfficeType: (_.isEmpty(req.body.boxOfficeType)) ? '' : req.body.boxOfficeType
     };
     // 券種マスタから取得
-    let searchTicketTypesResult: {
+    const searchTicketTypesResult: {
         count: number;
         data: any;
     } = {
         count: 0,
         data: []
     };
-    if (forms.ticketTypes !== '' && forms.ticketTypes !== undefined && forms.ticketTypes.length > 0) {
+    if (forms.ticketTypes.length > 0) {
         const ticketTypes = await ticketTypeService.searchTicketTypes({
             id: forms.ticketTypes
         });
-        searchTicketTypesResult =  {
-            count: ticketTypes.data.length,
-            data: ticketTypes.data
-        };
+        for (let x = 0; x < forms.ticketTypes.length;) {
+            searchTicketTypesResult.data[x] = ticketTypes.data.find((y) => y.id === forms.ticketTypes[x]);
+            x = x + 1;
+        }
+        searchTicketTypesResult.count = forms.ticketTypes.length;
     }
     res.render('ticketTypeGroup/add', {
         message: message,
         errors: errors,
-        ticketTypes: searchTicketTypesResult.data,
+        ticketTypes: searchTicketTypesResult,
         forms: forms,
         boxOfficeTypeList: boxOfficeTypeList
     });
@@ -111,6 +120,14 @@ export async function update(req: Request, res: Response): Promise<void> {
     const boxOfficeTypeList = await boxOfficeTypeService.getBoxOfficeTypeList();
     let message = '';
     let errors: any = {};
+    let ticketTypeIds: string[] = [];
+    if (!_.isEmpty(req.body.ticketTypes)) {
+        if (_.isString(req.body.ticketTypes)) {
+            ticketTypeIds = [ req.body.ticketTypes ];
+        } else {
+            ticketTypeIds = req.body.ticketTypes;
+        }
+    }
     if (req.method === 'POST') {
         // バリデーション
         validate(req);
@@ -125,7 +142,7 @@ export async function update(req: Request, res: Response): Promise<void> {
                     name: req.body.name,
                     description: req.body.description,
                     notes: req.body.notes,
-                    ticketTypes: req.body.ticketTypes,
+                    ticketTypes: ticketTypeIds,
                     boxOfficeType: req.body.boxOfficeType
                 };
                 await ticketTypeService.updateTicketTypeGroup(ticketTypeGroup);
@@ -143,7 +160,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     const forms = {
         id: (_.isEmpty(req.body.id)) ? ticketGroup.id : req.body.id,
         name: (_.isEmpty(req.body.name)) ? ticketGroup.name : req.body.name,
-        ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : req.body.ticketTypes,
+        ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : ticketTypeIds,
         description: (_.isEmpty(req.body.description)) ? ticketGroup.description : req.body.description,
         notes: (_.isEmpty(req.body.notes)) ? ticketGroup.notes : req.body.notes,
         boxOfficeType: (_.isEmpty(req.body.boxOfficeType)) ? ticketGroup.boxOfficeType : req.body.boxOfficeType
@@ -156,17 +173,15 @@ export async function update(req: Request, res: Response): Promise<void> {
         count: 0,
         data: []
     };
-    if (forms.ticketTypes !== '' && forms.ticketTypes !== undefined) {
-        if (forms.ticketTypes.length > 0) {
-            const ticketTypes = await ticketTypeService.searchTicketTypes({
-                id: forms.ticketTypes
-            });
-            for (let x = 0; x < forms.ticketTypes.length;) {
-                searchTicketTypesResult.data[x] = ticketTypes.data.find((y) => y.id === forms.ticketTypes[x]);
-                x = x + 1;
-            }
-            searchTicketTypesResult.count = forms.ticketTypes.length;
+    if (forms.ticketTypes.length > 0) {
+        const ticketTypes = await ticketTypeService.searchTicketTypes({
+            id: forms.ticketTypes
+        });
+        for (let x = 0; x < forms.ticketTypes.length;) {
+            searchTicketTypesResult.data[x] = ticketTypes.data.find((y) => y.id === forms.ticketTypes[x]);
+            x = x + 1;
         }
+        searchTicketTypesResult.count = forms.ticketTypes.length;
     }
 
     res.render('ticketTypeGroup/update', {

@@ -48,8 +48,8 @@ $( function() {
     // show or hide 対象券種名
     var priceList = $('#sortable2 > li').length;
     if (priceList == 0) {
-        $('#sortable1').hide();
-        $('#sortable2').hide();
+        // $('#sortable1').hide();
+        // $('#sortable2').hide();
     }
 
     // form submit

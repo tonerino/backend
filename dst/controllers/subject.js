@@ -44,17 +44,6 @@ function add(req, res) {
                         endpoint: process.env.API_ENDPOINT,
                         auth: req.user.authClient
                     });
-                    const checkDetailCd = yield subjectService.searchSubject({
-                        detailCd: subject.detailCd
-                    });
-                    if (checkDetailCd.totalCount > 0) {
-                        message = '細目コードduplicate';
-                        res.render('subject/add', {
-                            message: message,
-                            errors: errors,
-                            forms: req.body
-                        });
-                    }
                     yield subjectService.createSubject({
                         attributes: subject
                     });

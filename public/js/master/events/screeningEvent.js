@@ -502,7 +502,7 @@ function deletePerformance() {
     $.ajax({
         dataType: 'json',
         url: '/events/screeningEvent/' + performance,
-        type: 'DELETE',
+        type: 'POST',
     }).done(function (data) {
         if (!data.error) {
             modal.modal('hide');

@@ -4,7 +4,7 @@
 import * as chevre from '@toei-jp/chevre-api-nodejs-client';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
-import { BAD_REQUEST } from 'http-status';
+import { BAD_REQUEST, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 
 import User from '../../user';
@@ -223,22 +223,26 @@ export async function deletePerformance(req: Request, res: Response): Promise<vo
         });
         const event = await eventService.findScreeningEventById({ id: req.params.eventId });
         if (moment(event.startDate).isSameOrAfter(moment().tz('Asia/Tokyo'), 'day')) {
+            await eventService.deleteScreeningEvent({
+                id: req.params.eventId
+            });
+            res.json({
+                validation: null,
+                error: null
+            });
+
+            return;
+        } else {
             res.json({
                 validation: null,
                 error: '開始日時'
             });
+
+            return;
         }
-        debug('delete screening event...', req.params.eventId);
-        await eventService.deleteScreeningEvent({
-            id: req.params.eventId
-        });
-        res.json({
-            validation: null,
-            error: false
-        });
     } catch (err) {
         debug('delete error', err);
-        res.json({
+        res.status(NO_CONTENT).json({
             validation: null,
             error: err.message
         });

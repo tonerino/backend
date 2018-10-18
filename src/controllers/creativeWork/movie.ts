@@ -16,7 +16,7 @@ const NAME_MAX_LENGTH_CODE: number = 64;
 // 作品名・日本語 全角64
 const NAME_MAX_LENGTH_NAME_JA: number = 64;
 // 作品名・英語 半角128
-const NAME_MAX_LENGTH_NAME_EN: number = 128;
+// const NAME_MAX_LENGTH_NAME_EN: number = 128;
 // 上映時間・数字10
 const NAME_MAX_LENGTH_NAME_MINUTES: number = 10;
 
@@ -201,7 +201,7 @@ function validate(req: Request, checkType: string): void {
     req.checkBody('duration', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     req.checkBody('duration', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_NAME_MINUTES))
         .isNumeric()
-        .len({ max: NAME_MAX_LENGTH_NAME_EN });
+        .len({ max: NAME_MAX_LENGTH_NAME_MINUTES });
     // レイティング
     colName = 'レイティング';
     req.checkBody('contentRating', Message.Common.required.replace('$fieldName$', colName)).notEmpty();

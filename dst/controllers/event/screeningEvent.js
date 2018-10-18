@@ -245,23 +245,26 @@ function deletePerformance(req, res) {
             });
             const event = yield eventService.findScreeningEventById({ id: req.params.eventId });
             if (moment(event.startDate).isSameOrAfter(moment().tz('Asia/Tokyo'), 'day')) {
+                yield eventService.deleteScreeningEvent({
+                    id: req.params.eventId
+                });
+                res.json({
+                    validation: null,
+                    error: null
+                });
+                return;
+            }
+            else {
                 res.json({
                     validation: null,
                     error: '開始日時'
                 });
+                return;
             }
-            debug('delete screening event...', req.params.eventId);
-            yield eventService.deleteScreeningEvent({
-                id: req.params.eventId
-            });
-            res.json({
-                validation: null,
-                error: false
-            });
         }
         catch (err) {
             debug('delete error', err);
-            res.json({
+            res.status(http_status_1.NO_CONTENT).json({
                 validation: null,
                 error: err.message
             });

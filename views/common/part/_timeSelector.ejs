@@ -2,19 +2,19 @@
     <option value="" disabled selected>--</option>
     <% for (let i = 0; i < 24; i++) { %>
         <% let hour = ('00' + String(i)).slice(-2); %>
-            <option value="<%= hour %>">
-                <%= hour %>
-            </option>
-            <% } %>
+        <option value="<%= hour %>">
+            <%= hour %>
+        </option>
+    <% } %>
 </select>
 時
 <select class="form-control" name="<%= minuteName %>">
     <option value="" disabled selected>--</option>
     <% for (let i = 0; i < 60; i+=5) { %>
         <% let minutes = ('00' + String(i)).slice(-2); %>
-            <option value="<%= minutes %>">
-                <%= minutes %>
-            </option>
-            <% } %>
+        <option value="<%= minutes %>">
+            <%= minutes %>
+        </option>
+    <% } %>
 </select>
 分

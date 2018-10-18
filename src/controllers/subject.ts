@@ -38,17 +38,6 @@ export async function add(req: Request, res: Response): Promise<void> {
                     endpoint: <string>process.env.API_ENDPOINT,
                     auth: req.user.authClient
                 });
-                const checkDetailCd = await subjectService.searchSubject({
-                    detailCd: subject.detailCd
-                });
-                if (checkDetailCd.totalCount > 0) {
-                    message = '細目コードduplicate';
-                    res.render('subject/add', {
-                        message: message,
-                        errors: errors,
-                        forms: req.body
-                    });
-                }
                 await subjectService.createSubject({
                     attributes: subject
                 });
