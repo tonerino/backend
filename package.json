@@ -1,3 +1,6 @@
+// 20181018155631
+// https://raw.githubusercontent.com/toei-jp/chevre-backend/develop/package.json
+
 {
   "author": {
     "name": "Motionpicture co.,ltd."
@@ -17,7 +20,7 @@
     }
   ],
   "dependencies": {
-    "@toei-jp/chevre-api-nodejs-client": "^1.0.0-alpha.9",
+    "@toei-jp/chevre-api-nodejs-client": "^1.0.0-alpha.12",
     "body-parser": "^1.17.2",
     "connect-redis": "^3.4.0",
     "cookie-parser": "^1.4.1",
@@ -79,12 +82,16 @@
     "node": ">=6.9.1",
     "npm": ">=3.10.8"
   },
-  "keywords": [],
+  "keywords": [
+    
+  ],
   "license": "ISC",
   "main": "server.js",
   "name": "toei-chevre-backend",
   "private": true,
-  "repository": {},
+  "repository": {
+    
+  },
   "scripts": {
     "build": "tsc",
     "check": "npm run tslint && nsp check",
