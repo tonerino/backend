@@ -205,7 +205,7 @@ function getList(req, res) {
                     });
                 }
                 if (req.query.id !== '' && req.query.id !== undefined) {
-                    if (ticketTypeIds.indexOf(req.query.id)) {
+                    if (ticketTypeIds.indexOf(req.query.id) >= 0) {
                         ticketTypeIds.push(req.query.id);
                     }
                 }
