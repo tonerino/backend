@@ -12,6 +12,7 @@ import screeningEventRouter from './event/screeningEvent';
 import screeningEventSeriesRouter from './event/screeningEventSeries';
 import movieTheaterRouter from './places/movieTheater';
 import reservationsRouter from './reservations';
+import subjectRouter from './subject';
 import ticketTypeMasterRouter from './ticketType';
 import ticketTypeGroupMasterRouter from './ticketTypeGroup';
 
@@ -23,6 +24,7 @@ router.use('/events/screeningEvent', screeningEventRouter);
 router.use('/events/screeningEventSeries', screeningEventSeriesRouter);
 router.use('/places/movieTheater', movieTheaterRouter);
 router.use('/reservations', reservationsRouter);
+router.use('/subjects', subjectRouter);
 router.use('/ticketTypes', ticketTypeMasterRouter);
 router.use('/ticketTypeGroups', ticketTypeGroupMasterRouter);
 router.use(commonRouter);

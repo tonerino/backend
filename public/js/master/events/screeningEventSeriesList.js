@@ -45,7 +45,6 @@ $(function () {
         conditions['limit'] = ITEMS_ON_PAGE;
         conditions['page'] = pageNumber;
         var url = '/events/screeningEventSeries/getlist';
-        //alert(JSON.stringify(conditions));
         $.ajax({
             dataType: 'json',
             url: url,

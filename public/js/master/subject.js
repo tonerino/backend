@@ -26,6 +26,15 @@ $(function () {
         search(1);
     });
 
+    // 編集ボタンイベント
+    $(document).on('click', 'a.edit', function () {
+        // イベント識別子取得&url編集
+        var id = $(this).attr('uid');
+        // var identifier = $('td[name="identifier"]', $(this).closest('tr')).html();
+        var url = '/subjects/' + id + '/update';
+        window.location.href = url;
+    });
+
     // 検索条件クリア
     $(document).on('click', '.reset-condition', function () {
         $.fn.clearFormValue('form');
@@ -35,7 +44,7 @@ $(function () {
     //--------------------------------
     function search(pageNumber) {
         conditions['page'] = pageNumber;
-        var url = '/tickettypegroups/getlist';
+        var url = '/subjects/getlist';
         $.ajax({
             dataType: 'json',
             url: url,
@@ -47,6 +56,7 @@ $(function () {
             }
         }).done(function (data) {
             if (data.success) {
+                //alert("success:" + data.count);
                 var dataCount = (data.count) ? (data.count) : 0;
                 // 一覧表示
                 if ($.CommonMasterList.bind(data.results, dataCount, pageNumber)) {
@@ -54,6 +64,9 @@ $(function () {
                 } else {
                     $('#list').hide();
                 }
+                $('td[name="duration"]').each(function (i, obj) {
+                    $(this).text(moment.duration($(this).text()).asMinutes() + '分');
+                });
                 // 検索条件表示
                 $.fn.setDataToForm('form', conditions);
             }
@@ -64,45 +77,6 @@ $(function () {
         });
     }
 
-    // 関連券種グループ button
-    $(document).on('click', '.popupListTicketType', function (event) {
-        event.preventDefault();
-        var target = $(this).find('a:first').attr('href');
-        list(target);
-    });
 
-    /**
-     * 関連券種グループのpopupを表示
-     */
-    function list(url) {
-        $.ajax({
-            dataType: 'json',
-            url: url,
-            cache: false,
-            type: 'GET',
-            // data: conditions,
-            beforeSend: function () {
-                $('.loading').modal();
-            }
-        }).done(function (data) {
-            if (data.success) {
-                var modal = $('#listModal');
-                var listTicketTypeGroup = modal.find('#listTicketType');
-                listTicketTypeGroup.empty();
-                if (data.results.length > 0) {
-                    for (let i = 0; i < data.results.length; i++) {
-                        console.log(data.results[i]);
-                        listTicketTypeGroup.append(`<tr><td>${data.results[i]}</td></tr>`);
-                    }
-                } else {
-                    listTicketTypeGroup.append(`<tr><td>データがありません。</td></tr>`);
-                }
-                modal.modal();
-            }
-        }).fail(function (jqxhr, textStatus, error) {
-            alert(error);
-        }).always(function (data) {
-            $('.loading').modal('hide');
-        });
-    }
 });
+

@@ -234,7 +234,7 @@ export async function deletePerformance(req: Request, res: Response): Promise<vo
         });
         res.json({
             validation: null,
-            error: null
+            error: false
         });
     } catch (err) {
         debug('delete error', err);

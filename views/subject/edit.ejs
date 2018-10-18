@@ -1,0 +1,41 @@
+<%- contentFor('title') %>
+科目編集
+<%- contentFor('displayId') %>
+Aa-13
+<%- contentFor('styles') %>
+
+<%- contentFor('scripts') %>
+
+<%- contentFor('body') %>
+<div class="col-sm-12 form-container">
+    <% /* フォーム */ %>
+    <form method="post" class="form-horizontal" >
+        <div class="menu-group">
+            <% /* メッセージ */ %>
+            <% if (message !== '') { %>
+            <p class="error message text-danger panel-body bg-danger"><%= message %></p>
+            <% } %>
+        </div>
+
+        <% /* 登録・更新共通部 */ %>
+        <%- include('form', { forms: forms }) %>
+
+        <% /* 更新ボタン */ %>
+        <div class="form-group">
+            <div class="btn-area panel-body">
+                <a class="btn btn-ok btn-primary">更新する</a>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+$(function(){
+    $('.btn-ok').on('click', function(){
+        $('form').submit();
+    });
+    // datepickerセット
+    $('.datepicker').datepicker({
+        language: 'ja'
+    })
+});
+</script>

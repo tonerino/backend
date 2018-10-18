@@ -1,0 +1,78 @@
+<%- contentFor('title') %>
+科目マスタ一覧
+<%- contentFor('displayId') %>
+Aa-14
+<%- contentFor('styles') %>
+<link href="/css/simplePagination.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="/js/jquery.simplePagination.js"></script>
+<script src="/js/master/commonMaster.js"></script>
+<script src="/js/master/commonMasterList.js"></script>
+<script src="/js/master/subject.js"></script>
+
+<%- contentFor('body') %>
+<div class="col-sm-12 form-container search">
+    <form method="post" class="form-horizontal" >
+    <%- include('../common/master/_hidden') %>
+        <div class="menu-group">
+            <% if (subjectModel.message !== undefined) { %>
+            <p class="error message text-danger panel-body bg-danger"><%= subjectModel.message %></p>
+            <% } %>
+        </div>
+        <div class="form-group ">
+            <label for="detailCd" class="col-sm-3 control-label label-title">
+                細目コード
+            </label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="detailCd" id="detailCd" placeholder="" maxlength=64 value="">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="panel-body">
+                <a class="btn btn-ok search btn-primary"><span>検索する</span></a>
+                <a class="reset-condition btn btn-danger"><span>検索内容リセット</span></a>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="col-sm-12 form-container search">
+    <div>
+        <p id="searchedCount" style="display:none;">
+        検索結果 $searched_count$件
+        </p>
+    </div>
+    <div id="list" class="table-responsive" style="display:none;">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>科目分類コード</th>
+                    <th>科目分類名称</th>
+                    <th>科目コード</th>
+                    <th>科目名称</th>
+                    <th>細目コード</th>
+                    <th>細目名称</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="templateRow" identifier="$subjectClassificationCd$">
+                    <td name="subjectClassificationCd">$subjectClassificationCd$</td>
+                    <td name="subjectClassificationName">$subjectClassificationName$</td>
+                    <td name="subjectCd">$subjectCd$</td>
+                    <td name="subjectName">$subjectName$</td>
+                    <td name="detailCd">$detailCd$</td>
+                    <td name="detailName">$detailName$</td>
+                    <td name="edit" class="center">
+                        <div class="btn-area">
+                          <a class="btn btn-list edit" href="/subjects/$id$/update">
+                            <span>編集</span>
+                          </a>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="pager" class="div_pager_parent"></div>  
+</div>
+<%- include('../common/master/_loading') %>

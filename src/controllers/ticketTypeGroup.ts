@@ -30,7 +30,7 @@ export async function add(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const entertainmentTypeService = new chevre.service.EntertainmentType({
+    const boxOfficeTypeService = new chevre.service.BoxOfficeType({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
@@ -49,7 +49,7 @@ export async function add(req: Request, res: Response): Promise<void> {
                     description: req.body.description,
                     notes: req.body.notes,
                     ticketTypes: req.body.ticketTypes,
-                    entertainmentType: req.body.entertainmentType
+                    boxOfficeType: req.body.boxOfficeType
                 };
                 await ticketTypeService.createTicketTypeGroup(ticketTypeGroup);
                 // message = '登録完了';
@@ -62,14 +62,14 @@ export async function add(req: Request, res: Response): Promise<void> {
             }
         }
     }
-    const entertainmentTypeList = await entertainmentTypeService.getEntertainmentTypeList();
+    const boxOfficeTypeList = await boxOfficeTypeService.getBoxOfficeTypeList();
     const forms = {
         id: (_.isEmpty(req.body.id)) ? '' : req.body.id,
         name: (_.isEmpty(req.body.name)) ? '' : req.body.name,
         ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? [] : req.body.ticketTypes,
         description: (_.isEmpty(req.body.description)) ? {} : req.body.description,
         notes: (_.isEmpty(req.body.notes)) ? {} : req.body.notes,
-        entertainmentType: (_.isEmpty(req.body.entertainmentType)) ? '' : req.body.entertainmentType
+        boxOfficeType: (_.isEmpty(req.body.boxOfficeType)) ? '' : req.body.boxOfficeType
     };
     // 券種マスタから取得
     let searchTicketTypesResult: {
@@ -93,7 +93,7 @@ export async function add(req: Request, res: Response): Promise<void> {
         errors: errors,
         ticketTypes: searchTicketTypesResult.data,
         forms: forms,
-        entertainmentTypeList: entertainmentTypeList
+        boxOfficeTypeList: boxOfficeTypeList
     });
 }
 /**
@@ -104,11 +104,11 @@ export async function update(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const entertainmentTypeService = new chevre.service.EntertainmentType({
+    const boxOfficeTypeService = new chevre.service.BoxOfficeType({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const entertainmentTypeList = await entertainmentTypeService.getEntertainmentTypeList();
+    const boxOfficeTypeList = await boxOfficeTypeService.getBoxOfficeTypeList();
     let message = '';
     let errors: any = {};
     if (req.method === 'POST') {
@@ -126,7 +126,7 @@ export async function update(req: Request, res: Response): Promise<void> {
                     description: req.body.description,
                     notes: req.body.notes,
                     ticketTypes: req.body.ticketTypes,
-                    entertainmentType: req.body.entertainmentType
+                    boxOfficeType: req.body.boxOfficeType
                 };
                 await ticketTypeService.updateTicketTypeGroup(ticketTypeGroup);
                 // message = '編集完了';
@@ -146,7 +146,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : req.body.ticketTypes,
         description: (_.isEmpty(req.body.description)) ? ticketGroup.description : req.body.description,
         notes: (_.isEmpty(req.body.notes)) ? ticketGroup.notes : req.body.notes,
-        entertainmentType: (_.isEmpty(req.body.entertainmentType)) ? ticketGroup.entertainmentType : req.body.entertainmentType
+        boxOfficeType: (_.isEmpty(req.body.boxOfficeType)) ? ticketGroup.boxOfficeType : req.body.boxOfficeType
     };
     // 券種マスタから取得
     const searchTicketTypesResult: {
@@ -174,7 +174,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         errors: errors,
         ticketTypes: searchTicketTypesResult,
         forms: forms,
-        entertainmentTypeList: entertainmentTypeList
+        boxOfficeTypeList: boxOfficeTypeList
     });
 }
 /**
@@ -224,13 +224,17 @@ export async function getTicketTypeList(req: Request, res: Response): Promise<vo
         const ticketGroup = await ticketTypeService.findTicketTypeGroupById({ id: req.query.id });
         // 券種
         const ticketTypeNameList: any = [];
-        for (const ticketType of ticketGroup.ticketTypes) {
-            const ticketTypeData = await ticketTypeService.findTicketTypeById({ id: ticketType });
-            ticketTypeNameList.push(ticketTypeData.name.ja);
+        let countData: number = 0;
+        if (ticketGroup.ticketTypes !== null) {
+            countData = ticketGroup.ticketTypes.length;
+            for (const ticketType of ticketGroup.ticketTypes) {
+                const ticketTypeData = await ticketTypeService.findTicketTypeById({ id: ticketType });
+                ticketTypeNameList.push(ticketTypeData.name.ja);
+            }
         }
         res.json({
             success: true,
-            count: ticketGroup.ticketTypes.length,
+            count: countData,
             results: ticketTypeNameList
         });
     } catch (err) {
@@ -283,5 +287,8 @@ function validate(req: Request): void {
     req.checkBody('name.en', Message.Common.getMaxLength(colName, 128)).len({ max: 128 });
     // 興行区分
     colName = '興行区分';
-    req.checkBody('entertainmentType', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('boxOfficeType', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    //対象券種名
+    colName = '対象券種名';
+    req.checkBody('ticketTypes', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 }

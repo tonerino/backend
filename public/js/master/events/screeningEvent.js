@@ -747,6 +747,7 @@ function createTime() {
  * @returns {JQuery} 
  */
 function createScreen(performances, ticketGroups) {
+    console.log(ticketGroups);
     var dom = $('<td class="screen"></td>').css({ minWidth: SCREEN_WIDTH });
     var sortedPerformance = performances.sort((p1, p2) => {
         if (p1.doorTime > p2.doorTime) return 1;
@@ -786,9 +787,11 @@ function createScreen(performances, ticketGroups) {
             var saleStartTime = '';
         }
         var ticketTypeGroupName = '';
+        var boxOfficeTypeId = '';
         for (var j = 0; j < ticketGroups.length; j++) {
             if (ticketGroups[j]['id'] == performance.ticketTypeGroup) {
                 ticketTypeGroupName = ticketGroups[j]['name'].ja;
+                boxOfficeTypeId = ticketGroups[j]['boxOfficeType'];
             }
         }
         // var saleStartDate = (performance.saleStartDate) ? moment(performance.saleStartDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '';

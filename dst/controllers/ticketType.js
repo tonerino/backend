@@ -33,6 +33,11 @@ function add(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
+        const subjectService = new chevre.service.Subject({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        const subjectList = yield subjectService.getSubjectList();
         let message = '';
         let errors = {};
         if (req.method === 'POST') {
@@ -55,7 +60,8 @@ function add(req, res) {
                         nameForManagementSite: req.body.nameForManagementSite,
                         nameForPrinting: req.body.nameForPrinting,
                         seatReservationUnit: req.body.seatReservationUnit,
-                        subject: 1,
+                        subject: req.body.subject,
+                        nonBoxOfficeSubject: req.body.nonBoxOfficeSubject,
                         typeOfNote: req.body.typeOfNote,
                         indicatorColor: req.body.indicatorColor
                     };
@@ -82,13 +88,15 @@ function add(req, res) {
             nameForManagementSite: (_.isEmpty(req.body.nameForManagementSite)) ? '' : req.body.nameForManagementSite,
             nameForPrinting: (_.isEmpty(req.body.nameForPrinting)) ? '' : req.body.nameForPrinting,
             seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? '' : req.body.seatReservationUnit,
-            subject: 1,
+            subject: (_.isEmpty(req.body.subject)) ? '' : req.body.subject,
+            nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject)) ? '' : req.body.nonBoxOfficeSubject,
             typeOfNote: (_.isEmpty(req.body.typeOfNote)) ? '' : req.body.typeOfNote
         };
         res.render('ticketType/add', {
             message: message,
             errors: errors,
-            forms: forms
+            forms: forms,
+            subjectList: subjectList
         });
     });
 }
@@ -102,6 +110,11 @@ function update(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
+        const subjectService = new chevre.service.Subject({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        const subjectList = yield subjectService.getSubjectList();
         let message = '';
         let errors = {};
         let ticketType = yield ticketTypeService.findTicketTypeById({ id: req.params.id });
@@ -125,7 +138,8 @@ function update(req, res) {
                         nameForManagementSite: req.body.nameForManagementSite,
                         nameForPrinting: req.body.nameForPrinting,
                         seatReservationUnit: req.body.seatReservationUnit,
-                        subject: 1,
+                        subject: req.body.subject,
+                        nonBoxOfficeSubject: req.body.nonBoxOfficeSubject,
                         typeOfNote: req.body.typeOfNote,
                         indicatorColor: req.body.indicatorColor
                     };
@@ -152,13 +166,15 @@ function update(req, res) {
                 ticketType.nameForManagementSite : req.body.nameForManagementSite,
             nameForPrinting: (_.isEmpty(req.body.nameForPrinting)) ? ticketType.nameForPrinting : req.body.nameForPrinting,
             seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? ticketType.seatReservationUnit : req.body.seatReservationUnit,
-            subject: 1,
+            subject: (_.isEmpty(req.body.subject)) ? ticketType.subject : req.body.subject,
+            nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject)) ? ticketType.nonBoxOfficeSubject : req.body.nonBoxOfficeSubject,
             typeOfNote: (_.isEmpty(req.body.typeOfNote)) ? ticketType.typeOfNote : req.body.typeOfNote
         };
         res.render('ticketType/update', {
             message: message,
             errors: errors,
-            forms: forms
+            forms: forms,
+            subjectList: subjectList
         });
     });
 }
@@ -177,9 +193,21 @@ function getList(req, res) {
             let ticketTypeIds = [];
             if (req.query.ticketTypeGroups !== undefined && req.query.ticketTypeGroups !== '') {
                 const ticketTypeGroup = yield ticketTypeService.findTicketTypeGroupById({ id: req.query.ticketTypeGroups });
-                ticketTypeIds = ticketTypeGroup.ticketTypes;
-                if (ticketTypeIds.indexOf(req.query.id) && req.query.id !== '' && req.query.id !== undefined) {
-                    ticketTypeIds.push(req.query.id);
+                if (ticketTypeGroup.ticketTypes !== null) {
+                    ticketTypeIds = ticketTypeGroup.ticketTypes;
+                }
+                else {
+                    //券種がありません。
+                    res.json({
+                        success: true,
+                        count: 0,
+                        results: []
+                    });
+                }
+                if (req.query.id !== '' && req.query.id !== undefined) {
+                    if (ticketTypeIds.indexOf(req.query.id)) {
+                        ticketTypeIds.push(req.query.id);
+                    }
                 }
             }
             else {
@@ -190,7 +218,7 @@ function getList(req, res) {
             const result = yield ticketTypeService.searchTicketTypes({
                 limit: req.query.limit,
                 page: req.query.page,
-                id: req.query.id,
+                id: ticketTypeIds,
                 name: req.query.name
             });
             res.json({
@@ -302,5 +330,8 @@ function validateFormAdd(req) {
     // 金額
     colName = '金額';
     req.checkBody('price', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('price', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_EN)).len({ max: CHAGE_MAX_LENGTH });
+    req.checkBody('price', Message.Common.getMaxLengthHalfByte(colName, CHAGE_MAX_LENGTH)).isNumeric().len({ max: CHAGE_MAX_LENGTH });
+    // 細目
+    colName = '細目';
+    req.checkBody('subject', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 }

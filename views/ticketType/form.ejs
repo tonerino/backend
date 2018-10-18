@@ -189,3 +189,38 @@
         <input type="hidden" name="hiddenColor" id="hiddenColor">
     </div>
 </div>
+<div class="form-group ">
+    <label for="subject" class="col-sm-3 control-label label-title">
+        細目<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <select class="form-control" name="subject">
+            <option value="" disabled selected>選択してください</option>
+            <% for (let subject of subjectList) { %>
+            <option value="<%= subject.detailCd %>" <% if (forms.subject == subject.detailCd) { %> selected <% } %> >
+                <%= subject.detailName %>
+            </option>
+            <% } %>
+        </select>
+        <p class="error message text-danger">
+            <% if (errors && errors.subject) { %>
+            <%- errors.subject.msg %>
+            <% } %>
+        </p>
+    </div>
+</div>
+<div class="form-group ">
+    <label for="nonBoxOfficeSubject" class="col-sm-3 control-label label-title">
+        興行外細目
+    </label>
+    <div class="col-sm-9">
+        <select class="form-control" name="nonBoxOfficeSubject">
+            <option value="" disabled selected>選択してください</option>
+            <% for (let subject of subjectList) { %>
+            <option value="<%= subject.detailCd %>" <% if (forms.nonBoxOfficeSubject == subject.detailCd) { %> selected <% } %> >
+                <%= subject.detailName %>
+            </option>
+            <% } %>
+        </select>
+    </div>
+</div>

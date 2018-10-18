@@ -97,6 +97,14 @@ $(function () {
                             var id = $.fn.getStringValue(data, "id", "");
                             temp = temp.replace("\$id\$", id);
                         }
+                        if (fieldId === 'popup') {
+                            var id = $.fn.getStringValue(data, "id", "");
+                            temp = temp.replace("\$id\$", id);
+                        }
+                        if (fieldId === 'subjectEdit') {
+                            var id = $.fn.getStringValue(data, "detailCd", "");
+                            temp = temp.replace("\$detailCd\$", id);
+                        }
                     });
                     tempRow[cntCol++] = temp;
                 });

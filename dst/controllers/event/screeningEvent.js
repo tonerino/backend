@@ -256,7 +256,7 @@ function deletePerformance(req, res) {
             });
             res.json({
                 validation: null,
-                error: null
+                error: false
             });
         }
         catch (err) {

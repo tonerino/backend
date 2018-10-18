@@ -47,7 +47,6 @@
         <ul id="sortable1" class="connectedSortable">
             
         </ul>
-            
         <ul id="sortable2" class="connectedSortable">
             <% if (ticketTypes.count > 0) { %>
                 <% for (let x in ticketTypes.data) { %>
@@ -57,12 +56,12 @@
                 <% } %>
             <% } %>
         </ul>
+        <p class="error message text-danger">
+            <% if (errors && errors.ticketTypes) { %>
+            <%- errors.ticketTypes.msg %>
+            <% } %>
+        </p>
     </div>
-    <p class="error message text-danger">
-        <% if (errors && errors.ticketTypes) { %>
-        <%- errors.ticketTypes.msg %>
-        <% } %>
-    </p>
 </div>
 <div class="form-group ">
     <label for="description.ja" class="col-sm-3 control-label label-title">
@@ -98,19 +97,19 @@
     </div>
 </div>
 <div class="form-group ">
-    <label for="entertainmentType" class="col-sm-3 control-label label-title">
+    <label for="boxOfficeType" class="col-sm-3 control-label label-title">
         興行区分<font color="red">＊</font>
     </label>
     <div class="col-sm-9">
-        <select name="entertainmentType" id="entertainmentType" class="form-control">
+        <select name="boxOfficeType" id="boxOfficeType" class="form-control">
             <option value="" selected>通常興行</option>
-            <% for (let entertainment of entertainmentTypeList) { %>
-            <option value="<%= entertainment.id %>"  <% if (forms.entertainmentType == entertainment.id) { %> selected <% } %> ><%- entertainment.name.ja %></option>
+            <% for (let boxOffice of boxOfficeTypeList) { %>
+            <option value="<%= boxOffice.id %>"  <% if (forms.boxOfficeType == boxOffice.id) { %> selected <% } %> ><%- boxOffice.name.ja %></option>
             <% } %>
         </select>
         <p class="error message text-danger">
-            <% if (errors && errors.entertainmentType) { %>
-            <%- errors.entertainmentType.msg %>
+            <% if (errors && errors.boxOfficeType) { %>
+            <%- errors.boxOfficeType.msg %>
             <% } %>
         </p>
     </div>

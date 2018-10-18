@@ -23,10 +23,7 @@
         <select class="form-control" name="movieIdentifier" id="movieIdentifier">
             <option value="">選択してください</option>
             <% for (const movie of movies) { %>
-            <option value="<%= movie.identifier %>" <% if (forms.movieIdentifier===movie.identifier) { %> selected
-                <% } %>>
-                <%= movie.name %>
-            </option>
+            <option value="<%= movie.identifier %>" <% if (forms.movieIdentifier===movie.identifier) { %> selected <% } %>><%= movie.name %></option>
             <% } %>
         </select>
         <p class="error message text-danger">

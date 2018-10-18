@@ -336,12 +336,10 @@ export async function getList(req: Request, res: Response): Promise<void> {
                 id: event.id,
                 movieIdentifier: event.workPerformed.identifier,
                 filmNameJa: event.name.ja,
-                filmNameEn: event.name.en,
-                kanaName: event.kanaName,
-                // duration: moment.duration(event.duration).humanize(),
                 duration: event.duration,
                 contentRating: event.workPerformed.contentRating,
-                subtitleLanguage: event.subtitleLanguage,
+                subtitleLanguage: (_.isNull(event.subtitleLanguage)) ?
+                    '' : ((event.subtitleLanguage === 1) ? '吹替' : '字幕'),
                 videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : '',
                 movieSubtitleName: (_.isEmpty(event.movieSubtitleName)) ? '' : event.movieSubtitleName
             };
