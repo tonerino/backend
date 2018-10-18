@@ -15,6 +15,7 @@ import reservationsRouter from './reservations';
 import subjectRouter from './subject';
 import ticketTypeMasterRouter from './ticketType';
 import ticketTypeGroupMasterRouter from './ticketTypeGroup';
+import timeMeterRouter from './timeMeter';
 
 const router = express.Router();
 router.use(authRouter);
@@ -25,6 +26,7 @@ router.use('/events/screeningEventSeries', screeningEventSeriesRouter);
 router.use('/places/movieTheater', movieTheaterRouter);
 router.use('/reservations', reservationsRouter);
 router.use('/subjects', subjectRouter);
+router.use('/timeMeter', timeMeterRouter);
 router.use('/ticketTypes', ticketTypeMasterRouter);
 router.use('/ticketTypeGroups', ticketTypeGroupMasterRouter);
 router.use(commonRouter);
