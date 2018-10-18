@@ -38,12 +38,6 @@ $(function () {
         edit(target);
     });
 
-    // 作品検索
-    $(document).on('click', '.film-search-button', function (event) {
-        event.preventDefault();
-        filmSearch();
-    });
-
     // 新規登録（確定）
     $(document).on('click', '.regist-button', function (event) {
         event.preventDefault();
@@ -120,6 +114,8 @@ function getEventSeries(theater, fromDate, toDate) {
     if (!fromDate || !theater || !toDate) {
         return;
     }
+    var screeningEventSeriesSelect = $('#newModal select[name="screeningEventSeriesId"]');
+    screeningEventSeriesSelect.html('<option selected disabled>-----</option>')
     $.ajax({
         dataType: 'json',
         url: '/events/screeningEventSeries/search',
@@ -132,16 +128,16 @@ function getEventSeries(theater, fromDate, toDate) {
     }).done(function (data) {
         if (data && data.success) {
             // console.log(data);
-            var modal = $('#newModal');
             var screeningEventSeries = data.results;
             var options = screeningEventSeries.map(function (e) {
                 return '<option value="' + e.id + '" data-mvtk-flag="' + e.mvtkFlg + '">' + e.filmNameJa + '</option>';
             });
             options.unshift('<option value="" disabled selected>選択してください</option>')
-            modal.find('select[name="screeningEventSeriesId"]').html(options);
+            screeningEventSeriesSelect.html(options);
         }
     }).fail(function (jqxhr, textStatus, error) {
         console.error(jqxhr, textStatus, error);
+        alert('エラーが発生しました。');
     });
 }
 
@@ -153,15 +149,27 @@ function getEventSeries(theater, fromDate, toDate) {
  * @returns {void}
  */
 function getScreens(theater, modal = 'none') {
+    var selectScreen = $('select[name="screen"]');
+    if (modal.indexOf('none') >= 0) {
+        selectScreen = $('.search select[name="screen"]');
+    }
+    if (modal.indexOf('edit') >= 0) {
+        selectScreen = $('#editModal select[name="screen"]');
+    }
+    if (modal.indexOf('add') >= 0) {
+        selectScreen = $('#newModal select[name="screen"]');
+    }
     function resetScreenList() {
         var o = $('<option></option>');
         o.html('劇場を選択してください');
         o.val('');
-        $('.search select[name="screen"').html(o);
+        selectScreen.html(o);
     }
     if (!theater) {
         resetScreenList();
         return;
+    } else {
+        selectScreen.html('<option selected disabled>-----</option>');
     }
     $.ajax({
         dataType: 'json',
@@ -173,15 +181,8 @@ function getScreens(theater, modal = 'none') {
     }).done(function (data) {
         if (data && data.success) {
             if (modal.indexOf('none') >= 0) {
-                var selectScreen = $('.search select[name="screen"]');
                 selectScreen.html('<option value="">-----</option>');
-            }
-            if (modal.indexOf('edit') >= 0) {
-                var selectScreen = $('#editModal select[name="screen"]');
-                selectScreen.html('<option value="" disabled selected>選択してください</option>');
-            }
-            if (modal.indexOf('add') >= 0) {
-                var selectScreen = $('#newModal select[name="screen"]');
+            } else {
                 selectScreen.html('<option value="" disabled selected>選択してください</option>');
             }
             $.each(data.results, function (_, screen) {
@@ -195,6 +196,7 @@ function getScreens(theater, modal = 'none') {
         }
     }).fail(function (jqxhr, textStatus, error) {
         console.error(jqxhr, textStatus, error);
+        alert('エラーが発生しました。');
     });
 }
 
@@ -436,10 +438,10 @@ function update() {
 /**
  * 検索
  * @function search
- * @param {theater}
- * @param {date}
- * @param {days}
- * @param {screen}
+ * @param {string} theater
+ * @param {string} date
+ * @param {number} date
+ * @param {string} screen
  * @returns {void}
  */
 function search(theater, date, days, screen) {
@@ -447,12 +449,13 @@ function search(theater, date, days, screen) {
         alert('劇場、上映日を選択してください');
         return;
     }
+    $('.loading').modal();
     var query = {
         theater: theater,
         date: date,
         days: days
     };
-    if (screen !== undefined) {
+    if (screen !== undefined && screen !== null) {
         query.screen = screen;
     }
     getScreens(theater, 'edit');
@@ -483,7 +486,8 @@ function search(theater, date, days, screen) {
         }
     }).fail(function (jqxhr, textStatus, error) {
         console.error(jqxhr, textStatus, error);
-    });
+        alert('エラーが発生しました。');
+    }).always(function() { $('.loading').modal('hide'); });
 }
 
 /**
