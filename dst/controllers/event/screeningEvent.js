@@ -244,7 +244,7 @@ function deletePerformance(req, res) {
                 auth: req.user.authClient
             });
             const event = yield eventService.findScreeningEventById({ id: req.params.eventId });
-            if (moment(event.startDate).isSameOrAfter(moment().tz('Asia/Tokyo'), 'day')) {
+            if (moment(event.startDate).tz('Asia/Tokyo').isSameOrAfter(moment().tz('Asia/Tokyo'), 'day')) {
                 yield eventService.deleteScreeningEvent({
                     id: req.params.eventId
                 });

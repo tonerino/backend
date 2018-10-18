@@ -222,7 +222,7 @@ export async function deletePerformance(req: Request, res: Response): Promise<vo
             auth: req.user.authClient
         });
         const event = await eventService.findScreeningEventById({ id: req.params.eventId });
-        if (moment(event.startDate).isSameOrAfter(moment().tz('Asia/Tokyo'), 'day')) {
+        if (moment(event.startDate).tz('Asia/Tokyo').isSameOrAfter(moment().tz('Asia/Tokyo'), 'day')) {
             await eventService.deleteScreeningEvent({
                 id: req.params.eventId
             });
