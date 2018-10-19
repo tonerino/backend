@@ -46,7 +46,7 @@ ordersRouter.get('/cancel', async (req, res) => {
                 }
             }
         });
-        returnOrderService.confirm({
+        void returnOrderService.confirm({
             transactionId: transaction.id
         });
 

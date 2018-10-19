@@ -20,6 +20,7 @@
             "LF"
         ],
         "no-any": false,
+        "no-redundant-jsdoc": false,
         "no-backbone-get-set-outside-model": false,
         "no-console": [
             true,

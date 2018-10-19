@@ -1,4 +1,4 @@
- // tslint:disable:no-redundant-jsdoc, no-increment-decrement
+// tslint:disable:no-redundant-jsdoc
 import * as cinerino from '@toei-jp/cinerino-api-nodejs-client';
 import * as uuid from 'uuid';
 
@@ -130,7 +130,7 @@ export class AuthModel {
             return;
         }
 
-        // tslint:disable-next-line:prefer-for-of
+        // tslint:disable-next-line:prefer-for-of no-increment-decrement
         for (let i = 0; i < session.auth.length; i++) {
             if (session.auth[0].api === apiEndpoint) {
                 session.auth[0] = authSession;
