@@ -40,9 +40,19 @@ Aa-20
                 上映日
                 <font color="red">＊</font>
             </label>
-            <div class="col-sm-9">
-                <input autocomplete="off" class="form-control datepicker" name="startDate" placeholder="選択してください" maxlength=10>
+            <div class="col-sm-3">
+                <input autocomplete="off" class="form-control datepicker" name="startDate" placeholder="YYYY/MM/DD" maxlength=10>
                 <p class="error message text-danger"></p>
+            </div>
+            <div class="col-sm-6" id="startDateTime">
+                <%- include('../common/part/_timeSelector', {
+                    hourName: 'startDateHourFrom',
+                    minuteName: 'startDateMinuteFrom'
+                }) %> 〜
+                <%- include('../common/part/_timeSelector', {
+                    hourName: 'startDateHourThrough',
+                    minuteName: 'startDateMinuteThrough'
+                }) %>
             </div>
         </div>
         <div class="form-group form-inline">
@@ -54,7 +64,7 @@ Aa-20
                 <input type="text" class="form-control datepicker" name="orderDateThrough" id="orderDateThrough" />
             </div>
         </div>
-        <div class="form-group form-inline">
+        <!-- <div class="form-group form-inline">
             <label for="modifiedFrom1" class="col-sm-3 control-label label-title">
                 上映時刻
             </label>
@@ -68,7 +78,7 @@ Aa-20
                     minuteName: 'startDateMinuteThrough'
                 }) %>
             </div>
-        </div>
+        </div> -->
         <div class="form-group">
             <label for="name" class="col-sm-3 control-label label-title">
                 上映作品

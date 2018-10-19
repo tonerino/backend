@@ -122,3 +122,8 @@ header .title {
 .btn-disabled, .btn-cancel {
   width: 100px;
 }
+
+#startDateTime select {
+  width: 50px;
+  display: inline-block;
+}
