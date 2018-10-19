@@ -41,6 +41,11 @@
     </span>
     <div class="col-sm-9">
         <input type="number" class="form-control" name="price" id="price" placeholder="" maxlength=10>
+        <p class="error message text-danger">
+            <% if (errors && errors.ticketTypes) { %>
+            <%- errors.ticketTypes.msg %>
+            <% } %>
+        </p>
     </div>
     <div class="col-sm-3 control-label label-title"></div>
     <div class="col-sm-9" id="price-list">
@@ -56,11 +61,6 @@
                 <% } %>
             <% } %>
         </ul>
-        <p class="error message text-danger">
-            <% if (errors && errors.ticketTypes) { %>
-            <%- errors.ticketTypes.msg %>
-            <% } %>
-        </p>
     </div>
 </div>
 <div class="form-group ">
@@ -102,9 +102,14 @@
     </label>
     <div class="col-sm-9">
         <select name="boxOfficeType" id="boxOfficeType" class="form-control">
-            <option value="" selected>通常興行</option>
             <% for (let boxOffice of boxOfficeTypeList) { %>
-            <option value="<%= boxOffice.id %>"  <% if (forms.boxOfficeType == boxOffice.id) { %> selected <% } %> ><%- boxOffice.name.ja %></option>
+                <% if (forms.boxOfficeType == boxOffice.id) { %>
+                    <option value="<%= boxOffice.id %>" selected><%= boxOffice.name.ja %></option>
+                <% } else if (boxOffice.name.ja === '通常興行') { %>
+                    <option value="<%= boxOffice.id %>" selected><%= boxOffice.name.ja %></option>
+                <% } else { %>
+                    <option value="<%= boxOffice.id %>"><%= boxOffice.name.ja %></option>
+                <% } %>
             <% } %>
         </select>
         <p class="error message text-danger">
