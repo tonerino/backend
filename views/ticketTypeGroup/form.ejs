@@ -104,11 +104,11 @@
         <select name="boxOfficeType" id="boxOfficeType" class="form-control">
             <% for (let boxOffice of boxOfficeTypeList) { %>
                 <% if (forms.boxOfficeType == boxOffice.id) { %>
-                    <option value="<%= boxOffice.id %>" selected><%= boxOffice.name.ja %></option>
-                <% } else if (boxOffice.name.ja === '通常興行') { %>
-                    <option value="<%= boxOffice.id %>" selected><%= boxOffice.name.ja %></option>
+                    <option value="<%= boxOffice.id %>" selected><%= boxOffice.name %></option>
+                <% } else if (boxOffice.name === '通常興行') { %>
+                    <option value="<%= boxOffice.id %>" selected><%= boxOffice.name %></option>
                 <% } else { %>
-                    <option value="<%= boxOffice.id %>"><%= boxOffice.name.ja %></option>
+                    <option value="<%= boxOffice.id %>"><%= boxOffice.name %></option>
                 <% } %>
             <% } %>
         </select>
