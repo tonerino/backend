@@ -94,22 +94,22 @@ ordersRouter.get('/search', async (req, res) => {
         debug('orders response', searchResult.data);
 
         //キャンセル処理しているオーダーの取得
-        const orderNotCanceled: string[] = searchResult.data.filter((d) => d.acceptedOffers.length > 0)
-        .filter((d) => d.orderStatus !== cinerino.factory.orderStatus.OrderReturned)
-        .map((d) => d.orderNumber);
+        const orderNotCanceled: string[] = searchResult.data.filter((d: cinerino.factory.order.IOrder) => d.acceptedOffers.length > 0)
+        .filter((d: cinerino.factory.order.IOrder) => d.orderStatus !== cinerino.factory.orderStatus.OrderReturned)
+        .map((d: cinerino.factory.order.IOrder) => d.orderNumber);
 
         let orderCancellings: string[] = [];
         if (orderNotCanceled.length > 0) {
             orderCancellings = await transactionService.search({
                 typeOf: cinerino.factory.transactionType.ReturnOrder,
                 object: { order: { orderNumbers: orderNotCanceled } }
-            }).then((docs) => docs.data.map((d) => d.object.order.orderNumber));
+            }).then((docs: any) => docs.data.map((d: any) => d.object.order.orderNumber));
         }
 
         res.json({
             success: true,
             count: searchResult.totalCount,
-            results: searchResult.data.map((t) => {
+            results: searchResult.data.map((t: cinerino.factory.order.IOrder) => {
                 return t;
             }),
             orderCancellings: orderCancellings
