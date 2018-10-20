@@ -1,11 +1,12 @@
 /**
  * base
  */
-
+import * as chevre from '@toei-jp/chevre-api-nodejs-client';
+import * as cinerino from '@toei-jp/cinerino-api-nodejs-client';
 import * as debug from 'debug';
 import { Request, Response } from 'express';
 import * as httpStatus from 'http-status';
-import { ApiEndpoint, AuthModel, IAuthSession } from '../../models/auth/auth.model';
+import { ApiEndpoint } from '../../user';
 
 const log = debug('frontend:base');
 
@@ -14,25 +15,19 @@ const log = debug('frontend:base');
  */
 export function getOptions(req: Request, apiEndpoint?: ApiEndpoint) {
     let endpoint: string;
+    let authClient: chevre.auth.OAuth2 | cinerino.auth.OAuth2;
     if (apiEndpoint === ApiEndpoint.cinerino) {
         endpoint = (<string>process.env.CINERINO_API_ENDPOINT);
+        authClient = req.user.authClient;
     } else {
         endpoint = (<string>process.env.API_ENDPOINT);
+        authClient = req.user.cinerinoAuthClient;
     }
-    let authModel: AuthModel;
-    if ((<Express.Session>req.session).auth !== undefined) {
-        const authSession = (<Express.Session>req.session).auth.find((auth: IAuthSession) => auth.api === apiEndpoint);
-        authModel = new AuthModel(authSession, apiEndpoint);
-    } else {
-        authModel = new AuthModel({}, apiEndpoint);
-    }
-    const options = {
-        endpoint,
-        auth: authModel.create()
-    };
-    authModel.save(req.session, apiEndpoint);
 
-    return options;
+    return {
+        endpoint,
+        auth: authClient
+    };
 }
 
 /**

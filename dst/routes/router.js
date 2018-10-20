@@ -43,4 +43,3 @@ router.get('/', (req, res, next) => {
     res.redirect('/creativeWorks/movie');
 });
 exports.default = router;
-//# sourceMappingURL=router.js.map

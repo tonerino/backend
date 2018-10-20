@@ -17,7 +17,7 @@ const createDebug = require("debug");
 const express_1 = require("express");
 const moment = require("moment");
 const base_controller_1 = require("../controllers/base/base.controller");
-const auth_model_1 = require("../models/auth/auth.model");
+const user_1 = require("../user");
 const ordersRouter = express_1.Router();
 const debug = createDebug('chevre-backend:orders');
 ordersRouter.get('', (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -41,7 +41,7 @@ ordersRouter.get('', (req, res) => __awaiter(this, void 0, void 0, function* () 
     }
 }));
 ordersRouter.get('/cancel', (req, res) => __awaiter(this, void 0, void 0, function* () {
-    const options = base_controller_1.getOptions(req, auth_model_1.ApiEndpoint.cinerino);
+    const options = base_controller_1.getOptions(req, user_1.ApiEndpoint.cinerino);
     const returnOrderService = new cinerino.service.transaction.ReturnOrder(options);
     try {
         const transaction = yield returnOrderService.start({
@@ -64,37 +64,67 @@ ordersRouter.get('/cancel', (req, res) => __awaiter(this, void 0, void 0, functi
 }));
 ordersRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const options = base_controller_1.getOptions(req, auth_model_1.ApiEndpoint.cinerino);
+        const options = base_controller_1.getOptions(req, user_1.ApiEndpoint.cinerino);
         const orderService = new cinerino.service.Order(options);
         const transactionService = new cinerino.service.transaction.ReturnOrder(options);
-        const params = {
-            limit: req.query.limit,
-            page: req.query.page,
-            locationBranchCode: req.query.locationBranchCode,
-            orderDateFrom: (req.query.orderDateFrom)
-                ? moment(`${req.query.orderDateFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
-            orderDateThrough: (req.query.orderDateThrough)
-                ? moment(`${req.query.orderDateThrough}T23:59:59+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
-            screeningEventSeriesId: req.query.screeningEventSeriesId ? req.query.screeningEventSeriesId : undefined,
-            // 購入番号
-            confirmationNumber: req.query.confirmationNumber ? req.query.confirmationNumber : undefined,
-            // 電話番号
-            telephone: req.query.telephone ? req.query.telephone : undefined,
-            // 購入場所
-            placeTicket: req.query.placeTicket ? req.query.placeTicket : undefined
-        };
+        // 購入場所(customerのクライアントID識別子で判断する、どのアプリで注文されたか、ということ)
+        const customerIdentifiers = [];
+        switch (req.query.placeTicket) {
+            case 'POS':
+                customerIdentifiers.push({ name: 'clientId', value: process.env.POS_CLIENT_ID });
+                break;
+            case 'WEB':
+                customerIdentifiers.push({ name: 'clientId', value: process.env.FRONTEND_CLIENT_ID });
+                break;
+            default:
+        }
+        let eventStartFrom;
+        let eventStartThrough;
         const startDateHourFrom = req.query.startDateHourFrom ? req.query.startDateHourFrom : '00';
         const startDateMinuteFrom = req.query.startDateMinuteFrom ? req.query.startDateMinuteFrom : '00';
         const startDateHourThrough = req.query.startDateHourThrough ? req.query.startDateHourThrough : '23';
         const startDateMinuteThrough = req.query.startDateMinuteThrough ? req.query.startDateMinuteThrough : '55';
         if (req.query.startDate) {
             // tslint:disable-next-line:max-line-length
-            params.reservedEventStartDateFrom = moment(`${req.query.startDate}T${startDateHourFrom}:${startDateMinuteFrom}:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate();
+            eventStartFrom = moment(`${req.query.startDate}T${startDateHourFrom}:${startDateMinuteFrom}:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate();
             // tslint:disable-next-line:max-line-length
-            params.reservedEventStartDateThrough = moment(`${req.query.startDate}T${startDateHourThrough}:${startDateMinuteThrough}:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate();
+            eventStartThrough = moment(`${req.query.startDate}T${startDateHourThrough}:${startDateMinuteThrough}:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate();
         }
-        const searchResult = yield orderService.searchOrder(params);
-        debug('orders response', searchResult.data);
+        const params = {
+            limit: Number(req.query.limit),
+            page: Number(req.query.page),
+            orderDateFrom: (req.query.orderDateFrom !== undefined && req.query.orderDateFrom !== '')
+                ? moment(`${req.query.orderDateFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate()
+                : moment(`2018-10-01T00:00:00+09:00`).toDate(),
+            orderDateThrough: (req.query.orderDateFrom !== undefined && req.query.orderDateFrom !== '')
+                ? moment(`${req.query.orderDateThrough}T23:59:59+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate()
+                : moment().toDate(),
+            // 購入番号
+            customer: {
+                typeOf: cinerino.factory.personType.Person,
+                // 電話番号
+                telephone: req.query.telephone ? req.query.telephone : undefined,
+                identifiers: customerIdentifiers
+            },
+            confirmationNumbers: req.query.confirmationNumber ? [req.query.confirmationNumber] : undefined,
+            acceptedOffers: {
+                itemOffered: {
+                    reservationFor: {
+                        startFrom: eventStartFrom,
+                        startThrough: eventStartThrough,
+                        superEvent: {
+                            ids: req.query.screeningEventSeriesId ? [req.query.screeningEventSeriesId] : undefined,
+                            location: {
+                                branchCodes: [req.query.locationBranchCode]
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        debug('searching orders...', params);
+        const searchResult = yield orderService.search(params);
+        debug(searchResult.totalCount, 'orders found');
         //キャンセル処理しているオーダーの取得
         const orderNotCanceled = searchResult.data.filter((d) => d.acceptedOffers.length > 0)
             .filter((d) => d.orderStatus !== cinerino.factory.orderStatus.OrderReturned)
@@ -116,12 +146,13 @@ ordersRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, functi
         });
     }
     catch (err) {
+        debug(err);
         res.json({
             success: false,
             count: 0,
-            results: []
+            results: [],
+            message: err.message
         });
     }
 }));
 exports.default = ordersRouter;
-//# sourceMappingURL=orders.js.map

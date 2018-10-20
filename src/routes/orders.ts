@@ -7,7 +7,7 @@ import * as createDebug from 'debug';
 import { Router } from 'express';
 import * as moment from 'moment';
 import { getOptions } from '../controllers/base/base.controller';
-import { ApiEndpoint } from '../models/auth/auth.model';
+import { ApiEndpoint } from '../user';
 
 const ordersRouter = Router();
 const debug = createDebug('chevre-backend:orders');
@@ -50,9 +50,9 @@ ordersRouter.get('/cancel', async (req, res) => {
             transactionId: transaction.id
         });
 
-        res.json({success: true});
+        res.json({ success: true });
     } catch (error) {
-        res.json({success: false});
+        res.json({ success: false });
     }
 });
 ordersRouter.get('/search', async (req, res) => {
@@ -61,42 +61,72 @@ ordersRouter.get('/search', async (req, res) => {
         const orderService = new cinerino.service.Order(options);
         const transactionService = new cinerino.service.transaction.ReturnOrder(options);
 
-        const params: cinerino.factory.order.ISearchOrdersConditions = {
-            limit: req.query.limit,
-            page: req.query.page,
-            locationBranchCode: req.query.locationBranchCode,
-            orderDateFrom: (req.query.orderDateFrom)
-            ? moment(`${req.query.orderDateFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
-            orderDateThrough: (req.query.orderDateThrough)
-            ? moment(`${req.query.orderDateThrough}T23:59:59+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
-            screeningEventSeriesId: req.query.screeningEventSeriesId ? req.query.screeningEventSeriesId : undefined,
-            // 購入番号
-            confirmationNumber: req.query.confirmationNumber ? req.query.confirmationNumber : undefined,
-            // 電話番号
-            telephone: req.query.telephone ? req.query.telephone : undefined,
-            // 購入場所
-            placeTicket: req.query.placeTicket ? req.query.placeTicket : undefined
-        };
+        // 購入場所(customerのクライアントID識別子で判断する、どのアプリで注文されたか、ということ)
+        const customerIdentifiers = [];
+        switch (req.query.placeTicket) {
+            case 'POS':
+                customerIdentifiers.push({ name: 'clientId', value: <string>process.env.POS_CLIENT_ID });
+                break;
+            case 'WEB':
+                customerIdentifiers.push({ name: 'clientId', value: <string>process.env.FRONTEND_CLIENT_ID });
+                break;
+            default:
+        }
 
+        let eventStartFrom: Date | undefined;
+        let eventStartThrough: Date | undefined;
         const startDateHourFrom = req.query.startDateHourFrom ? req.query.startDateHourFrom : '00';
         const startDateMinuteFrom = req.query.startDateMinuteFrom ? req.query.startDateMinuteFrom : '00';
         const startDateHourThrough = req.query.startDateHourThrough ? req.query.startDateHourThrough : '23';
         const startDateMinuteThrough = req.query.startDateMinuteThrough ? req.query.startDateMinuteThrough : '55';
-
         if (req.query.startDate) {
             // tslint:disable-next-line:max-line-length
-            params.reservedEventStartDateFrom = moment(`${req.query.startDate}T${startDateHourFrom}:${startDateMinuteFrom}:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate();
+            eventStartFrom = moment(`${req.query.startDate}T${startDateHourFrom}:${startDateMinuteFrom}:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate();
             // tslint:disable-next-line:max-line-length
-            params.reservedEventStartDateThrough = moment(`${req.query.startDate}T${startDateHourThrough}:${startDateMinuteThrough}:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate();
+            eventStartThrough = moment(`${req.query.startDate}T${startDateHourThrough}:${startDateMinuteThrough}:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate();
         }
 
-        const searchResult = await orderService.searchOrder(params);
-        debug('orders response', searchResult.data);
+        const params: cinerino.factory.order.ISearchConditions = {
+            limit: Number(req.query.limit),
+            page: Number(req.query.page),
+            orderDateFrom: (req.query.orderDateFrom !== undefined && req.query.orderDateFrom !== '')
+                ? moment(`${req.query.orderDateFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate()
+                : moment(`2018-10-01T00:00:00+09:00`).toDate(),
+            orderDateThrough: (req.query.orderDateFrom !== undefined && req.query.orderDateFrom !== '')
+                ? moment(`${req.query.orderDateThrough}T23:59:59+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate()
+                : moment().toDate(),
+            // 購入番号
+            customer: {
+                typeOf: cinerino.factory.personType.Person,
+                // 電話番号
+                telephone: req.query.telephone ? req.query.telephone : undefined,
+                identifiers: customerIdentifiers
+            },
+            confirmationNumbers: req.query.confirmationNumber ? [req.query.confirmationNumber] : undefined,
+            acceptedOffers: {
+                itemOffered: {
+                    reservationFor: {
+                        startFrom: eventStartFrom,
+                        startThrough: eventStartThrough,
+                        superEvent: {
+                            ids: req.query.screeningEventSeriesId ? [req.query.screeningEventSeriesId] : undefined,
+                            location: {
+                                branchCodes: [req.query.locationBranchCode]
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        debug('searching orders...', params);
+        const searchResult = await orderService.search(params);
+        debug(searchResult.totalCount, 'orders found');
 
         //キャンセル処理しているオーダーの取得
         const orderNotCanceled: string[] = searchResult.data.filter((d: cinerino.factory.order.IOrder) => d.acceptedOffers.length > 0)
-        .filter((d: cinerino.factory.order.IOrder) => d.orderStatus !== cinerino.factory.orderStatus.OrderReturned)
-        .map((d: cinerino.factory.order.IOrder) => d.orderNumber);
+            .filter((d: cinerino.factory.order.IOrder) => d.orderStatus !== cinerino.factory.orderStatus.OrderReturned)
+            .map((d: cinerino.factory.order.IOrder) => d.orderNumber);
 
         let orderCancellings: string[] = [];
         if (orderNotCanceled.length > 0) {
@@ -115,10 +145,12 @@ ordersRouter.get('/search', async (req, res) => {
             orderCancellings: orderCancellings
         });
     } catch (err) {
+        debug(err);
         res.json({
             success: false,
             count: 0,
-            results: []
+            results: [],
+            message: err.message
         });
     }
 });

@@ -1,8 +1,17 @@
 import * as chevreapi from '@toei-jp/chevre-api-nodejs-client';
+import * as cinerinoapi from '@toei-jp/cinerino-api-nodejs-client';
 import * as createDebug from 'debug';
 
 const debug = createDebug('chevre-backend:user');
 
+/**
+ * ApiEndpointを確定のため
+ * @enum ApiEndpoint
+ */
+export enum ApiEndpoint {
+    cinerino = 'cinerino',
+    chevre = 'chevre'
+}
 /**
  * ユーザー設定インターフェース
  */
@@ -25,16 +34,29 @@ export default class User {
     public host: string;
     public session: Express.Session;
     public state: string;
+    /**
+     * ChevreAPI認証クライアント(管理者としてのAuthorizationCodeフロー)
+     */
     public authClient: chevreapi.auth.OAuth2;
+    /**
+     * CinerinoAPI認証クライアント(管理者としてのAuthorizationCodeフロー)
+     */
+    public cinerinoAuthClient: cinerinoapi.auth.OAuth2;
     public profile: IProfile;
     constructor(configurations: IConfigurations) {
         this.host = configurations.host;
         this.session = configurations.session;
-
         this.authClient = new chevreapi.auth.OAuth2({
             domain: <string>process.env.API_AUTHORIZE_SERVER_DOMAIN,
             clientId: <string>process.env.API_CLIENT_ID,
             clientSecret: <string>process.env.API_CLIENT_SECRET,
+            redirectUri: `https://${configurations.host}/signIn`,
+            logoutUri: `https://${configurations.host}/logout`
+        });
+        this.cinerinoAuthClient = new cinerinoapi.auth.OAuth2({
+            domain: <string>process.env.CINERINO_AUTHORIZE_SERVER_DOMAIN,
+            clientId: <string>process.env.CINERINO_CLIENT_ID,
+            clientSecret: <string>process.env.CINERINO_CLIENT_SECRET,
             redirectUri: `https://${configurations.host}/signIn`,
             logoutUri: `https://${configurations.host}/logout`
         });
