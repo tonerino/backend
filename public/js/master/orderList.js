@@ -123,7 +123,7 @@ $(function () {
                     if ($.inArray(rows[x].orderNumber, orderCancellings) > -1) {
                         cancelling.show();
                         break;
-                    } else if (rows[x].cancelDate === undefined) {
+                    } else if (rows[x].dateReturned === undefined) {
                         cancelBtn.show();
                         break;
                     }
