@@ -12,7 +12,7 @@ import { ApiEndpoint } from '../user';
 const ordersRouter = Router();
 const debug = createDebug('chevre-backend:orders');
 
-ordersRouter.get('', async (req, res) => {
+ordersRouter.get('', async (req, res, next) => {
     const placeService = new chevre.service.Place({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
@@ -24,12 +24,8 @@ ordersRouter.get('', async (req, res) => {
             message: '',
             movieTheaters: searchMovieTheatersResult.data
         });
-    } catch (error) {
-        const searchMovieTheatersResult = await placeService.searchMovieTheaters({});
-        res.render('orders/index', {
-            message: '',
-            movieTheaters: searchMovieTheatersResult.data
-        });
+    } catch (err) {
+        next(err);
     }
 });
 ordersRouter.get('/cancel', async (req, res) => {

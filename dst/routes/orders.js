@@ -20,7 +20,7 @@ const base_controller_1 = require("../controllers/base/base.controller");
 const user_1 = require("../user");
 const ordersRouter = express_1.Router();
 const debug = createDebug('chevre-backend:orders');
-ordersRouter.get('', (req, res) => __awaiter(this, void 0, void 0, function* () {
+ordersRouter.get('', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     const placeService = new chevre.service.Place({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient
@@ -32,12 +32,8 @@ ordersRouter.get('', (req, res) => __awaiter(this, void 0, void 0, function* () 
             movieTheaters: searchMovieTheatersResult.data
         });
     }
-    catch (error) {
-        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({});
-        res.render('orders/index', {
-            message: '',
-            movieTheaters: searchMovieTheatersResult.data
-        });
+    catch (err) {
+        next(err);
     }
 }));
 ordersRouter.get('/cancel', (req, res) => __awaiter(this, void 0, void 0, function* () {
