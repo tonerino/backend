@@ -11,9 +11,9 @@ import * as Message from '../common/Const/Message';
 const debug = createDebug('chevre-backend:controllers');
 
 // 作品コード 半角64
-// const NAME_MAX_LENGTH_CODE: number = 64;
+const NAME_MAX_LENGTH_CODE: number = 64;
 // 作品名・日本語 全角64
-// const NAME_MAX_LENGTH_NAME_JA: number = 64;
+const NAME_MAX_LENGTH_NAME_JA: number = 64;
 // 作品名・英語 半角128
 // const NAME_MAX_LENGTH_NAME_EN: number = 128;
 // 上映時間・数字10
@@ -178,19 +178,31 @@ function validate(req: Request): void {
     // 科目分類コード
     let colName: string = '科目分類コード';
     req.checkBody('subjectClassificationCd', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('subjectClassificationCd', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_CODE))
+        .len({ max: NAME_MAX_LENGTH_CODE });
     // 科目分類名称
     colName = '科目分類名称';
     req.checkBody('subjectClassificationName', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('subjectClassificationName', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_JA))
+        .len({ max: NAME_MAX_LENGTH_NAME_JA });
     // 科目コード
     colName = '科目コード';
     req.checkBody('subjectCd', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('subjectCd', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_CODE))
+        .len({ max: NAME_MAX_LENGTH_CODE });
     // 科目名称
     colName = '科目名称';
     req.checkBody('subjectName', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('subjectName', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_JA))
+        .len({ max: NAME_MAX_LENGTH_NAME_JA });
     // 細目コード
     colName = '細目コード';
     req.checkBody('detailCd', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('detailCd', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_CODE))
+        .len({ max: NAME_MAX_LENGTH_CODE });
     // 細目名称
     colName = '細目名称';
     req.checkBody('detailName', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('detailName', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_JA))
+        .len({ max: NAME_MAX_LENGTH_NAME_JA });
 }
