@@ -59,3 +59,26 @@ var flattenObject = function (ob) {
     }
     return toReturn;
 };
+// エラー削除
+$.fn.clearFormError = function (formSelector) {
+    $(formSelector).find('p.error.message').html('');
+}
+// 必要なカラムを確認
+$.fn.checkRequired = function (formSelector) {
+    var isError = false;
+    $('font[color=red]:contains("＊")').each(function() {
+        var formGroup = $(this).closest('.form-group');
+        var fieldNameDisplay = $(formGroup).find('label.label-title').contents().filter(function() {
+            return this.nodeType == Node.TEXT_NODE;
+        }).text().trim();
+
+        if (fieldName = $(formGroup).find('label.label-title').attr('for')) {
+            var control = $(formGroup).find('[name='+ fieldName +']');
+            if (control.val() === '') {
+                $(formGroup).find('.error.message').text(fieldNameDisplay + 'が未入力です');
+                isError = true;
+            }
+        }
+    });
+    return isError;
+}
