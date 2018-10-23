@@ -36,16 +36,24 @@ function add(req, res) {
             errors = req.validationErrors(true);
             // 検証
             if (validatorResult.isEmpty()) {
-                // 券種DB登録プロセス
+                // 配給DB登録プロセス
                 try {
                     const distribution = {
                         id: req.body.id,
                         name: req.body.name
                     };
-                    yield distributionService.createDistribution(distribution);
-                    message = '登録完了';
-                    res.redirect('/complete');
-                    return;
+                    const searchDistribution = yield distributionService.searchDistribution({
+                        id: req.body.id
+                    });
+                    if (searchDistribution.totalCount > 0) {
+                        message = '配給コードが既に登録されています。';
+                    }
+                    else {
+                        yield distributionService.createDistribution(distribution);
+                        message = '登録完了';
+                        res.redirect('/complete');
+                        return;
+                    }
                 }
                 catch (error) {
                     message = error.message;
