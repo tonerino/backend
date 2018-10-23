@@ -6,6 +6,11 @@ $(function () {
         language: 'ja'
     })
 
+    // 検索条件クリア
+    $(document).on('click', '.reset-condition', function () {
+        $.fn.clearFormValue('form');
+    });
+
     // 共通一覧表示初期セット・ページャセット
     $.CommonMasterList.init('#templateRow', '#searchedCount');
     $.CommonMasterList.pager('#pager', ITEMS_ON_PAGE, function (pageNumber) {
@@ -33,7 +38,7 @@ $(function () {
         }
     });
 
-    $(document).on('click', '[name=cancelButton] a.btn.btn-danger', function() {
+    $(document).on('click', '.cancelButton a.btn.btn-danger', function() {
         var self = this;
         var orderNumber = $(this).closest('tr').find('[name=orderNumber]').val();
         if (!confirm('キャンセル処理を実行してよろしいですか?\n\nオータ番号: ' + orderNumber)) return false;
@@ -115,8 +120,8 @@ $(function () {
     function showCancelButton(rows, orderCancellings) {
         $('#list tbody tr').each(function() {
             var trId = $(this).attr('_id');
-            var cancelBtn = $(this).find('[name=cancelButton] a.btn-cancel');
-            var cancelling = $(this).find('[name=cancelButton] p.btn-disabled');
+            var cancelBtn = $(this).find('.cancelButton a.btn-cancel');
+            var cancelling = $(this).find('.cancelButton p.btn-disabled');
             for (var x in rows) {
                 if (rows[x]._id === trId) {
                     if (rows[x].orderStatus === 'OrderReturned') continue;
