@@ -38,7 +38,7 @@ ordersRouter.get('', (req, res, next) => __awaiter(this, void 0, void 0, functio
 }));
 ordersRouter.get('/cancel', (req, res) => __awaiter(this, void 0, void 0, function* () {
     const options = base_controller_1.getOptions(req, user_1.ApiEndpoint.cinerino);
-    const returnOrderService = new cinerino.service.transaction.ReturnOrder(options);
+    const returnOrderService = new cinerino.service.txn.ReturnOrder(options);
     try {
         const transaction = yield returnOrderService.start({
             // tslint:disable-next-line:no-magic-numbers
@@ -49,9 +49,7 @@ ordersRouter.get('/cancel', (req, res) => __awaiter(this, void 0, void 0, functi
                 }
             }
         });
-        void returnOrderService.confirm({
-            transactionId: transaction.id
-        });
+        void returnOrderService.confirm(transaction);
         res.json({ success: true });
     }
     catch (error) {
@@ -62,7 +60,7 @@ ordersRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, functi
     try {
         const options = base_controller_1.getOptions(req, user_1.ApiEndpoint.cinerino);
         const orderService = new cinerino.service.Order(options);
-        const transactionService = new cinerino.service.transaction.ReturnOrder(options);
+        const transactionService = new cinerino.service.txn.ReturnOrder(options);
         // 購入場所(customerのクライアントID識別子で判断する、どのアプリで注文されたか、ということ)
         const customerIdentifiers = [];
         switch (req.query.placeTicket) {
