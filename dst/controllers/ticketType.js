@@ -49,7 +49,7 @@ function add(req, res) {
             // 検証
             if (validatorResult.isEmpty()) {
                 // availabilityをフォーム値によって作成
-                let availability = chevre.factory.itemAvailability.InStock;
+                let availability = chevre.factory.itemAvailability.OutOfStock;
                 if (req.body.isBoxTicket === '1' && req.body.isOnlineTicket === '1') {
                     availability = chevre.factory.itemAvailability.InStock;
                 }
@@ -62,17 +62,16 @@ function add(req, res) {
                 // 券種DB登録プロセス
                 try {
                     const ticketType = {
+                        typeOf: 'Offer',
                         id: req.body.id,
                         name: req.body.name,
                         description: req.body.description,
                         notes: req.body.notes,
                         price: req.body.price,
+                        priceCurrency: chevre.factory.priceCurrency.JPY,
                         availability: availability,
-                        isBoxTicket: (req.body.isBoxTicket === '1') ? true : false,
-                        isOnlineTicket: (req.body.isOnlineTicket === '1') ? true : false,
                         nameForManagementSite: req.body.nameForManagementSite,
                         nameForPrinting: req.body.nameForPrinting,
-                        seatReservationUnit: req.body.seatReservationUnit,
                         subject: req.body.subject,
                         nonBoxOfficeSubject: req.body.nonBoxOfficeSubject,
                         typeOfNote: req.body.typeOfNote,
@@ -100,7 +99,7 @@ function add(req, res) {
             isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? '' : req.body.isOnlineTicket,
             nameForManagementSite: (_.isEmpty(req.body.nameForManagementSite)) ? '' : req.body.nameForManagementSite,
             nameForPrinting: (_.isEmpty(req.body.nameForPrinting)) ? '' : req.body.nameForPrinting,
-            seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? '' : req.body.seatReservationUnit,
+            seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? 1 : req.body.seatReservationUnit,
             subject: (_.isEmpty(req.body.subject)) ? '' : req.body.subject,
             nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject)) ? '' : req.body.nonBoxOfficeSubject,
             typeOfNote: (_.isEmpty(req.body.typeOfNote)) ? '' : req.body.typeOfNote
@@ -117,7 +116,7 @@ exports.add = add;
 /**
  * 編集
  */
-// tslint:disable-next-line:cyclomatic-complexity
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function update(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const ticketTypeService = new chevre.service.TicketType({
@@ -140,7 +139,7 @@ function update(req, res) {
             // 検証
             if (validatorResult.isEmpty()) {
                 // availabilityをフォーム値によって作成
-                let availability = chevre.factory.itemAvailability.InStock;
+                let availability = chevre.factory.itemAvailability.OutOfStock;
                 if (req.body.isBoxTicket === '1' && req.body.isOnlineTicket === '1') {
                     availability = chevre.factory.itemAvailability.InStock;
                 }
@@ -153,17 +152,21 @@ function update(req, res) {
                 // 券種DB更新プロセス
                 try {
                     ticketType = {
+                        typeOf: 'Offer',
                         id: req.params.id,
                         name: req.body.name,
                         description: req.body.description,
                         notes: req.body.notes,
                         price: req.body.price,
+                        priceCurrency: chevre.factory.priceCurrency.JPY,
                         availability: availability,
-                        isBoxTicket: (req.body.isBoxTicket === '1') ? true : false,
-                        isOnlineTicket: (req.body.isOnlineTicket === '1') ? true : false,
                         nameForManagementSite: req.body.nameForManagementSite,
                         nameForPrinting: req.body.nameForPrinting,
-                        seatReservationUnit: req.body.seatReservationUnit,
+                        eligibleQuantity: {
+                            typeOf: 'QuantitativeValue',
+                            value: Number(req.body.seatReservationUnit),
+                            unitCode: chevre.factory.unitCode.C62
+                        },
                         subject: req.body.subject,
                         nonBoxOfficeSubject: req.body.nonBoxOfficeSubject,
                         typeOfNote: req.body.typeOfNote,
@@ -179,6 +182,25 @@ function update(req, res) {
                 }
             }
         }
+        let isBoxTicket = false;
+        let isOnlineTicket = false;
+        switch (ticketType.availability) {
+            case chevre.factory.itemAvailability.InStock:
+                isBoxTicket = true;
+                isOnlineTicket = true;
+                break;
+            case chevre.factory.itemAvailability.InStoreOnly:
+                isBoxTicket = true;
+                break;
+            case chevre.factory.itemAvailability.OnlineOnly:
+                isOnlineTicket = true;
+                break;
+            default:
+        }
+        let seatReservationUnit = 1;
+        if (ticketType.eligibleQuantity !== undefined) {
+            seatReservationUnit = ticketType.eligibleQuantity.value;
+        }
         const forms = {
             id: (_.isEmpty(req.body.id)) ? ticketType.id : req.body.id,
             name: (_.isEmpty(req.body.name)) ? ticketType.name : req.body.name,
@@ -186,12 +208,12 @@ function update(req, res) {
             description: (_.isEmpty(req.body.description)) ? ticketType.description : req.body.description,
             notes: (_.isEmpty(req.body.notes)) ? ticketType.notes : req.body.notes,
             indicatorColor: (_.isEmpty(req.body.indicatorColor)) ? ticketType.indicatorColor : req.body.indicatorColor,
-            isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? ticketType.isBoxTicket : req.body.isBoxTicket,
-            isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? ticketType.isOnlineTicket : req.body.isOnlineTicket,
+            isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket,
+            isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket,
             nameForManagementSite: (_.isEmpty(req.body.nameForManagementSite)) ?
                 ticketType.nameForManagementSite : req.body.nameForManagementSite,
             nameForPrinting: (_.isEmpty(req.body.nameForPrinting)) ? ticketType.nameForPrinting : req.body.nameForPrinting,
-            seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? ticketType.seatReservationUnit : req.body.seatReservationUnit,
+            seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit,
             subject: (_.isEmpty(req.body.subject)) ? ticketType.subject : req.body.subject,
             nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject)) ? ticketType.nonBoxOfficeSubject : req.body.nonBoxOfficeSubject,
             typeOfNote: (_.isEmpty(req.body.typeOfNote)) ? ticketType.typeOfNote : req.body.typeOfNote
