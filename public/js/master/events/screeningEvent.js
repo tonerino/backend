@@ -384,11 +384,7 @@ function update() {
     // var saleStartDate = modal.find('input[name=saleStartDate]').val();
     var onlineDisplayStartDate = modal.find('input[name=onlineDisplayStartDate]').val();
     var maxSeatNumber = modal.find('input[name=maxSeatNumber]').val();
-    if (modal.find('input[name=preSaleFlg]').is(':checked')) {
-        var preSaleFlg = 1;
-    } else {
-        var preSaleFlg = 0;
-    }
+    var mvtkExcludeFlg = modal.find('input[name=mvtkExcludeFlg]').val();
 
     if (performance === ''
         || screen === ''
@@ -416,7 +412,7 @@ function update() {
             saleStartTime: saleStartTime,
             onlineDisplayStartDate: onlineDisplayStartDate,
             maxSeatNumber: maxSeatNumber,
-            preSaleFlg: preSaleFlg
+            mvtkExcludeFlg: mvtkExcludeFlg
         }
     }).done(function (data) {
         if (!data.error) {
@@ -487,7 +483,7 @@ function search(theater, date, days, screen) {
     }).fail(function (jqxhr, textStatus, error) {
         console.error(jqxhr, textStatus, error);
         alert('エラーが発生しました。');
-    }).always(function() { $('.loading').modal('hide'); });
+    }).always(function () { $('.loading').modal('hide'); });
 }
 
 /**
@@ -576,7 +572,6 @@ function add() {
     // modal.find('input[name=saleStartDate]').val('');
     // modal.find('input[name=onlineDisplayStartDate]').val('');
     // modal.find('input[name=maxSeatNumber]').val('');
-    // modal.find('input[name=preSaleFlg]').val('');
 
     $('#newModal').modal();
 }
@@ -596,6 +591,7 @@ function edit(target) {
     var endTime = target.attr('data-endTime');
     var screen = target.attr('data-screen');
     var film = target.attr('data-film');
+    var mvtkExcludeFlg = target.attr('data-mvtkExcludeFlg');
     var filmName = target.text();
     var ticketTypeGroup = target.attr('data-ticketTypeGroup');
     var saleStartDate = target.attr('data-saleStartDate') ? target.attr('data-saleStartDate') : '';
@@ -603,7 +599,6 @@ function edit(target) {
     // var saleStartDate = target.attr('data-saleStartDate') ? target.attr('data-saleStartDate') : '';
     var onlineDisplayStartDate = target.attr('data-onlineDisplayStartDate') ? target.attr('data-onlineDisplayStartDate') : '';
     var maxSeatNumber = target.attr('data-maxSeatNumber');
-    var preSaleFlg = target.attr('data-preSaleFlg');
     var modal = $('#editModal');
     modal.find('.day span').text(moment(day).format('YYYY年MM月DD日(ddd)'));
     // チェックstartTime削除ボタン表示
@@ -617,6 +612,7 @@ function edit(target) {
     modal.find('input[name=theater]').val(theater);
     modal.find('input[name=day]').val(day);
     modal.find('input[name=screeningEventId]').val(film);
+    modal.find('input[name=mvtkExcludeFlg]').val(mvtkExcludeFlg);
 
     var fix = function (time) { return ('0' + (parseInt(time / 5) * 5)).slice(-2); };
     modal.find('select[name=doorTimeHour]').val(doorTime.slice(0, 2));
@@ -649,11 +645,6 @@ function edit(target) {
         modal.find('input[name=onlineDisplayStartDate]').val('');
     }
     modal.find('input[name=maxSeatNumber]').val(maxSeatNumber);
-    if (preSaleFlg == 1) {
-        modal.find('input[name=preSaleFlg]').prop('checked', true);
-    } else {
-        modal.find('input[name=preSaleFlg]').prop('checked', false);
-    }
 
     modal.find('.film span').text(filmName);
     modal.modal();
@@ -783,25 +774,28 @@ function createScreen(performances, ticketGroups) {
             width: width + '%'
         };
         // 販売開始日
-        if (performance.saleStartDate) {
-            var saleStartDate = moment(performance.saleStartDate).tz('Asia/Tokyo').format('YYYY/MM/DD');
-            var saleStartTime = moment(performance.saleStartDate).tz('Asia/Tokyo').format('HHmm');
+        if (performance.offers) {
+            var saleStartDate = moment(performance.offers.validFrom).tz('Asia/Tokyo').format('YYYY/MM/DD');
+            var saleStartTime = moment(performance.offers.validFrom).tz('Asia/Tokyo').format('HHmm');
         } else {
             var saleStartDate = '';
             var saleStartTime = '';
         }
         var ticketTypeGroupName = '';
-        var boxOfficeTypeId = '';
         for (var j = 0; j < ticketGroups.length; j++) {
             if (ticketGroups[j]['id'] == performance.ticketTypeGroup) {
                 ticketTypeGroupName = ticketGroups[j]['name'].ja;
                 boxOfficeTypeId = ticketGroups[j]['boxOfficeType'];
             }
         }
-        // var saleStartDate = (performance.saleStartDate) ? moment(performance.saleStartDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '';
-        var onlineDisplayStartDate = (performance.onlineDisplayStartDate) ? moment(performance.onlineDisplayStartDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '';
-        var maxSeatNumber = (performance.maxSeatNumber) ? performance.maxSeatNumber : '';
-        var preSaleFlg = (performance.preSaleFlg) ? performance.preSaleFlg : 0;
+        var onlineDisplayStartDate = (performance.offers) ? moment(performance.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY/MM/DD') : '';
+        var maxSeatNumber = (performance.offers) ? performance.offers.eligibleQuantity.maxValue : '';
+        var mvtkExcludeFlg = '0';
+        if (performance.offers !== undefined
+            && Array.isArray(performance.offers.acceptedPaymentMethod)
+            && performance.offers.acceptedPaymentMethod.indexOf('MovieTicket') < 0) {
+            mvtkExcludeFlg = '1';
+        }
         /**
         * 劇場上映作品名
         * 興行区分名
@@ -822,7 +816,7 @@ function createScreen(performances, ticketGroups) {
             'data-saleStartTime="' + saleStartTime + '" ' +
             'data-onlineDisplayStartDate="' + onlineDisplayStartDate + '" ' +
             'data-maxSeatNumber="' + maxSeatNumber + '" ' +
-            'data-preSaleFlg="' + preSaleFlg + '" ' +
+            'data-mvtkExcludeFlg="' + mvtkExcludeFlg + '" ' +
             'role="button" class="inner">' + performance.name.ja + '<br />' +
             performance.location.name.ja + '<br />' + ticketTypeGroupName + '</div>' +
             '</div>');

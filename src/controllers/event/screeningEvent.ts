@@ -11,6 +11,8 @@ import User from '../../user';
 
 const debug = createDebug('chevre-backend:controllers');
 
+const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -30;
+
 export async function index(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
         const ticketTypeService = new chevre.service.TicketType({
@@ -272,10 +274,47 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         throw new Error('上映スクリーン名が見つかりません');
     }
 
+    const offersValidAfterStart = (body.endSaleTimeAfterScreening !== undefined && body.endSaleTimeAfterScreening !== '')
+        ? Number(body.endSaleTimeAfterScreening)
+        : DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES;
+    const startDate = moment(`${body.day}T${body.startTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate();
+    const salesStartDate = moment(`${body.saleStartDate}T${body.saleStartTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate();
+    const salesEndDate = moment(startDate).add(offersValidAfterStart, 'minutes').toDate();
+    const onlineDisplayStartDate = moment(`${body.onlineDisplayStartDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate();
+    let acceptedPaymentMethod: chevre.factory.paymentMethodType[] | undefined;
+    // ムビチケ除外の場合は対応決済方法を追加
+    if (body.mvtkExcludeFlg === '1') {
+        Object.keys(chevre.factory.paymentMethodType).forEach((key) => {
+            if (acceptedPaymentMethod === undefined) {
+                acceptedPaymentMethod = [];
+            }
+            const paymentMethodType = (<any>chevre.factory.paymentMethodType)[key];
+            if (paymentMethodType !== chevre.factory.paymentMethodType.MovieTicket) {
+                acceptedPaymentMethod.push(paymentMethodType);
+            }
+        });
+    }
+
+    const offers: chevre.factory.event.screeningEvent.IOffer = {
+        typeOf: 'Offer',
+        priceCurrency: chevre.factory.priceCurrency.JPY,
+        availabilityEnds: salesEndDate,
+        availabilityStarts: onlineDisplayStartDate,
+        eligibleQuantity: {
+            typeOf: 'QuantitativeValue',
+            unitCode: chevre.factory.unitCode.C62,
+            maxValue: Number(body.maxSeatNumber),
+            value: 1
+        },
+        validFrom: salesStartDate,
+        validThrough: salesEndDate,
+        acceptedPaymentMethod: acceptedPaymentMethod
+    };
+
     return {
         typeOf: chevre.factory.eventType.ScreeningEvent,
         doorTime: moment(`${body.day}T${body.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
-        startDate: moment(`${body.day}T${body.startTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
+        startDate: startDate,
         endDate: moment(`${body.day}T${body.endTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
         ticketTypeGroup: body.ticketTypeGroup,
         workPerformed: screeningEventSeries.workPerformed,
@@ -287,11 +326,9 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         superEvent: screeningEventSeries,
         name: screeningEventSeries.name,
         eventStatus: chevre.factory.eventStatusType.EventScheduled,
-        mvtkExcludeFlg: body.mvtkExcludeFlg,
-        saleStartDate: moment(`${body.saleStartDate}T${body.saleStartTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
-        onlineDisplayStartDate: moment(`${body.onlineDisplayStartDate}+09:00`, 'YYYYMMDD').toDate(),
-        maxSeatNumber: body.maxSeatNumber,
-        preSaleFlg: body.preSaleFlg
+        offers: offers,
+        checkInCount: <any>undefined,
+        attendeeCount: <any>undefined
     };
 }
 /**
@@ -322,7 +359,7 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
     const toDate = moment(`${body.toDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ').tz('Asia/Tokyo');
     const weekDays: string[] = body.weekDayData;
     const ticketTypes: string[] = body.ticketData;
-    const mvtkExcludeFlgs: number[] = body.mvtkExcludeFlgData;
+    const mvtkExcludeFlgs: string[] = body.mvtkExcludeFlgData;
     const timeData: { doorTime: string; startTime: string; endTime: string }[] = body.timeData;
     const attributes: chevre.factory.event.screeningEvent.IAttributes[] = [];
     for (let date = startDate; date <= toDate; date = date.add(1, 'day')) {
@@ -330,10 +367,48 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
         const day = date.get('day').toString();
         if (weekDays.indexOf(day) >= 0) {
             timeData.forEach((data, i) => {
+                const offersValidAfterStart = (body.endSaleTimeAfterScreening !== undefined && body.endSaleTimeAfterScreening !== '')
+                    ? Number(body.endSaleTimeAfterScreening)
+                    : DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES;
+                const eventStartDate = moment(`${formattedDate}T${data.startTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate();
+                const salesStartDate = moment(`${formattedDate}T0000+09:00`, 'YYYYMMDDTHHmmZ')
+                    .add(parseInt(body.saleStartDays, 10) * -1, 'day').toDate();
+                const salesEndDate = moment(eventStartDate).add(offersValidAfterStart, 'minutes').toDate();
+                const onlineDisplayStartDate = moment(`${body.onlineDisplayStartDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate();
+                let acceptedPaymentMethod: chevre.factory.paymentMethodType[] | undefined;
+                // ムビチケ除外の場合は対応決済方法を追加
+                if (mvtkExcludeFlgs[i] === '1') {
+                    Object.keys(chevre.factory.paymentMethodType).forEach((key) => {
+                        if (acceptedPaymentMethod === undefined) {
+                            acceptedPaymentMethod = [];
+                        }
+                        const paymentMethodType = (<any>chevre.factory.paymentMethodType)[key];
+                        if (paymentMethodType !== chevre.factory.paymentMethodType.MovieTicket) {
+                            acceptedPaymentMethod.push(paymentMethodType);
+                        }
+                    });
+                }
+
+                const offers: chevre.factory.event.screeningEvent.IOffer = {
+                    typeOf: 'Offer',
+                    priceCurrency: chevre.factory.priceCurrency.JPY,
+                    availabilityEnds: salesEndDate,
+                    availabilityStarts: onlineDisplayStartDate,
+                    eligibleQuantity: {
+                        typeOf: 'QuantitativeValue',
+                        unitCode: chevre.factory.unitCode.C62,
+                        maxValue: Number(body.maxSeatNumber),
+                        value: 1
+                    },
+                    validFrom: salesStartDate,
+                    validThrough: salesEndDate,
+                    acceptedPaymentMethod: acceptedPaymentMethod
+                };
+
                 attributes.push({
                     typeOf: chevre.factory.eventType.ScreeningEvent,
                     doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
-                    startDate: moment(`${formattedDate}T${data.startTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
+                    startDate: eventStartDate,
                     endDate: moment(`${formattedDate}T${data.endTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
                     ticketTypeGroup: ticketTypes[i],
                     workPerformed: screeningEventSeries.workPerformed,
@@ -345,13 +420,9 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                     superEvent: screeningEventSeries,
                     name: screeningEventSeries.name,
                     eventStatus: chevre.factory.eventStatusType.EventScheduled,
-                    maxSeatNumber: body.maxSeatNumber,
-                    preSaleFlg: 0,
-                    saleStartDate: moment(`${formattedDate}T0000+09:00`, 'YYYYMMDDTHHmmZ')
-                        .add(parseInt(body.saleStartDays, 10) * -1, 'day').toDate(),
-                    onlineDisplayStartDate: moment(`${body.onlineDisplayStartDate}T0000+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
-                    mvtkExcludeFlg: mvtkExcludeFlgs[i],
-                    endSaleTimeAfterScreening: body.endSaleTimeAfterScreening
+                    offers: offers,
+                    checkInCount: <any>undefined,
+                    attendeeCount: <any>undefined
                 });
             });
         }

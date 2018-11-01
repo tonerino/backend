@@ -20,6 +20,7 @@ const CHAGE_MAX_LENGTH = 10;
 /**
  * 新規登録
  */
+// tslint:disable-next-line:cyclomatic-complexity
 export async function add(req: Request, res: Response): Promise<void> {
     const ticketTypeService = new chevre.service.TicketType({
         endpoint: <string>process.env.API_ENDPOINT,
@@ -39,6 +40,16 @@ export async function add(req: Request, res: Response): Promise<void> {
         errors = req.validationErrors(true);
         // 検証
         if (validatorResult.isEmpty()) {
+            // availabilityをフォーム値によって作成
+            let availability: chevre.factory.itemAvailability = chevre.factory.itemAvailability.InStock;
+            if (req.body.isBoxTicket === '1' && req.body.isOnlineTicket === '1') {
+                availability = chevre.factory.itemAvailability.InStock;
+            } else if (req.body.isBoxTicket === '1') {
+                availability = chevre.factory.itemAvailability.InStoreOnly;
+            } else if (req.body.isOnlineTicket === '1') {
+                availability = chevre.factory.itemAvailability.OnlineOnly;
+            }
+
             // 券種DB登録プロセス
             try {
                 const ticketType = {
@@ -47,6 +58,7 @@ export async function add(req: Request, res: Response): Promise<void> {
                     description: req.body.description,
                     notes: req.body.notes,
                     price: req.body.price,
+                    availability: availability,
                     isBoxTicket: (req.body.isBoxTicket === '1') ? true : false,
                     isOnlineTicket: (req.body.isOnlineTicket === '1') ? true : false,
                     nameForManagementSite: req.body.nameForManagementSite,
@@ -95,6 +107,7 @@ export async function add(req: Request, res: Response): Promise<void> {
 /**
  * 編集
  */
+// tslint:disable-next-line:cyclomatic-complexity
 export async function update(req: Request, res: Response): Promise<void> {
     const ticketTypeService = new chevre.service.TicketType({
         endpoint: <string>process.env.API_ENDPOINT,
@@ -115,6 +128,16 @@ export async function update(req: Request, res: Response): Promise<void> {
         errors = req.validationErrors(true);
         // 検証
         if (validatorResult.isEmpty()) {
+            // availabilityをフォーム値によって作成
+            let availability: chevre.factory.itemAvailability = chevre.factory.itemAvailability.InStock;
+            if (req.body.isBoxTicket === '1' && req.body.isOnlineTicket === '1') {
+                availability = chevre.factory.itemAvailability.InStock;
+            } else if (req.body.isBoxTicket === '1') {
+                availability = chevre.factory.itemAvailability.InStoreOnly;
+            } else if (req.body.isOnlineTicket === '1') {
+                availability = chevre.factory.itemAvailability.OnlineOnly;
+            }
+
             // 券種DB更新プロセス
             try {
                 ticketType = {
@@ -123,6 +146,7 @@ export async function update(req: Request, res: Response): Promise<void> {
                     description: req.body.description,
                     notes: req.body.notes,
                     price: req.body.price,
+                    availability: availability,
                     isBoxTicket: (req.body.isBoxTicket === '1') ? true : false,
                     isOnlineTicket: (req.body.isOnlineTicket === '1') ? true : false,
                     nameForManagementSite: req.body.nameForManagementSite,

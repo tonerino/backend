@@ -16,6 +16,7 @@ const createDebug = require("debug");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const debug = createDebug('chevre-backend:controllers');
+const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -30;
 function index(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -296,10 +297,45 @@ function createEventFromBody(body, user) {
         if (screeningRoom.name === undefined) {
             throw new Error('上映スクリーン名が見つかりません');
         }
+        const offersValidAfterStart = (body.endSaleTimeAfterScreening !== undefined && body.endSaleTimeAfterScreening !== '')
+            ? Number(body.endSaleTimeAfterScreening)
+            : DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES;
+        const startDate = moment(`${body.day}T${body.startTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate();
+        const salesStartDate = moment(`${body.saleStartDate}T${body.saleStartTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate();
+        const salesEndDate = moment(startDate).add(offersValidAfterStart, 'minutes').toDate();
+        const onlineDisplayStartDate = moment(`${body.onlineDisplayStartDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate();
+        let acceptedPaymentMethod;
+        // ムビチケ除外の場合は対応決済方法を追加
+        if (body.mvtkExcludeFlg === '1') {
+            Object.keys(chevre.factory.paymentMethodType).forEach((key) => {
+                if (acceptedPaymentMethod === undefined) {
+                    acceptedPaymentMethod = [];
+                }
+                const paymentMethodType = chevre.factory.paymentMethodType[key];
+                if (paymentMethodType !== chevre.factory.paymentMethodType.MovieTicket) {
+                    acceptedPaymentMethod.push(paymentMethodType);
+                }
+            });
+        }
+        const offers = {
+            typeOf: 'Offer',
+            priceCurrency: chevre.factory.priceCurrency.JPY,
+            availabilityEnds: salesEndDate,
+            availabilityStarts: onlineDisplayStartDate,
+            eligibleQuantity: {
+                typeOf: 'QuantitativeValue',
+                unitCode: chevre.factory.unitCode.C62,
+                maxValue: Number(body.maxSeatNumber),
+                value: 1
+            },
+            validFrom: salesStartDate,
+            validThrough: salesEndDate,
+            acceptedPaymentMethod: acceptedPaymentMethod
+        };
         return {
             typeOf: chevre.factory.eventType.ScreeningEvent,
             doorTime: moment(`${body.day}T${body.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
-            startDate: moment(`${body.day}T${body.startTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
+            startDate: startDate,
             endDate: moment(`${body.day}T${body.endTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
             ticketTypeGroup: body.ticketTypeGroup,
             workPerformed: screeningEventSeries.workPerformed,
@@ -311,11 +347,9 @@ function createEventFromBody(body, user) {
             superEvent: screeningEventSeries,
             name: screeningEventSeries.name,
             eventStatus: chevre.factory.eventStatusType.EventScheduled,
-            mvtkExcludeFlg: body.mvtkExcludeFlg,
-            saleStartDate: moment(`${body.saleStartDate}T${body.saleStartTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
-            onlineDisplayStartDate: moment(`${body.onlineDisplayStartDate}+09:00`, 'YYYYMMDD').toDate(),
-            maxSeatNumber: body.maxSeatNumber,
-            preSaleFlg: body.preSaleFlg
+            offers: offers,
+            checkInCount: undefined,
+            attendeeCount: undefined
         };
     });
 }
@@ -355,10 +389,46 @@ function createMultipleEventFromBody(body, user) {
             const day = date.get('day').toString();
             if (weekDays.indexOf(day) >= 0) {
                 timeData.forEach((data, i) => {
+                    const offersValidAfterStart = (body.endSaleTimeAfterScreening !== undefined && body.endSaleTimeAfterScreening !== '')
+                        ? Number(body.endSaleTimeAfterScreening)
+                        : DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES;
+                    const eventStartDate = moment(`${formattedDate}T${data.startTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate();
+                    const salesStartDate = moment(`${formattedDate}T0000+09:00`, 'YYYYMMDDTHHmmZ')
+                        .add(parseInt(body.saleStartDays, 10) * -1, 'day').toDate();
+                    const salesEndDate = moment(eventStartDate).add(offersValidAfterStart, 'minutes').toDate();
+                    const onlineDisplayStartDate = moment(`${body.onlineDisplayStartDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate();
+                    let acceptedPaymentMethod;
+                    // ムビチケ除外の場合は対応決済方法を追加
+                    if (mvtkExcludeFlgs[i] === '1') {
+                        Object.keys(chevre.factory.paymentMethodType).forEach((key) => {
+                            if (acceptedPaymentMethod === undefined) {
+                                acceptedPaymentMethod = [];
+                            }
+                            const paymentMethodType = chevre.factory.paymentMethodType[key];
+                            if (paymentMethodType !== chevre.factory.paymentMethodType.MovieTicket) {
+                                acceptedPaymentMethod.push(paymentMethodType);
+                            }
+                        });
+                    }
+                    const offers = {
+                        typeOf: 'Offer',
+                        priceCurrency: chevre.factory.priceCurrency.JPY,
+                        availabilityEnds: salesEndDate,
+                        availabilityStarts: onlineDisplayStartDate,
+                        eligibleQuantity: {
+                            typeOf: 'QuantitativeValue',
+                            unitCode: chevre.factory.unitCode.C62,
+                            maxValue: Number(body.maxSeatNumber),
+                            value: 1
+                        },
+                        validFrom: salesStartDate,
+                        validThrough: salesEndDate,
+                        acceptedPaymentMethod: acceptedPaymentMethod
+                    };
                     attributes.push({
                         typeOf: chevre.factory.eventType.ScreeningEvent,
                         doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
-                        startDate: moment(`${formattedDate}T${data.startTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
+                        startDate: eventStartDate,
                         endDate: moment(`${formattedDate}T${data.endTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
                         ticketTypeGroup: ticketTypes[i],
                         workPerformed: screeningEventSeries.workPerformed,
@@ -370,13 +440,9 @@ function createMultipleEventFromBody(body, user) {
                         superEvent: screeningEventSeries,
                         name: screeningEventSeries.name,
                         eventStatus: chevre.factory.eventStatusType.EventScheduled,
-                        maxSeatNumber: body.maxSeatNumber,
-                        preSaleFlg: 0,
-                        saleStartDate: moment(`${formattedDate}T0000+09:00`, 'YYYYMMDDTHHmmZ')
-                            .add(parseInt(body.saleStartDays, 10) * -1, 'day').toDate(),
-                        onlineDisplayStartDate: moment(`${body.onlineDisplayStartDate}T0000+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
-                        mvtkExcludeFlg: mvtkExcludeFlgs[i],
-                        endSaleTimeAfterScreening: body.endSaleTimeAfterScreening
+                        offers: offers,
+                        checkInCount: undefined,
+                        attendeeCount: undefined
                     });
                 });
             }

@@ -27,6 +27,7 @@ const CHAGE_MAX_LENGTH = 10;
 /**
  * 新規登録
  */
+// tslint:disable-next-line:cyclomatic-complexity
 function add(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const ticketTypeService = new chevre.service.TicketType({
@@ -47,6 +48,17 @@ function add(req, res) {
             errors = req.validationErrors(true);
             // 検証
             if (validatorResult.isEmpty()) {
+                // availabilityをフォーム値によって作成
+                let availability = chevre.factory.itemAvailability.InStock;
+                if (req.body.isBoxTicket === '1' && req.body.isOnlineTicket === '1') {
+                    availability = chevre.factory.itemAvailability.InStock;
+                }
+                else if (req.body.isBoxTicket === '1') {
+                    availability = chevre.factory.itemAvailability.InStoreOnly;
+                }
+                else if (req.body.isOnlineTicket === '1') {
+                    availability = chevre.factory.itemAvailability.OnlineOnly;
+                }
                 // 券種DB登録プロセス
                 try {
                     const ticketType = {
@@ -55,6 +67,7 @@ function add(req, res) {
                         description: req.body.description,
                         notes: req.body.notes,
                         price: req.body.price,
+                        availability: availability,
                         isBoxTicket: (req.body.isBoxTicket === '1') ? true : false,
                         isOnlineTicket: (req.body.isOnlineTicket === '1') ? true : false,
                         nameForManagementSite: req.body.nameForManagementSite,
@@ -104,6 +117,7 @@ exports.add = add;
 /**
  * 編集
  */
+// tslint:disable-next-line:cyclomatic-complexity
 function update(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const ticketTypeService = new chevre.service.TicketType({
@@ -125,6 +139,17 @@ function update(req, res) {
             errors = req.validationErrors(true);
             // 検証
             if (validatorResult.isEmpty()) {
+                // availabilityをフォーム値によって作成
+                let availability = chevre.factory.itemAvailability.InStock;
+                if (req.body.isBoxTicket === '1' && req.body.isOnlineTicket === '1') {
+                    availability = chevre.factory.itemAvailability.InStock;
+                }
+                else if (req.body.isBoxTicket === '1') {
+                    availability = chevre.factory.itemAvailability.InStoreOnly;
+                }
+                else if (req.body.isOnlineTicket === '1') {
+                    availability = chevre.factory.itemAvailability.OnlineOnly;
+                }
                 // 券種DB更新プロセス
                 try {
                     ticketType = {
@@ -133,6 +158,7 @@ function update(req, res) {
                         description: req.body.description,
                         notes: req.body.notes,
                         price: req.body.price,
+                        availability: availability,
                         isBoxTicket: (req.body.isBoxTicket === '1') ? true : false,
                         isOnlineTicket: (req.body.isOnlineTicket === '1') ? true : false,
                         nameForManagementSite: req.body.nameForManagementSite,

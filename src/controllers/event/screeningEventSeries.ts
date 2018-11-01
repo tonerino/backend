@@ -86,6 +86,7 @@ export async function add(req: Request, res: Response): Promise<void> {
 /**
  * 編集
  */
+// tslint:disable-next-line:cyclomatic-complexity
 export async function update(req: Request, res: Response): Promise<void> {
     const creativeWorkService = new chevre.service.CreativeWork({
         endpoint: <string>process.env.API_ENDPOINT,
@@ -135,6 +136,14 @@ export async function update(req: Request, res: Response): Promise<void> {
             }
         }
     }
+
+    let mvtkFlg = 1;
+    if (event.offers !== undefined
+        && Array.isArray(event.offers.acceptedPaymentMethod)
+        && event.offers.acceptedPaymentMethod.indexOf(chevre.factory.paymentMethodType.MovieTicket) < 0) {
+        mvtkFlg = 0;
+    }
+
     const forms = {
         movieIdentifier: (_.isEmpty(req.body.movieIdentifier)) ? event.workPerformed.identifier : req.body.movieIdentifier,
         nameJa: (_.isEmpty(req.body.nameJa)) ? event.name.ja : req.body.nameJa,
@@ -156,7 +165,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         signageDislaySubtitleName: (_.isEmpty(req.body.signageDislaySubtitleName)) ?
             event.signageDislaySubtitleName : req.body.signageDislaySubtitleName,
         summaryStartDay: (_.isEmpty(req.body.summaryStartDay)) ? event.summaryStartDay : req.body.summaryStartDay,
-        mvtkFlg: (_.isEmpty(req.body.mvtkFlg)) ? event.mvtkFlg : req.body.mvtkFlg,
+        mvtkFlg: (_.isEmpty(req.body.mvtkFlg)) ? mvtkFlg : req.body.mvtkFlg,
         description: (_.isEmpty(req.body.description)) ? event.description : req.body.description
     };
     // 作品マスタ画面遷移
@@ -210,6 +219,27 @@ function createEventFromBody(
         return { typeOf: f, name: f };
     }) : [];
 
+    let acceptedPaymentMethod: chevre.factory.paymentMethodType[] | undefined;
+    // ムビチケ除外の場合は対応決済方法を追加
+    Object.keys(chevre.factory.paymentMethodType).forEach((key) => {
+        if (acceptedPaymentMethod === undefined) {
+            acceptedPaymentMethod = [];
+        }
+
+        const paymentMethodType = (<any>chevre.factory.paymentMethodType)[key];
+        if (body.mvtkFlg !== '1' && paymentMethodType === chevre.factory.paymentMethodType.MovieTicket) {
+            return;
+        }
+
+        acceptedPaymentMethod.push(paymentMethodType);
+    });
+
+    const offers: chevre.factory.event.screeningEventSeries.IOffer = {
+        typeOf: 'Offer',
+        priceCurrency: chevre.factory.priceCurrency.JPY,
+        acceptedPaymentMethod: acceptedPaymentMethod
+    };
+
     return {
         typeOf: chevre.factory.eventType.ScreeningEventSeries,
         name: {
@@ -243,7 +273,7 @@ function createEventFromBody(
         signageDisplayName: body.signageDisplayName,
         signageDislaySubtitleName: body.signageDislaySubtitleName,
         summaryStartDay: body.summaryStartDay,
-        mvtkFlg: body.mvtkFlg,
+        offers: offers,
         description: {
             ja: body.description,
             en: '',
@@ -274,6 +304,12 @@ export async function search(req: Request, res: Response): Promise<void> {
             }
         });
         const results = data.map((event) => {
+            let mvtkFlg = 1;
+            if (event.offers !== undefined && Array.isArray(event.offers.acceptedPaymentMethod)
+                && event.offers.acceptedPaymentMethod.indexOf(chevre.factory.paymentMethodType.MovieTicket) < 0) {
+                mvtkFlg = 0;
+            }
+
             return {
                 id: event.id,
                 movieIdentifier: event.workPerformed.identifier,
@@ -284,7 +320,7 @@ export async function search(req: Request, res: Response): Promise<void> {
                 contentRating: event.workPerformed.contentRating,
                 subtitleLanguage: event.subtitleLanguage,
                 videoFormat: event.videoFormat,
-                mvtkFlg: event.mvtkFlg
+                mvtkFlg: mvtkFlg
             };
         });
         results.sort((event1, event2) => {

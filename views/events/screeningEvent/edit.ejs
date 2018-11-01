@@ -1,11 +1,11 @@
 <div class="modal fade" id="editModal" tabindex="-1">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal"><span>×</span></button>
-				<h4 class="modal-title">スケジュール編集</h4>
-			</div>
-			<div class="modal-body">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span>×</span></button>
+                <h4 class="modal-title">スケジュール編集</h4>
+            </div>
+            <div class="modal-body">
                 <div class="panel-body">
                     <form class="form-horizontal">
                         <ul class="list-group">
@@ -51,17 +51,20 @@
                             <div class="col-sm-12">
                                 <select class="form-control" name="ticketTypeGroup">
                                     <option value="">選択してください</option>
-                                <% for (ticketType of ticketGroups) { %>
-                                    <option value="<%= ticketType.id %>"><%= ticketType.name.ja %></option>
-                                <% } %>
+                                    <% for (ticketType of ticketGroups) { %>
+                                    <option value="<%= ticketType.id %>">
+                                        <%= ticketType.name.ja %>
+                                    </option>
+                                    <% } %>
                                 </select>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-sm-3 control-label" for="saleStartDate">販売開始日</label>
                             <div class="col-sm-9 form-inline">
-                                <input class="form-control datepicker" name="saleStartDate" placeholder="YYYY/MM/DD" maxlength=10>
-                                日 
+                                <input class="form-control datepicker" name="saleStartDate" placeholder="YYYY/MM/DD"
+                                    maxlength=10>
+                                日
                                 <%- include('../../common/part/_timeSelector', {
                                     hourName: 'saleStartDateHour',
                                     minuteName: 'saleStartDateMinutes'
@@ -71,7 +74,8 @@
                         <div class="form-group">
                             <label class="col-sm-3 control-label" for="onlineDisplayStartDate">オンライン表示開始日</label>
                             <div class="col-sm-9 form-inline">
-                                <input class="form-control datepicker" name="onlineDisplayStartDate" placeholder="YYYY/MM/DD" maxlength=10>
+                                <input class="form-control datepicker" name="onlineDisplayStartDate" placeholder="YYYY/MM/DD"
+                                    maxlength=10>
                             </div>
                         </div>
                         <div class="form-group">
@@ -80,27 +84,22 @@
                                 <input class="form-control" type="number" name="maxSeatNumber" maxlength=10>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label" for="preSaleFlg">先行販売フラグ</label>
-                            <div class="col-sm-9 form-inline">
-                                <input type="checkbox" value="1" name="preSaleFlg">
-                            </div>
-                        </div>
                     </form>
                 </div>
-			</div>
+            </div>
             <input type="hidden" name="screeningEventId" value="">
             <input type="hidden" name="performance" value="">
             <input type="hidden" name="film" value="">
             <input type="hidden" name="theater" value="">
             <input type="hidden" name="day" value="">
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+            <input type="hidden" name="mvtkExcludeFlg" value="">
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
                 <button type="button" class="btn btn-primary update-button">パフォーマンスを更新</button>
-                
+
                 <button type="button" class="btn btn-danger delete-button">削除</button>
-                
-			</div>
-		</div>
-	</div>
+
+            </div>
+        </div>
+    </div>
 </div>
