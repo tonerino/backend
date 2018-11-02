@@ -130,7 +130,11 @@ function getEventSeries(theater, fromDate, toDate) {
             // console.log(data);
             var screeningEventSeries = data.results;
             var options = screeningEventSeries.map(function (e) {
-                return '<option value="' + e.id + '" data-mvtk-flag="' + e.mvtkFlg + '">' + e.filmNameJa + '</option>';
+                return '<option value="' + e.id + '"'
+                    + ' data-mvtk-flag="' + e.mvtkFlg + '"'
+                    + ' data-startDate="' + e.startDate + '"'
+                    + ' data-endDate="' + e.endDate + '"'
+                    + '>' + e.filmNameJa + '</option>';
             });
             options.unshift('<option value="" disabled selected>選択してください</option>')
             screeningEventSeriesSelect.html(options);
@@ -291,6 +295,7 @@ function regist() {
     var onlineDisplayStartDate = modal.find('input[name=onlineDisplayStartDate]').val();
     var tableData = getTableData();
     var weekDayData = getWeekDayData();
+
     if (theater === ''
         || screen === null
         || startDate === ''
@@ -309,6 +314,20 @@ function regist() {
     var maxSeatNumber = selectedTheater.attr('data-max-seat-number');
     var saleStartDays = selectedTheater.attr('data-sale-start-days');
     var endSaleTimeAfterScreening = selectedTheater.attr('data-end-sale-time');
+
+    if (moment(startDate + 'T00:00:00+09:00', 'YYYY/MM/DDTHH:mm:ssZ') >= moment(toDate + 'T00:00:00+09:00', 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day')) {
+        alert('登録期間を正しく設定してください');
+        return;
+    }
+
+    // 登録期間が興行期間に含まれているかどうか確認
+    var eventSeriesStartDate = modal.find('select[name=screeningEventSeriesId]').find('option:selected').attr('data-startDate');
+    var eventSeriesEndDate = modal.find('select[name=screeningEventSeriesId]').find('option:selected').attr('data-endDate');
+    if (moment(startDate + 'T00:00:00+09:00', 'YYYY/MM/DDTHH:mm:ssZ') < moment(eventSeriesStartDate)
+        || moment(toDate + 'T00:00:00+09:00', 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day') > moment(eventSeriesEndDate)) {
+        alert('登録期間を興行期間内に設定してください');
+        return;
+    }
 
     if (
         maxSeatNumber === undefined
@@ -384,7 +403,7 @@ function update() {
     // var saleStartDate = modal.find('input[name=saleStartDate]').val();
     var onlineDisplayStartDate = modal.find('input[name=onlineDisplayStartDate]').val();
     var maxSeatNumber = modal.find('input[name=maxSeatNumber]').val();
-    var mvtkExcludeFlg = modal.find('input[name=mvtkExcludeFlg]').val();
+    var mvtkExcludeFlg = modal.find('input[name=mvtkExcludeFlg]:checked').val();
 
     if (performance === ''
         || screen === ''
@@ -395,40 +414,57 @@ function update() {
         alert('情報が足りません');
         return;
     }
-    $.ajax({
-        dataType: 'json',
-        url: '/events/screeningEvent/' + performance + '/update',
-        type: 'POST',
-        data: {
-            theater: theater,
-            screen: screen,
-            day: day,
-            screeningEventId: screeningEventId,
-            doorTime: doorTime,
-            startTime: startTime,
-            endTime: endTime,
-            ticketTypeGroup: ticketTypeGroup,
-            saleStartDate: saleStartDate,
-            saleStartTime: saleStartTime,
-            onlineDisplayStartDate: onlineDisplayStartDate,
-            maxSeatNumber: maxSeatNumber,
-            mvtkExcludeFlg: mvtkExcludeFlg
+
+    // オンライン表示開始日 ≦ 当日を確認
+    var performanceBefore = $('div[data-performance="' + performance + '"]');
+    var onlineDisplayStartDateBefore = performanceBefore.attr('data-onlineDisplayStartDate');
+    var now = moment();
+    var confirmed = false;
+    if (moment(onlineDisplayStartDateBefore + 'T00:00:00T09:00', 'YYYY/MM/DDTHH:mm:ssZ') <= now
+        && moment(onlineDisplayStartDate + 'T00:00:00T09:00', 'YYYY/MM/DDTHH:mm:ssZ') > now) {
+        if (window.confirm('オンライン表示中のスケジュールが非表示になります。本当に変更しますか？')) {
+            confirmed = true;
         }
-    }).done(function (data) {
-        if (!data.error) {
-            modal.modal('hide');
-            search(
-                theater,
-                $('.search input[name=date]').val(),
-                $('.search input[name=days]').val()
-            );
-            return;
-        }
-        alert('更新に失敗しました');
-    }).fail(function (jqxhr, textStatus, error) {
-        console.error(jqxhr, textStatus, error);
-        alert('更新に失敗しました');
-    });
+    } else {
+        confirmed = true;
+    }
+
+    if (confirmed) {
+        $.ajax({
+            dataType: 'json',
+            url: '/events/screeningEvent/' + performance + '/update',
+            type: 'POST',
+            data: {
+                theater: theater,
+                screen: screen,
+                day: day,
+                screeningEventId: screeningEventId,
+                doorTime: doorTime,
+                startTime: startTime,
+                endTime: endTime,
+                ticketTypeGroup: ticketTypeGroup,
+                saleStartDate: saleStartDate,
+                saleStartTime: saleStartTime,
+                onlineDisplayStartDate: onlineDisplayStartDate,
+                maxSeatNumber: maxSeatNumber,
+                mvtkExcludeFlg: mvtkExcludeFlg
+            }
+        }).done(function (data) {
+            if (!data.error) {
+                modal.modal('hide');
+                search(
+                    theater,
+                    $('.search input[name=date]').val(),
+                    $('.search input[name=days]').val()
+                );
+                return;
+            }
+            alert('更新に失敗しました');
+        }).fail(function (jqxhr, textStatus, error) {
+            console.error(jqxhr, textStatus, error);
+            alert('更新に失敗しました');
+        });
+    }
 }
 
 /**
@@ -612,7 +648,7 @@ function edit(target) {
     modal.find('input[name=theater]').val(theater);
     modal.find('input[name=day]').val(day);
     modal.find('input[name=screeningEventId]').val(film);
-    modal.find('input[name=mvtkExcludeFlg]').val(mvtkExcludeFlg);
+    modal.find('input[name=mvtkExcludeFlg]').prop('checked', (mvtkExcludeFlg === '1'));
 
     var fix = function (time) { return ('0' + (parseInt(time / 5) * 5)).slice(-2); };
     modal.find('select[name=doorTimeHour]').val(doorTime.slice(0, 2));

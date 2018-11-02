@@ -313,6 +313,7 @@ export async function search(req: Request, res: Response): Promise<void> {
             }
 
             return {
+                ...event,
                 id: event.id,
                 movieIdentifier: event.workPerformed.identifier,
                 filmNameJa: event.name.ja,

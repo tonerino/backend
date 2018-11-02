@@ -84,6 +84,18 @@
                                 <input class="form-control" type="number" name="maxSeatNumber" maxlength=10>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label for="name" class="col-sm-3 control-label label-title">
+                            </label>
+                            <div class="col-sm-9">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="mvtkExcludeFlg" value="1" id="mvtkExcludeFlg">
+                                    <label class="form-check-label" for="mvtkExcludeFlg">
+                                        ムビチケ対象外
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -92,7 +104,6 @@
             <input type="hidden" name="film" value="">
             <input type="hidden" name="theater" value="">
             <input type="hidden" name="day" value="">
-            <input type="hidden" name="mvtkExcludeFlg" value="">
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
                 <button type="button" class="btn btn-primary update-button">パフォーマンスを更新</button>

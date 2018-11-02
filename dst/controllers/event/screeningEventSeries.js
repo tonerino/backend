@@ -309,18 +309,7 @@ function search(req, res) {
                     && event.offers.acceptedPaymentMethod.indexOf(chevre.factory.paymentMethodType.MovieTicket) < 0) {
                     mvtkFlg = 0;
                 }
-                return {
-                    id: event.id,
-                    movieIdentifier: event.workPerformed.identifier,
-                    filmNameJa: event.name.ja,
-                    filmNameEn: event.name.en,
-                    kanaName: event.kanaName,
-                    duration: moment.duration(event.duration).humanize(),
-                    contentRating: event.workPerformed.contentRating,
-                    subtitleLanguage: event.subtitleLanguage,
-                    videoFormat: event.videoFormat,
-                    mvtkFlg: mvtkFlg
-                };
+                return Object.assign({}, event, { id: event.id, movieIdentifier: event.workPerformed.identifier, filmNameJa: event.name.ja, filmNameEn: event.name.en, kanaName: event.kanaName, duration: moment.duration(event.duration).humanize(), contentRating: event.workPerformed.contentRating, subtitleLanguage: event.subtitleLanguage, videoFormat: event.videoFormat, mvtkFlg: mvtkFlg });
             });
             results.sort((event1, event2) => {
                 if (event1.filmNameJa > event2.filmNameJa) {
