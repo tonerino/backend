@@ -11,10 +11,13 @@ Aa-2
 <div class="col-sm-12 form-container">
     <% /* フォーム */ %>
     <form method="post" class="form-horizontal" id="movie_product">
+        <input type="hidden" name="id" value="<%= forms.id %>">
         <div class="menu-group">
             <% /* メッセージ */ %>
             <% if (message !== '') { %>
-            <p class="error message text-danger panel-body bg-danger"><%= message %></p>
+            <p class="error message text-danger panel-body bg-danger">
+                <%= message %>
+            </p>
             <% } %>
         </div>
         <% /* 登録・更新共通部 */ %>

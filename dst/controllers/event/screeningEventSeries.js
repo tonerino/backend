@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const chevre = require("@toei-jp/chevre-api-nodejs-client");
 const createDebug = require("debug");
+const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const _ = require("underscore");
 const Message = require("../../common/Const/Message");
@@ -146,6 +147,7 @@ function update(req, res) {
             mvtkFlg = 0;
         }
         const forms = {
+            id: req.params.eventId,
             movieIdentifier: (_.isEmpty(req.body.movieIdentifier)) ? event.workPerformed.identifier : req.body.movieIdentifier,
             nameJa: (_.isEmpty(req.body.nameJa)) ? event.name.ja : req.body.nameJa,
             nameEn: (_.isEmpty(req.body.nameEn)) ? event.name.en : req.body.nameEn,
@@ -346,6 +348,25 @@ function search(req, res) {
 }
 exports.search = search;
 /**
+ * 劇場作品のスケジュール検索
+ */
+function searchScreeningEvents(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const eventService = new chevre.service.Event({
+                endpoint: process.env.API_ENDPOINT,
+                auth: req.user.authClient
+            });
+            const searchScreeningEventsResult = yield eventService.searchScreeningEvents(Object.assign({}, req.query, { superEvent: { ids: [req.params.id] } }));
+            res.json(searchScreeningEventsResult);
+        }
+        catch (error) {
+            res.status(http_status_1.INTERNAL_SERVER_ERROR).json({ error: { message: error.message } });
+        }
+    });
+}
+exports.searchScreeningEvents = searchScreeningEvents;
+/**
  * 一覧データ取得API
  */
 function getList(req, res) {
@@ -359,7 +380,7 @@ function getList(req, res) {
                 limit: req.query.limit,
                 page: req.query.page,
                 name: req.query.name,
-                endFrom: moment(new Date()).toDate(),
+                endFrom: (req.query.containsEnded === '1') ? undefined : new Date(),
                 location: {
                     branchCodes: (req.query.locationBranchCode !== '') ? [req.query.locationBranchCode] : undefined
                 },

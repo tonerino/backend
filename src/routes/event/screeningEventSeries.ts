@@ -13,5 +13,6 @@ screeningEventSeriesRouter.all('/getlist', ScreeningEventSeriesController.getLis
 screeningEventSeriesRouter.all('/getrating', ScreeningEventSeriesController.getRating);
 screeningEventSeriesRouter.get('/search', ScreeningEventSeriesController.search);
 screeningEventSeriesRouter.all('/:eventId/update', ScreeningEventSeriesController.update);
+screeningEventSeriesRouter.get('/:eventId/screeningEvents', ScreeningEventSeriesController.searchScreeningEvents);
 
 export default screeningEventSeriesRouter;

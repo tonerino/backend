@@ -34,11 +34,17 @@ export async function add(req: Request, res: Response): Promise<void> {
         if (validatorResult.isEmpty()) {
             try {
                 const movie = createMovieFromBody(req.body);
-                debug('saving an movie...', movie);
+
                 const creativeWorkService = new chevre.service.CreativeWork({
                     endpoint: <string>process.env.API_ENDPOINT,
                     auth: req.user.authClient
                 });
+                const { totalCount } = await creativeWorkService.searchMovies({ identifier: movie.identifier });
+                if (totalCount > 0) {
+                    throw new Error('既に存在する作品コードです');
+                }
+
+                debug('saving an movie...', movie);
                 await creativeWorkService.createMovie(movie);
                 res.redirect('/complete');
                 // res.redirect(`/creativeWorks/movie/${movie.identifier}/update`);
@@ -126,7 +132,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     });
 }
 function createMovieFromBody(body: any): chevre.factory.creativeWork.movie.ICreativeWork {
-    return {
+    const movie = {
         typeOf: chevre.factory.creativeWorkType.Movie,
         identifier: body.identifier,
         name: body.name,
@@ -139,6 +145,14 @@ function createMovieFromBody(body: any): chevre.factory.creativeWork.movie.ICrea
             moment(`${body.scheduleEndDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
         distribution: body.distribution
     };
+
+    if (movie.scheduleEndDate !== undefined
+        && movie.datePublished !== undefined
+        && movie.scheduleEndDate < movie.datePublished) {
+        throw new Error('興行終了予定日が公開日よりも前です');
+    }
+
+    return movie;
 }
 /**
  * 一覧データ取得API

@@ -17,7 +17,7 @@
     }
   ],
   "dependencies": {
-    "@toei-jp/chevre-api-nodejs-client": "^1.0.0-alpha.18",
+    "@toei-jp/chevre-api-nodejs-client": "^1.0.0-alpha.19",
     "@toei-jp/cinerino-api-nodejs-client": "^1.0.0-alpha.37",
     "body-parser": "^1.17.2",
     "connect-redis": "^3.4.0",
@@ -71,12 +71,12 @@
     "nyc": "^12.0.2",
     "rimraf": "^2.6.1",
     "sinon": "^6.3.5",
-    "snyk": "^1.105.1",
+    "snyk": "^1.106.0",
     "supertest": "^3.3.0",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-microsoft-contrib": "^5.2.1",
-    "typescript": "^3.1.5"
+    "typescript": "^3.1.6"
   },
   "engines": {
     "node": ">=6.9.1",

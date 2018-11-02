@@ -3,6 +3,8 @@
  */
 import * as chevre from '@toei-jp/chevre-api-nodejs-client';
 import { Request, Response } from 'express';
+import { BAD_REQUEST, NO_CONTENT } from 'http-status';
+import * as moment from 'moment';
 import * as _ from 'underscore';
 
 import * as Message from '../common/Const/Message';
@@ -66,7 +68,7 @@ export async function add(req: Request, res: Response): Promise<void> {
     let ticketTypeIds: string[] = [];
     if (!_.isEmpty(req.body.ticketTypes)) {
         if (_.isString(req.body.ticketTypes)) {
-            ticketTypeIds = [ req.body.ticketTypes ];
+            ticketTypeIds = [req.body.ticketTypes];
         } else {
             ticketTypeIds = req.body.ticketTypes;
         }
@@ -123,7 +125,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     let ticketTypeIds: string[] = [];
     if (!_.isEmpty(req.body.ticketTypes)) {
         if (_.isString(req.body.ticketTypes)) {
-            ticketTypeIds = [ req.body.ticketTypes ];
+            ticketTypeIds = [req.body.ticketTypes];
         } else {
             ticketTypeIds = req.body.ticketTypes;
         }
@@ -272,7 +274,7 @@ export async function getTicketTypePriceList(req: Request, res: Response): Promi
         const searchTicketTypesResult = await ticketTypeService.searchTicketTypes({
             price: req.query.price,
             idHasChoose: req.query.ticketTypeChoose
-         });
+        });
         res.json({
             success: true,
             count: searchTicketTypesResult.totalCount,
@@ -283,6 +285,40 @@ export async function getTicketTypePriceList(req: Request, res: Response): Promi
             success: false,
             results: err
         });
+    }
+}
+/**
+ * 削除
+ */
+export async function deleteById(req: Request, res: Response): Promise<void> {
+    try {
+        const eventService = new chevre.service.Event({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        const ticketTypeService = new chevre.service.TicketType({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+
+        const ticketTypeGroupId: string = req.params.id;
+
+        // 削除して問題ない券種グループかどうか検証
+        const searchEventsResult = await eventService.searchScreeningEvents({
+            limit: 1,
+            ticketTypeGroups: [ticketTypeGroupId],
+            sort: { endDate: chevre.factory.sortType.Descending }
+        });
+        if (searchEventsResult.data.length > 0) {
+            if (moment(searchEventsResult.data[0].endDate) >= moment()) {
+                throw new Error('終了していないスケジュールが存在します');
+            }
+        }
+
+        await ticketTypeService.deleteTicketTypeGroup({ id: ticketTypeGroupId });
+        res.status(NO_CONTENT).end();
+    } catch (error) {
+        res.status(BAD_REQUEST).json({ error: { message: error.message } });
     }
 }
 /**

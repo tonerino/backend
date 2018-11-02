@@ -4,6 +4,7 @@
 import * as chevre from '@toei-jp/chevre-api-nodejs-client';
 import * as createDebug from 'debug';
 import { Request, Response } from 'express';
+import { INTERNAL_SERVER_ERROR } from 'http-status';
 import * as moment from 'moment-timezone';
 import * as _ from 'underscore';
 
@@ -145,6 +146,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     }
 
     const forms = {
+        id: req.params.eventId,
         movieIdentifier: (_.isEmpty(req.body.movieIdentifier)) ? event.workPerformed.identifier : req.body.movieIdentifier,
         nameJa: (_.isEmpty(req.body.nameJa)) ? event.name.ja : req.body.nameJa,
         nameEn: (_.isEmpty(req.body.nameEn)) ? event.name.en : req.body.nameEn,
@@ -347,6 +349,24 @@ export async function search(req: Request, res: Response): Promise<void> {
     }
 }
 /**
+ * 劇場作品のスケジュール検索
+ */
+export async function searchScreeningEvents(req: Request, res: Response) {
+    try {
+        const eventService = new chevre.service.Event({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        const searchScreeningEventsResult = await eventService.searchScreeningEvents({
+            ...req.query,
+            superEvent: { ids: [req.params.id] }
+        });
+        res.json(searchScreeningEventsResult);
+    } catch (error) {
+        res.status(INTERNAL_SERVER_ERROR).json({ error: { message: error.message } });
+    }
+}
+/**
  * 一覧データ取得API
  */
 export async function getList(req: Request, res: Response): Promise<void> {
@@ -359,7 +379,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
             limit: req.query.limit,
             page: req.query.page,
             name: req.query.name,
-            endFrom: moment(new Date()).toDate(),
+            endFrom: (req.query.containsEnded === '1') ? undefined : new Date(),
             location: {
                 branchCodes: (req.query.locationBranchCode !== '') ? [req.query.locationBranchCode] : undefined
             },

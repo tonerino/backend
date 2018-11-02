@@ -11,11 +11,13 @@ Aa-7
 <%- contentFor('body') %>
 <div class="col-sm-12 form-container">
     <% /* フォーム */ %>
-    <form method="post" class="form-horizontal" id="ticketTypeGroupsForm" >
+    <form method="post" class="form-horizontal" id="ticketTypeGroupsForm">
         <div class="menu-group">
             <% /* メッセージ */ %>
             <% if (message != '') { %>
-            <p class="error message text-danger panel-body bg-danger"><%= message %></p>
+            <p class="error message text-danger panel-body bg-danger">
+                <%= message %>
+            </p>
             <% } %>
         </div>
 
@@ -26,16 +28,19 @@ Aa-7
 
         <% /* 登録ボタン */ %>
         <div class="form-group">
-            <div class="btn-area panel-body">
+            <div class="btn-area panel-body pull-left">
                 <a class="btn btn-ok btn-primary">更新する</a>
+            </div>
+            <div class="btn-area panel-body pull-right">
+                <a class="btn btn-delete btn-danger">削除する</a>
             </div>
         </div>
     </form>
 </div>
 <script>
-$(function(){
-    $('.btn-ok').on('click', function(){
-        $('form').submit();
+    $(function () {
+        $('.btn-ok').on('click', function () {
+            $('form').submit();
+        });
     });
-});
 </script>

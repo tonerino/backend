@@ -12,6 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 券種グループマスタコントローラー
  */
 const chevre = require("@toei-jp/chevre-api-nodejs-client");
+const http_status_1 = require("http-status");
+const moment = require("moment");
 const _ = require("underscore");
 const Message = require("../common/Const/Message");
 // 券種グループコード 半角64
@@ -307,6 +309,41 @@ function getTicketTypePriceList(req, res) {
     });
 }
 exports.getTicketTypePriceList = getTicketTypePriceList;
+/**
+ * 削除
+ */
+function deleteById(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const eventService = new chevre.service.Event({
+                endpoint: process.env.API_ENDPOINT,
+                auth: req.user.authClient
+            });
+            const ticketTypeService = new chevre.service.TicketType({
+                endpoint: process.env.API_ENDPOINT,
+                auth: req.user.authClient
+            });
+            const ticketTypeGroupId = req.params.id;
+            // 削除して問題ない券種グループかどうか検証
+            const searchEventsResult = yield eventService.searchScreeningEvents({
+                limit: 1,
+                ticketTypeGroups: [ticketTypeGroupId],
+                sort: { endDate: chevre.factory.sortType.Descending }
+            });
+            if (searchEventsResult.data.length > 0) {
+                if (moment(searchEventsResult.data[0].endDate) >= moment()) {
+                    throw new Error('終了していないスケジュールが存在します');
+                }
+            }
+            yield ticketTypeService.deleteTicketTypeGroup({ id: ticketTypeGroupId });
+            res.status(http_status_1.NO_CONTENT).end();
+        }
+        catch (error) {
+            res.status(http_status_1.BAD_REQUEST).json({ error: { message: error.message } });
+        }
+    });
+}
+exports.deleteById = deleteById;
 /**
  * 券種グループマスタ新規登録画面検証
  */
