@@ -269,7 +269,7 @@ function createEventFromBody(
         workPerformed: movie,
         duration: movie.duration,
         startDate: (!_.isEmpty(body.startDate)) ? moment(`${body.startDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
-        endDate: (!_.isEmpty(body.endDate)) ? moment(`${body.endDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
+        endDate: (!_.isEmpty(body.endDate)) ? moment(`${body.endDate}T23:59:59+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
         eventStatus: chevre.factory.eventStatusType.EventScheduled,
         movieSubtitleName: body.movieSubtitleName,
         signageDisplayName: body.signageDisplayName,
