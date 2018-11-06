@@ -398,7 +398,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
                 duration: event.duration,
                 contentRating: event.workPerformed.contentRating,
                 subtitleLanguage: (_.isNull(event.subtitleLanguage)) ?
-                    '' : ((event.subtitleLanguage === 1) ? '吹替' : '字幕'),
+                    '' : ((event.subtitleLanguage === '1') ? '吹替' : '字幕'),
                 videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : '',
                 movieSubtitleName: (_.isEmpty(event.movieSubtitleName)) ? '' : event.movieSubtitleName
             };

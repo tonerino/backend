@@ -23,7 +23,10 @@
         <select class="form-control" name="movieIdentifier" id="movieIdentifier">
             <option value="">選択してください</option>
             <% for (const movie of movies) { %>
-            <option value="<%= movie.identifier %>" <% if (forms.movieIdentifier===movie.identifier) { %> selected <% } %>><%= movie.name %></option>
+            <option value="<%= movie.identifier %>" <% if (forms.movieIdentifier===movie.identifier) { %> selected
+                <% } %>>
+                <%= movie.name %>
+            </option>
             <% } %>
         </select>
         <p class="error message text-danger">
@@ -215,8 +218,8 @@
     <div class="col-sm-9">
         <%
             let subtitles = [
-                {code: 0, name: {ja: '字幕', en:'subtitle'}},
-                {code: 1, name: {ja: '吹替', en:'dubbing'}}
+                {code: '0', name: {ja: '字幕', en:'subtitle'}},
+                {code: '1', name: {ja: '吹替', en:'dubbing'}}
             ];
         %>
         <select name="subtitleLanguage" id="subtitleLanguage" class="form-control">

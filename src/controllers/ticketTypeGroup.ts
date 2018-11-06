@@ -49,7 +49,7 @@ export async function add(req: Request, res: Response): Promise<void> {
                     id: req.body.id,
                     name: req.body.name,
                     description: req.body.description,
-                    notes: req.body.notes,
+                    alternateName: req.body.alternateName,
                     ticketTypes: req.body.ticketTypes,
                     boxOfficeType: req.body.boxOfficeType
                 };
@@ -78,7 +78,7 @@ export async function add(req: Request, res: Response): Promise<void> {
         name: (_.isEmpty(req.body.name)) ? '' : req.body.name,
         ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? [] : ticketTypeIds,
         description: (_.isEmpty(req.body.description)) ? {} : req.body.description,
-        notes: (_.isEmpty(req.body.notes)) ? {} : req.body.notes,
+        alternateName: (_.isEmpty(req.body.alternateName)) ? {} : req.body.alternateName,
         boxOfficeType: (_.isEmpty(req.body.boxOfficeType)) ? '' : req.body.boxOfficeType
     };
     // 券種マスタから取得
@@ -143,7 +143,7 @@ export async function update(req: Request, res: Response): Promise<void> {
                     id: req.params.id,
                     name: req.body.name,
                     description: req.body.description,
-                    notes: req.body.notes,
+                    alternateName: req.body.alternateName,
                     ticketTypes: ticketTypeIds,
                     boxOfficeType: req.body.boxOfficeType
                 };
@@ -164,7 +164,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         name: (_.isEmpty(req.body.name)) ? ticketGroup.name : req.body.name,
         ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : ticketTypeIds,
         description: (_.isEmpty(req.body.description)) ? ticketGroup.description : req.body.description,
-        notes: (_.isEmpty(req.body.notes)) ? ticketGroup.notes : req.body.notes,
+        alternateName: (_.isEmpty(req.body.alternamteName)) ? ticketGroup.alternateName : req.body.alternateName,
         boxOfficeType: (_.isEmpty(req.body.boxOfficeType)) ? ticketGroup.boxOfficeType : req.body.boxOfficeType
     };
     // 券種マスタから取得

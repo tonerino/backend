@@ -100,7 +100,7 @@ function update(req, res) {
                 try {
                     movie = createMovieFromBody(req.body);
                     debug('saving an movie...', movie);
-                    yield creativeWorkService.createMovie(movie);
+                    yield creativeWorkService.updateMovie(movie);
                     res.redirect(req.originalUrl);
                     return;
                 }
@@ -122,11 +122,15 @@ function update(req, res) {
             contentRating: movie.contentRating,
             subtitle: (_.isEmpty(req.body.subtitle)) ? movie.subtitle : req.body.subtitle,
             datePublished: (_.isEmpty(req.body.datePublished)) ?
-                (movie.datePublished !== null) ? moment(movie.datePublished).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
+                (movie.datePublished !== undefined) ? moment(movie.datePublished).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
                 req.body.datePublished,
-            scheduleEndDate: (_.isEmpty(req.body.scheduleEndDate)) ?
-                (movie.scheduleEndDate !== null) ? moment(movie.scheduleEndDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
-                req.body.scheduleEndDate,
+            offers: (_.isEmpty(req.body.offers)) ?
+                (movie.offers !== undefined && movie.offers.availabilityEnds !== undefined)
+                    ? {
+                        availabilityEnds: moment(movie.offers.availabilityEnds).add(-1, 'day').tz('Asia/Tokyo').format('YYYY/MM/DD')
+                    }
+                    : undefined
+                : req.body.offers,
             distribution: (_.isEmpty(req.body.distribution)) ? movie.distribution : req.body.distribution
         };
         // 作品マスタ画面遷移
@@ -150,13 +154,18 @@ function createMovieFromBody(body) {
         subtitle: body.subtitle,
         datePublished: (!_.isEmpty(body.datePublished)) ?
             moment(`${body.datePublished}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
-        scheduleEndDate: (!_.isEmpty(body.scheduleEndDate)) ?
-            moment(`${body.scheduleEndDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
+        offers: {
+            typeOf: 'Offer',
+            priceCurrency: chevre.factory.priceCurrency.JPY,
+            availabilityEnds: (!_.isEmpty(body.offers) && !_.isEmpty(body.offers.availabilityEnds)) ?
+                moment(`${body.offers.availabilityEnds}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day').toDate() : undefined
+        },
         distribution: body.distribution
     };
-    if (movie.scheduleEndDate !== undefined
+    if (movie.offers !== undefined
+        && movie.offers.availabilityEnds !== undefined
         && movie.datePublished !== undefined
-        && movie.scheduleEndDate < movie.datePublished) {
+        && movie.offers.availabilityEnds < movie.datePublished) {
         throw new Error('興行終了予定日が公開日よりも前です');
     }
     return movie;
@@ -178,8 +187,8 @@ function getList(req, res) {
                 name: req.query.name,
                 datePublishedFrom: (!_.isEmpty(req.query.datePublishedFrom)) ?
                     moment(`${req.query.datePublishedFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
-                datePublishedTo: (!_.isEmpty(req.query.datePublishedTo)) ?
-                    moment(`${req.query.datePublishedTo}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined
+                datePublishedThrough: (!_.isEmpty(req.query.datePublishedThrough)) ?
+                    moment(`${req.query.datePublishedThrough}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined
             });
             res.json({
                 success: true,

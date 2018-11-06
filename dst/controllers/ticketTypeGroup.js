@@ -59,7 +59,7 @@ function add(req, res) {
                         id: req.body.id,
                         name: req.body.name,
                         description: req.body.description,
-                        notes: req.body.notes,
+                        alternateName: req.body.alternateName,
                         ticketTypes: req.body.ticketTypes,
                         boxOfficeType: req.body.boxOfficeType
                     };
@@ -89,7 +89,7 @@ function add(req, res) {
             name: (_.isEmpty(req.body.name)) ? '' : req.body.name,
             ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? [] : ticketTypeIds,
             description: (_.isEmpty(req.body.description)) ? {} : req.body.description,
-            notes: (_.isEmpty(req.body.notes)) ? {} : req.body.notes,
+            alternateName: (_.isEmpty(req.body.alternateName)) ? {} : req.body.alternateName,
             boxOfficeType: (_.isEmpty(req.body.boxOfficeType)) ? '' : req.body.boxOfficeType
         };
         // 券種マスタから取得
@@ -155,7 +155,7 @@ function update(req, res) {
                         id: req.params.id,
                         name: req.body.name,
                         description: req.body.description,
-                        notes: req.body.notes,
+                        alternateName: req.body.alternateName,
                         ticketTypes: ticketTypeIds,
                         boxOfficeType: req.body.boxOfficeType
                     };
@@ -176,7 +176,7 @@ function update(req, res) {
             name: (_.isEmpty(req.body.name)) ? ticketGroup.name : req.body.name,
             ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : ticketTypeIds,
             description: (_.isEmpty(req.body.description)) ? ticketGroup.description : req.body.description,
-            notes: (_.isEmpty(req.body.notes)) ? ticketGroup.notes : req.body.notes,
+            alternateName: (_.isEmpty(req.body.alternamteName)) ? ticketGroup.alternateName : req.body.alternateName,
             boxOfficeType: (_.isEmpty(req.body.boxOfficeType)) ? ticketGroup.boxOfficeType : req.body.boxOfficeType
         };
         // 券種マスタから取得

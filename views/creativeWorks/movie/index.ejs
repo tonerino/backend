@@ -11,39 +11,44 @@ Aa-10
 <script src="/js/master/creativeWorks/movieList.js"></script>
 <%- contentFor('body') %>
 <div class="col-sm-12 form-container search">
-    <form method="post" class="form-horizontal" >
-    <%- include('../../common/master/_hidden') %>
+    <form method="post" class="form-horizontal">
+        <%- include('../../common/master/_hidden') %>
         <div class="menu-group">
             <% if (filmModel.message !== undefined) { %>
-            <p class="error message text-danger panel-body bg-danger"><%= filmModel.message %></p>
+            <p class="error message text-danger panel-body bg-danger">
+                <%= filmModel.message %>
+            </p>
             <% } %>
         </div>
-            <div class="form-group ">
-                <label for="identifier" class="col-sm-3 control-label label-title">
+        <div class="form-group ">
+            <label for="identifier" class="col-sm-3 control-label label-title">
                 作品コード
-                </label>
-                <div class="col-sm-9">
-                    <input type="text" class="form-control" name="identifier" id="identifier" placeholder="" maxlength=64 value="<%= filmModel.identifier %>">
-                </div>
+            </label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="identifier" id="identifier" placeholder="" maxlength=64
+                    value="<%= filmModel.identifier %>">
             </div>
-            <div class="form-group">
-                <label for="name" class="col-sm-3 control-label label-title">
+        </div>
+        <div class="form-group">
+            <label for="name" class="col-sm-3 control-label label-title">
                 作品名
-                </label>
-                <div class="col-sm-9">
-                    <input class="form-control" name="name" id="name" placeholder="" maxlength=64 value="<%= filmModel.name %>">
-                </div>
+            </label>
+            <div class="col-sm-9">
+                <input class="form-control" name="name" id="name" placeholder="" maxlength=64 value="<%= filmModel.name %>">
             </div>
-            <div class="form-group">
-                <label for="datePublishedTo" class="col-sm-3 control-label label-title">
-                    公開日（From - To）
-                </label>
-                <div class="col-sm-9">
-                    <input class="form-control datepicker" style="width:30%;display:inline-block;" placeholder="" maxlength=10 name="datePublishedFrom" id="datePublishedFrom" value="<%= filmModel.datePublishedFrom %>" />
-                     ～ 
-                    <input class="form-control datepicker" style="width:30%;display:inline-block;" placeholder="" maxlength=10 name="datePublishedTo" id="datePublishedTo" value="<%= filmModel.datePublishedTo %>" />
-                </div>
+        </div>
+        <div class="form-group">
+            <label for="datePublishedThrough" class="col-sm-3 control-label label-title">
+                公開日（From - To）
+            </label>
+            <div class="col-sm-9">
+                <input class="form-control datepicker" style="width:30%;display:inline-block;" placeholder="" maxlength=10
+                    name="datePublishedFrom" id="datePublishedFrom" value="<%= filmModel.datePublishedFrom %>" />
+                ～
+                <input class="form-control datepicker" style="width:30%;display:inline-block;" placeholder="" maxlength=10
+                    name="datePublishedThrough" id="datePublishedThrough" value="<%= filmModel.datePublishedThrough %>" />
             </div>
+        </div>
         <div class="form-group">
             <div class="panel-body">
                 <a class="btn btn-ok search btn-primary"><span>検索する</span></a>
@@ -55,7 +60,7 @@ Aa-10
 <div class="col-sm-12 form-container search">
     <div>
         <p id="searchedCount" style="display:none;">
-        検索結果 $searched_count$件
+            検索結果 $searched_count$件
         </p>
     </div>
     <div id="list" class="table-responsive" style="display:none;">
@@ -64,7 +69,7 @@ Aa-10
                 <tr>
                     <th>作品コード</th>
                     <th style="text-align:left;">作品名</th>
-                    <th>上映<br/>時間(分)</th>
+                    <th>上映<br />時間(分)</th>
                     <th></th>
                 </tr>
             </thead>
@@ -72,7 +77,7 @@ Aa-10
                 <tr id="templateRow" identifier="$identifier$">
                     <td name="identifier">$identifier$</td>
                     <td name="name">
-                    $name$<br/>
+                        $name$<br />
                     </td>
                     <td name="duration" style="text-align:right;">$duration$</td>
                     <td name="edit" class="center">
@@ -86,6 +91,6 @@ Aa-10
             </tbody>
         </table>
     </div>
-    <div id="pager" class="div_pager_parent"></div>  
+    <div id="pager" class="div_pager_parent"></div>
 </div>
 <%- include('../../common/master/_loading') %>

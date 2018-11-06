@@ -80,21 +80,18 @@ Aa-6
           <!--<th>サイト表示用券種名</th>-->
           <th>管理用券種名</th>
           <th>金額(円)</th>
+          <th>購入席単位</th>
           <th></th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        <tr id="templateRow" _id="$_id$">
-          <% /* 券種コード */ %>
+        <tr id="templateRow" _id="$id$">
           <td name="ticketCode">$ticketCode$</td>
-          <% /* サイト表示用券種名 */ %>
           <!--<td name="ticketNameJa">$ticketNameJa$</td>-->
-          <% /* 管理用券種名 */ %>
           <td name="managementTypeName">$managementTypeName$</td>
-          <% /* 金額(円) */ %>
-          <td name="ticketPrice" style="text-align:right;">$ticketPrice$</td>
-          <% /* 編集ボタン */ %>
+          <td name="price" style="text-align:right;">$price$</td>
+          <td name="eligibleQuantityValue">$eligibleQuantityValue$</td>
           <td name="edit" class="center">
             <div class="btn-area">
               <a class="btn btn-list edit" href="/ticketTypes/$id$/update">

@@ -66,10 +66,15 @@ function add(req, res) {
                         id: req.body.id,
                         name: req.body.name,
                         description: req.body.description,
-                        notes: req.body.notes,
+                        alternateName: req.body.alternateName,
                         price: req.body.price,
                         priceCurrency: chevre.factory.priceCurrency.JPY,
                         availability: availability,
+                        eligibleQuantity: {
+                            typeOf: 'QuantitativeValue',
+                            value: Number(req.body.seatReservationUnit),
+                            unitCode: chevre.factory.unitCode.C62
+                        },
                         nameForManagementSite: req.body.nameForManagementSite,
                         nameForPrinting: req.body.nameForPrinting,
                         subject: req.body.subject,
@@ -93,7 +98,7 @@ function add(req, res) {
             name: (_.isEmpty(req.body.name)) ? {} : req.body.name,
             price: (_.isEmpty(req.body.price)) ? '' : req.body.price,
             description: (_.isEmpty(req.body.description)) ? {} : req.body.description,
-            notes: (_.isEmpty(req.body.notes)) ? {} : req.body.notes,
+            alternateName: (_.isEmpty(req.body.alternateName)) ? {} : req.body.alternateName,
             indicatorColor: (_.isEmpty(req.body.indicatorColor)) ? '' : req.body.indicatorColor,
             isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? '' : req.body.isBoxTicket,
             isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? '' : req.body.isOnlineTicket,
@@ -156,7 +161,7 @@ function update(req, res) {
                         id: req.params.id,
                         name: req.body.name,
                         description: req.body.description,
-                        notes: req.body.notes,
+                        alternateName: req.body.alternateName,
                         price: req.body.price,
                         priceCurrency: chevre.factory.priceCurrency.JPY,
                         availability: availability,
@@ -206,7 +211,7 @@ function update(req, res) {
             name: (_.isEmpty(req.body.name)) ? ticketType.name : req.body.name,
             price: (_.isEmpty(req.body.price)) ? ticketType.price : req.body.price,
             description: (_.isEmpty(req.body.description)) ? ticketType.description : req.body.description,
-            notes: (_.isEmpty(req.body.notes)) ? ticketType.notes : req.body.notes,
+            alternateName: (_.isEmpty(req.body.alternateName)) ? ticketType.alternateName : req.body.alternateName,
             indicatorColor: (_.isEmpty(req.body.indicatorColor)) ? ticketType.indicatorColor : req.body.indicatorColor,
             isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket,
             isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket,
@@ -277,7 +282,8 @@ function getList(req, res) {
                         id: t.id,
                         ticketCode: t.id,
                         managementTypeName: t.name.ja,
-                        ticketPrice: t.price
+                        price: t.price,
+                        eligibleQuantityValue: t.eligibleQuantity.value
                     };
                 })
             });
