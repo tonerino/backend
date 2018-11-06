@@ -853,8 +853,8 @@ function createScreen(performances, ticketGroups) {
             'data-onlineDisplayStartDate="' + onlineDisplayStartDate + '" ' +
             'data-maxSeatNumber="' + maxSeatNumber + '" ' +
             'data-mvtkExcludeFlg="' + mvtkExcludeFlg + '" ' +
-            'role="button" class="inner">' + performance.name.ja + '<br />' +
-            performance.location.name.ja + '<br />' + ticketTypeGroupName + '</div>' +
+            'role="button" class="inner">' + performance.name.ja + '<br>' +
+            performance.location.name.ja + '<br>' + ticketTypeGroupName + '</div>' +
             '</div>');
         if (top < prevBtm) performanceDom.addClass('overlap');
         prevBtm = top + height;

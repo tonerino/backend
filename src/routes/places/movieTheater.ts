@@ -21,10 +21,27 @@ movieTheaterRouter.get('/search', async (req, res) => {
             page: req.query.page,
             name: req.query.name
         });
+
+        const results = data.map((movieTheater) => {
+            return {
+                ...movieTheater,
+                availabilityStartsGraceTimeInDays:
+                    (movieTheater.offers !== undefined && movieTheater.offers.availabilityStartsGraceTime !== undefined)
+                        // tslint:disable-next-line:no-magic-numbers
+                        ? -movieTheater.offers.availabilityStartsGraceTime.value
+                        : undefined,
+                availabilityEndsGraceTimeInMinutes:
+                    (movieTheater.offers !== undefined && movieTheater.offers.availabilityEndsGraceTime !== undefined)
+                        // tslint:disable-next-line:no-magic-numbers
+                        ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
+                        : undefined
+            };
+        });
+
         res.json({
             success: true,
             count: totalCount,
-            results: data
+            results: results
         });
     } catch (err) {
         res.json({

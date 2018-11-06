@@ -14,12 +14,9 @@
                                 <select class="form-control" name="theater">
                                     <option value="" disabled selected>選択してください</option>
                                     <% for (const movieTheater of movieTheaters) { %>
-                                    <option 
-                                        value="<%= movieTheater.branchCode %>"
-                                        data-max-seat-number="<%= movieTheater.maxSeatNumber %>"
-                                        data-sale-start-days="<%= movieTheater.saleStartDate %>"
-                                        data-end-sale-time="<%= movieTheater.endSaleTimeAfterScreening %>"
-                                    >
+                                    <option value="<%= movieTheater.branchCode %>" data-max-seat-number="<%= movieTheater.offers.eligibleQuantity.maxValue %>"
+                                        data-sale-start-days="<%= -movieTheater.offers.availabilityStartsGraceTime.value %>"
+                                        data-end-sale-time="<%= Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60) %>">
                                         <%= movieTheater.name.ja %>
                                     </option>
                                     <% } %>
@@ -45,9 +42,11 @@
                         <div class="form-group">
                             <label class="col-sm-3 control-label text-right">登録期間<font color="red">＊</font></label>
                             <div class="col-sm-9 form-inline">
-                                <input class="form-control datepicker" name="screeningDateStart" placeholder="YYYY/MM/DD" maxlength=10>
+                                <input class="form-control datepicker" name="screeningDateStart" placeholder="YYYY/MM/DD"
+                                    maxlength=10>
                                 〜
-                                <input class="form-control datepicker" name="screeningDateThrough" placeholder="YYYY/MM/DD" maxlength=10>
+                                <input class="form-control datepicker" name="screeningDateThrough" placeholder="YYYY/MM/DD"
+                                    maxlength=10>
                             </div>
                         </div>
                         <div class="form-group">
@@ -65,7 +64,8 @@
                         <div class="form-group">
                             <label class="col-sm-3 control-label text-right" for="onlineDisplayStartDate">オンライン表示開始日</label>
                             <div class="col-sm-9 form-inline">
-                                <input class="form-control datepicker" name="onlineDisplayStartDate" placeholder="YYYY/MM/DD" maxlength=10>
+                                <input class="form-control datepicker" name="onlineDisplayStartDate" placeholder="YYYY/MM/DD"
+                                    maxlength=10>
                             </div>
                         </div>
                         <table class="table table-bordered">
@@ -78,9 +78,11 @@
                                 <th class="text-center mvtk" style="max-width: 80px">ムビチケ対象外</th>
                             </thead>
                             <tbody>
-                            <% for (let i = 1; i <= 6; i++) { %>
+                                <% for (let i = 1; i <= 6; i++) { %>
                                 <tr>
-                                    <td class="text-center"><%= i %></td>
+                                    <td class="text-center">
+                                        <%= i %>
+                                    </td>
                                     <td class="form-inline">
                                         <%- include('../../common/part/_timeSelector', {
                                             hourName: 'doorTimeHour',
@@ -89,7 +91,7 @@
                                     </td>
                                     <td class="form-inline">
                                         <div class="col-sm-12">
-                                        <%- include('../../common/part/_timeSelector', {
+                                            <%- include('../../common/part/_timeSelector', {
                                             hourName: 'startTimeHour',
                                             minuteName: 'startTimeMinute'
                                         }) %>
@@ -97,7 +99,7 @@
                                     </td>
                                     <td class="form-inline">
                                         <div class="col-sm-12">
-                                        <%- include('../../common/part/_timeSelector', {
+                                            <%- include('../../common/part/_timeSelector', {
                                             hourName: 'endTimeHour',
                                             minuteName: 'endTimeMinute'
                                         }) %>
@@ -107,7 +109,9 @@
                                         <select class="form-control" name="ticketTypeGroup">
                                             <option value="" disabled selected>選択してください</option>
                                             <% for (ticketType of ticketGroups) { %>
-                                                <option value="<%= ticketType.id %>"><%= ticketType.name.ja %></option>
+                                            <option value="<%= ticketType.id %>">
+                                                <%= ticketType.name.ja %>
+                                            </option>
                                             <% } %>
                                         </select>
                                     </td>
@@ -115,7 +119,7 @@
                                         <input type="checkbox" name="mvtkExcludeFlg">
                                     </td>
                                 </tr>
-                            <% } %>
+                                <% } %>
                             </tbody>
                         </table>
                         <!-- <div class="form-group">
