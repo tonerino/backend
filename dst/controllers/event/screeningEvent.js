@@ -342,7 +342,9 @@ function createEventFromBody(body, user) {
             location: {
                 typeOf: screeningRoom.typeOf,
                 branchCode: screeningRoom.branchCode,
-                name: screeningRoom.name
+                name: screeningRoom.name,
+                alternateName: screeningRoom.alternateName,
+                address: screeningRoom.address
             },
             superEvent: screeningEventSeries,
             name: screeningEventSeries.name,
@@ -435,7 +437,9 @@ function createMultipleEventFromBody(body, user) {
                         location: {
                             typeOf: screeningRoom.typeOf,
                             branchCode: screeningRoom.branchCode,
-                            name: screeningRoom.name === undefined ? { en: '', ja: '', kr: '' } : screeningRoom.name
+                            name: screeningRoom.name === undefined ? { en: '', ja: '', kr: '' } : screeningRoom.name,
+                            alternateName: screeningRoom.alternateName,
+                            address: screeningRoom.address
                         },
                         superEvent: screeningEventSeries,
                         name: screeningEventSeries.name,

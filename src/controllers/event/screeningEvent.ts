@@ -319,9 +319,11 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         ticketTypeGroup: body.ticketTypeGroup,
         workPerformed: screeningEventSeries.workPerformed,
         location: {
-            typeOf: screeningRoom.typeOf,
+            typeOf: <chevre.factory.placeType.ScreeningRoom>screeningRoom.typeOf,
             branchCode: <string>screeningRoom.branchCode,
-            name: screeningRoom.name
+            name: screeningRoom.name,
+            alternateName: screeningRoom.alternateName,
+            address: screeningRoom.address
         },
         superEvent: screeningEventSeries,
         name: screeningEventSeries.name,
@@ -413,9 +415,11 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                     ticketTypeGroup: ticketTypes[i],
                     workPerformed: screeningEventSeries.workPerformed,
                     location: {
-                        typeOf: screeningRoom.typeOf,
+                        typeOf: <chevre.factory.placeType.ScreeningRoom>screeningRoom.typeOf,
                         branchCode: <string>screeningRoom.branchCode,
-                        name: screeningRoom.name === undefined ? { en: '', ja: '', kr: '' } : screeningRoom.name
+                        name: screeningRoom.name === undefined ? { en: '', ja: '', kr: '' } : screeningRoom.name,
+                        alternateName: screeningRoom.alternateName,
+                        address: screeningRoom.address
                     },
                     superEvent: screeningEventSeries,
                     name: screeningEventSeries.name,

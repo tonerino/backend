@@ -253,7 +253,7 @@ function createEventFromBody(
         alternativeHeadline: body.nameJa,
         location: {
             id: movieTheater.id,
-            typeOf: movieTheater.typeOf,
+            typeOf: <chevre.factory.placeType.MovieTheater>movieTheater.typeOf,
             branchCode: movieTheater.branchCode,
             name: movieTheater.name,
             kanaName: movieTheater.kanaName
