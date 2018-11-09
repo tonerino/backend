@@ -353,6 +353,7 @@ function regist() {
         return;
     }
 
+    var originalButtonText = $('.regist-button').text();
     $.ajax({
         dataType: 'json',
         url: '/events/screeningEvent/regist',
@@ -373,6 +374,8 @@ function regist() {
             endSaleTimeAfterScreening: endSaleTimeAfterScreening
         },
         beforeSend: function () {
+            $('.regist-button').prop('disabled', true);
+            $('.regist-button').text('登録中...');
         }
     }).done(function (data) {
         if (!data.error) {
@@ -403,7 +406,10 @@ function regist() {
         }
 
         creatingSchedules = false;
-    }).always(function () { });
+    }).always(function () {
+        $('.regist-button').prop('disabled', false);
+        $('.regist-button').text(originalButtonText);
+    });
 }
 
 /**
