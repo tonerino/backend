@@ -15,6 +15,11 @@ var HOUR_HEIGHT = 64;
  */
 var SCREEN_WIDTH = 107;
 
+/**
+ * スケジュール作成中かどうか
+ */
+var creatingSchedules = false;
+
 $(function () {
     // 検索
     $(document).on('click', '.search-button', function (event) {
@@ -286,6 +291,12 @@ function getTableData() {
  * @returns {void}
  */
 function regist() {
+    // 作成中なら何もしない
+    if (creatingSchedules) {
+        return;
+    }
+    creatingSchedules = true;
+
     var modal = $('#newModal');
     var theater = modal.find('select[name=theater]').val();
     var screen = modal.find('select[name=screen]').val();
@@ -306,6 +317,7 @@ function regist() {
         || weekDayData.length === 0
         || onlineDisplayStartDate === ''
     ) {
+        creatingSchedules = false;
         alert('情報が足りません');
         return;
     }
@@ -316,6 +328,7 @@ function regist() {
     var endSaleTimeAfterScreening = selectedTheater.attr('data-end-sale-time');
 
     if (moment(startDate + 'T00:00:00+09:00', 'YYYY/MM/DDTHH:mm:ssZ') >= moment(toDate + 'T00:00:00+09:00', 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day')) {
+        creatingSchedules = false;
         alert('登録期間を正しく設定してください');
         return;
     }
@@ -325,6 +338,7 @@ function regist() {
     var eventSeriesEndDate = modal.find('select[name=screeningEventSeriesId]').find('option:selected').attr('data-endDate');
     if (moment(startDate + 'T00:00:00+09:00', 'YYYY/MM/DDTHH:mm:ssZ') < moment(eventSeriesStartDate)
         || moment(toDate + 'T00:00:00+09:00', 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day') > moment(eventSeriesEndDate)) {
+        creatingSchedules = false;
         alert('登録期間を興行期間内に設定してください');
         return;
     }
@@ -334,6 +348,7 @@ function regist() {
         || saleStartDays === undefined
         || endSaleTimeAfterScreening === undefined
     ) {
+        creatingSchedules = false;
         alert('エラーが発生しました/nページをレフレッシュしてください！');
         return;
     }
@@ -356,6 +371,8 @@ function regist() {
             maxSeatNumber: maxSeatNumber,
             saleStartDays: saleStartDays,
             endSaleTimeAfterScreening: endSaleTimeAfterScreening
+        },
+        beforeSend: function () {
         }
     }).done(function (data) {
         if (!data.error) {
@@ -369,9 +386,14 @@ function regist() {
                 $('.search input[name=date]').val(),
                 $('.search input[name=days]:checked').val()
             );
+
+            creatingSchedules = false;
             return;
         }
+
         alert('登録に失敗しました');
+
+        creatingSchedules = false;
     }).fail(function (jqxhr, textStatus, error) {
         console.error(jqxhr, textStatus, error);
         if (jqxhr.responseJSON != undefined && jqxhr.responseJSON.error != undefined) {
@@ -379,7 +401,9 @@ function regist() {
         } else {
             alert('登録に失敗しました');
         }
-    });
+
+        creatingSchedules = false;
+    }).always(function () { });
 }
 
 /**

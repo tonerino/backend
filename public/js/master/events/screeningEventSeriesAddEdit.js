@@ -43,7 +43,7 @@ $(function () {
         if (identifier == undefined) {
             return false;
         } else {
-            var movieName = $('#movieIdentifier option:selected').text();
+            var movieName = $('#movieIdentifier option:selected').attr('data-name');
             // 上映作品名
             $('#nameJa').val('');
             $('#nameJa').val(movieName);

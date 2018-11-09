@@ -157,7 +157,7 @@ function createMovieFromBody(body: any): chevre.factory.creativeWork.movie.ICrea
     if (movie.offers !== undefined
         && movie.offers.availabilityEnds !== undefined
         && movie.datePublished !== undefined
-        && movie.offers.availabilityEnds < movie.datePublished) {
+        && movie.offers.availabilityEnds <= movie.datePublished) {
         throw new Error('興行終了予定日が公開日よりも前です');
     }
 
