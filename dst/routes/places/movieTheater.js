@@ -31,10 +31,14 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, 
             name: req.query.name
         });
         const results = data.map((movieTheater) => {
-            return Object.assign({}, movieTheater, { availabilityStartsGraceTimeInDays: (movieTheater.offers !== undefined && movieTheater.offers.availabilityStartsGraceTime !== undefined)
+            return Object.assign({}, movieTheater, { availabilityStartsGraceTimeInDays: (movieTheater.offers !== undefined
+                    && movieTheater.offers.availabilityStartsGraceTime !== undefined
+                    && movieTheater.offers.availabilityStartsGraceTime.value !== undefined)
                     // tslint:disable-next-line:no-magic-numbers
                     ? -movieTheater.offers.availabilityStartsGraceTime.value
-                    : undefined, availabilityEndsGraceTimeInMinutes: (movieTheater.offers !== undefined && movieTheater.offers.availabilityEndsGraceTime !== undefined)
+                    : undefined, availabilityEndsGraceTimeInMinutes: (movieTheater.offers !== undefined
+                    && movieTheater.offers.availabilityEndsGraceTime !== undefined
+                    && movieTheater.offers.availabilityEndsGraceTime.value !== undefined)
                     // tslint:disable-next-line:no-magic-numbers
                     ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
                     : undefined });

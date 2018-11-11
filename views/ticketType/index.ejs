@@ -79,8 +79,9 @@ Aa-6
           <th>券種コード</th>
           <!--<th>サイト表示用券種名</th>-->
           <th>管理用券種名</th>
-          <th>金額(円)</th>
+          <th>販売価格(円)<br>売掛金額(円)</th>
           <th>購入席単位</th>
+          <th>対応ムビチケ券種区分</th>
           <th></th>
           <th></th>
         </tr>
@@ -89,9 +90,10 @@ Aa-6
         <tr id="templateRow" _id="$id$">
           <td name="ticketCode">$ticketCode$</td>
           <!--<td name="ticketNameJa">$ticketNameJa$</td>-->
-          <td name="managementTypeName">$managementTypeName$</td>
-          <td name="price" style="text-align:right;">$price$</td>
-          <td name="eligibleQuantityValue">$eligibleQuantityValue$</td>
+          <td name="name.ja">$name.ja$</td>
+          <td name="price__accounting.accountsReceivable" style="text-align:right;">$price$<br>$accounting.accountsReceivable$</td>
+          <td name="eligibleQuantity.value">$eligibleQuantity.value$</td>
+          <td name="eligibleMovieTicketType">$eligibleMovieTicketType$</td>
           <td name="edit" class="center">
             <div class="btn-area">
               <a class="btn btn-list edit" href="/ticketTypes/$id$/update">

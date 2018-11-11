@@ -66,10 +66,15 @@ export async function add(req: Request, res: Response): Promise<void> {
                         value: Number(req.body.seatReservationUnit),
                         unitCode: chevre.factory.unitCode.C62
                     },
+                    eligibleMovieTicketType: req.body.eligibleMovieTicketType,
                     nameForManagementSite: req.body.nameForManagementSite,
                     nameForPrinting: req.body.nameForPrinting,
-                    subject: req.body.subject,
-                    nonBoxOfficeSubject: req.body.nonBoxOfficeSubject,
+                    accounting: {
+                        typeOf: 'Accounting',
+                        operatingRevenue: req.body.subject,
+                        nonOperatingRevenue: req.body.nonBoxOfficeSubject,
+                        accountsReceivable: Number(req.body.accounting.accountsReceivable)
+                    },
                     typeOfNote: req.body.typeOfNote,
                     indicatorColor: req.body.indicatorColor
                 };
@@ -85,20 +90,13 @@ export async function add(req: Request, res: Response): Promise<void> {
         }
     }
     const forms = {
-        id: (_.isEmpty(req.body.id)) ? '' : req.body.id,
-        name: (_.isEmpty(req.body.name)) ? {} : req.body.name,
-        price: (_.isEmpty(req.body.price)) ? '' : req.body.price,
-        description: (_.isEmpty(req.body.description)) ? {} : req.body.description,
-        alternateName: (_.isEmpty(req.body.alternateName)) ? {} : req.body.alternateName,
-        indicatorColor: (_.isEmpty(req.body.indicatorColor)) ? '' : req.body.indicatorColor,
+        name: {},
+        description: {},
+        accounting: {},
         isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? '' : req.body.isBoxTicket,
         isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? '' : req.body.isOnlineTicket,
-        nameForManagementSite: (_.isEmpty(req.body.nameForManagementSite)) ? '' : req.body.nameForManagementSite,
-        nameForPrinting: (_.isEmpty(req.body.nameForPrinting)) ? '' : req.body.nameForPrinting,
         seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? 1 : req.body.seatReservationUnit,
-        subject: (_.isEmpty(req.body.subject)) ? '' : req.body.subject,
-        nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject)) ? '' : req.body.nonBoxOfficeSubject,
-        typeOfNote: (_.isEmpty(req.body.typeOfNote)) ? '' : req.body.typeOfNote
+        ...req.body
     };
     res.render('ticketType/add', {
         message: message,
@@ -160,8 +158,13 @@ export async function update(req: Request, res: Response): Promise<void> {
                         value: Number(req.body.seatReservationUnit),
                         unitCode: chevre.factory.unitCode.C62
                     },
-                    subject: req.body.subject,
-                    nonBoxOfficeSubject: req.body.nonBoxOfficeSubject,
+                    eligibleMovieTicketType: req.body.eligibleMovieTicketType,
+                    accounting: {
+                        typeOf: 'Accounting',
+                        operatingRevenue: req.body.subject,
+                        nonOperatingRevenue: req.body.nonBoxOfficeSubject,
+                        accountsReceivable: Number(req.body.accounting.accountsReceivable)
+                    },
                     typeOfNote: req.body.typeOfNote,
                     indicatorColor: req.body.indicatorColor
                 };
@@ -193,25 +196,22 @@ export async function update(req: Request, res: Response): Promise<void> {
     }
 
     let seatReservationUnit = 1;
-    if (ticketType.eligibleQuantity !== undefined) {
+    if (ticketType.eligibleQuantity !== undefined && ticketType.eligibleQuantity.value !== undefined) {
         seatReservationUnit = ticketType.eligibleQuantity.value;
     }
+    if (ticketType.accounting === undefined) {
+        // ticketType.accounting = { typeOf: 'Accounting', operatingRevenue: ticketType.subject, accountsReceivable: 0 };
+    }
     const forms = {
-        id: (_.isEmpty(req.body.id)) ? ticketType.id : req.body.id,
-        name: (_.isEmpty(req.body.name)) ? ticketType.name : req.body.name,
-        price: (_.isEmpty(req.body.price)) ? ticketType.price : req.body.price,
-        description: (_.isEmpty(req.body.description)) ? ticketType.description : req.body.description,
-        alternateName: (_.isEmpty(req.body.alternateName)) ? ticketType.alternateName : req.body.alternateName,
-        indicatorColor: (_.isEmpty(req.body.indicatorColor)) ? ticketType.indicatorColor : req.body.indicatorColor,
+        ...ticketType,
+        ...req.body,
         isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket,
         isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket,
-        nameForManagementSite: (_.isEmpty(req.body.nameForManagementSite)) ?
-            ticketType.nameForManagementSite : req.body.nameForManagementSite,
-        nameForPrinting: (_.isEmpty(req.body.nameForPrinting)) ? ticketType.nameForPrinting : req.body.nameForPrinting,
         seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit,
-        subject: (_.isEmpty(req.body.subject)) ? ticketType.subject : req.body.subject,
-        nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject)) ? ticketType.nonBoxOfficeSubject : req.body.nonBoxOfficeSubject,
-        typeOfNote: (_.isEmpty(req.body.typeOfNote)) ? ticketType.typeOfNote : req.body.typeOfNote
+        subject: (_.isEmpty(req.body.subject)) ? ticketType.accounting.operatingRevenue : req.body.subject,
+        nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject))
+            ? ticketType.accounting.nonOperatingRevenue
+            : req.body.nonBoxOfficeSubject
     };
     res.render('ticketType/update', {
         message: message,
@@ -265,11 +265,9 @@ export async function getList(req: Request, res: Response): Promise<void> {
             count: result.totalCount,
             results: result.data.map((t) => {
                 return {
-                    id: t.id,
+                    ...t,
                     ticketCode: t.id,
-                    managementTypeName: t.name.ja,
-                    price: t.price,
-                    eligibleQuantityValue: t.eligibleQuantity.value
+                    eligibleMovieTicketType: (t.eligibleMovieTicketType !== undefined) ? t.eligibleMovieTicketType : ''
                 };
             })
         });
@@ -364,4 +362,9 @@ function validateFormAdd(req: Request): void {
     // 細目
     colName = '細目';
     req.checkBody('subject', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+
+    colName = '売掛金額';
+    req.checkBody('accounting.accountsReceivable', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('accounting.accountsReceivable', Message.Common.getMaxLengthHalfByte(colName, CHAGE_MAX_LENGTH))
+        .isNumeric().len({ max: CHAGE_MAX_LENGTH });
 }

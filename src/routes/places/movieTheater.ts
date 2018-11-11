@@ -26,12 +26,16 @@ movieTheaterRouter.get('/search', async (req, res) => {
             return {
                 ...movieTheater,
                 availabilityStartsGraceTimeInDays:
-                    (movieTheater.offers !== undefined && movieTheater.offers.availabilityStartsGraceTime !== undefined)
+                    (movieTheater.offers !== undefined
+                        && movieTheater.offers.availabilityStartsGraceTime !== undefined
+                        && movieTheater.offers.availabilityStartsGraceTime.value !== undefined)
                         // tslint:disable-next-line:no-magic-numbers
                         ? -movieTheater.offers.availabilityStartsGraceTime.value
                         : undefined,
                 availabilityEndsGraceTimeInMinutes:
-                    (movieTheater.offers !== undefined && movieTheater.offers.availabilityEndsGraceTime !== undefined)
+                    (movieTheater.offers !== undefined
+                        && movieTheater.offers.availabilityEndsGraceTime !== undefined
+                        && movieTheater.offers.availabilityEndsGraceTime.value !== undefined)
                         // tslint:disable-next-line:no-magic-numbers
                         ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
                         : undefined
