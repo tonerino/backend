@@ -2,6 +2,13 @@ $(function () {
     var eventId = $('input[name="id"]').val();
 
     $('.btn-ok').on('click', function () {
+        // 新規追加の場合スケジュール存在確認なし
+        if (eventId === undefined) {
+            submit();
+
+            return;
+        }
+
         // 登録済スケジュールの存在を確認
         $.ajax({
             dataType: 'json',
@@ -23,21 +30,31 @@ $(function () {
             }
 
             if (confirmed) {
-                var signageDisplayName = $('#signageDisplayName').val();
-                if (signageDisplayName == null || signageDisplayName == '') {
-                    var movieIdentifier = $('#movieIdentifier option:selected').val();
-                    if (movieIdentifier != '') {
-                        $('#signageDisplayName').val('');
-                        $('#signageDisplayName').val($('#movieIdentifier option:selected').text());
-                    }
-                }
-                $('form').submit();
+                submit();
             }
         }).fail(function (jqxhr, textStatus, error) {
             alert('スケジュールを検索できませんでした');
         }).always(function () {
         });
     });
+
+    /**
+     * フォームをsubmitする
+     */
+    function submit() {
+        // サイネージ表示名自動保管
+        var signageDisplayName = $('#signageDisplayName').val();
+        if (signageDisplayName == null || signageDisplayName == '') {
+            var movieIdentifier = $('#movieIdentifier option:selected').val();
+            var movieName = $('#movieIdentifier option:selected').attr('data-name');
+            if (movieIdentifier !== '') {
+                $('#signageDisplayName').val(movieName);
+            }
+        }
+
+        $('form').submit();
+    }
+
     $('body').on('change', '#movieIdentifier', function () {
         var identifier = $(this).val();
         if (identifier == undefined) {
