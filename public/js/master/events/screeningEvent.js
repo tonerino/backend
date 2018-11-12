@@ -567,8 +567,8 @@ function deletePerformance() {
     }
     $.ajax({
         dataType: 'json',
-        url: '/events/screeningEvent/' + performance,
-        type: 'POST',
+        url: '/events/screeningEvent/' + performance + '/cancel',
+        type: 'PUT',
     }).done(function (data) {
         if (!data.error) {
             modal.modal('hide');

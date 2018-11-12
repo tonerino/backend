@@ -56,6 +56,7 @@ export async function search(req: Request, res: Response): Promise<void> {
         const screen = req.query.screen;
         const movieTheater = await placeService.findMovieTheaterByBranchCode({ branchCode: req.query.theater });
         const searchResult = await eventService.searchScreeningEvents({
+            eventStatuses: [chevre.factory.eventStatusType.EventScheduled],
             inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
             inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').add(days, 'day').toDate(),
             superEvent: {
@@ -69,6 +70,7 @@ export async function search(req: Request, res: Response): Promise<void> {
             if (searchResult.data.length < searchResult.totalCount) {
                 let dataPage2: typeof searchResult.data;
                 const searchResultPage2 = await eventService.searchScreeningEvents({
+                    eventStatuses: [chevre.factory.eventStatusType.EventScheduled],
                     inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
                     inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').add(days, 'day').toDate(),
                     superEvent: {
@@ -214,10 +216,11 @@ export async function update(req: Request, res: Response): Promise<void> {
         });
     }
 }
+
 /**
- * 削除
+ * 物理削除ではなくイベントキャンセル
  */
-export async function deletePerformance(req: Request, res: Response): Promise<void> {
+export async function cancelPerformance(req: Request, res: Response): Promise<void> {
     try {
         const eventService = new chevre.service.Event({
             endpoint: <string>process.env.API_ENDPOINT,
@@ -225,22 +228,18 @@ export async function deletePerformance(req: Request, res: Response): Promise<vo
         });
         const event = await eventService.findScreeningEventById({ id: req.params.eventId });
         if (moment(event.startDate).tz('Asia/Tokyo').isSameOrAfter(moment().tz('Asia/Tokyo'), 'day')) {
-            await eventService.deleteScreeningEvent({
-                id: req.params.eventId
-            });
+            event.eventStatus = chevre.factory.eventStatusType.EventCancelled;
+            await eventService.updateScreeningEvent({ id: event.id, attributes: event });
+
             res.json({
                 validation: null,
                 error: null
             });
-
-            return;
         } else {
             res.json({
                 validation: null,
                 error: '開始日時'
             });
-
-            return;
         }
     } catch (err) {
         debug('delete error', err);
@@ -250,6 +249,7 @@ export async function deletePerformance(req: Request, res: Response): Promise<vo
         });
     }
 }
+
 /**
  * リクエストボディからイベントオブジェクトを作成する
  */

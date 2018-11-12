@@ -17,7 +17,7 @@
     }
   ],
   "dependencies": {
-    "@toei-jp/chevre-api-nodejs-client": "^1.0.0-alpha.23",
+    "@toei-jp/chevre-api-nodejs-client": "^1.0.0-alpha.24",
     "@toei-jp/cinerino-api-nodejs-client": "^1.0.0-alpha.38",
     "body-parser": "^1.17.2",
     "connect-redis": "^3.4.0",

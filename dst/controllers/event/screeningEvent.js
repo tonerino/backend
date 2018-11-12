@@ -65,6 +65,7 @@ function search(req, res) {
             const screen = req.query.screen;
             const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: req.query.theater });
             const searchResult = yield eventService.searchScreeningEvents({
+                eventStatuses: [chevre.factory.eventStatusType.EventScheduled],
                 inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
                 inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').add(days, 'day').toDate(),
                 superEvent: {
@@ -78,6 +79,7 @@ function search(req, res) {
                 if (searchResult.data.length < searchResult.totalCount) {
                     let dataPage2;
                     const searchResultPage2 = yield eventService.searchScreeningEvents({
+                        eventStatuses: [chevre.factory.eventStatusType.EventScheduled],
                         inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
                         inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').add(days, 'day').toDate(),
                         superEvent: {
@@ -235,9 +237,9 @@ function update(req, res) {
 }
 exports.update = update;
 /**
- * 削除
+ * 物理削除ではなくイベントキャンセル
  */
-function deletePerformance(req, res) {
+function cancelPerformance(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const eventService = new chevre.service.Event({
@@ -246,21 +248,18 @@ function deletePerformance(req, res) {
             });
             const event = yield eventService.findScreeningEventById({ id: req.params.eventId });
             if (moment(event.startDate).tz('Asia/Tokyo').isSameOrAfter(moment().tz('Asia/Tokyo'), 'day')) {
-                yield eventService.deleteScreeningEvent({
-                    id: req.params.eventId
-                });
+                event.eventStatus = chevre.factory.eventStatusType.EventCancelled;
+                yield eventService.updateScreeningEvent({ id: event.id, attributes: event });
                 res.json({
                     validation: null,
                     error: null
                 });
-                return;
             }
             else {
                 res.json({
                     validation: null,
                     error: '開始日時'
                 });
-                return;
             }
         }
         catch (err) {
@@ -272,7 +271,7 @@ function deletePerformance(req, res) {
         }
     });
 }
-exports.deletePerformance = deletePerformance;
+exports.cancelPerformance = cancelPerformance;
 /**
  * リクエストボディからイベントオブジェクトを作成する
  */
