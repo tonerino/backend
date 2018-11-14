@@ -146,6 +146,13 @@ function update(req, res) {
             && event.offers.acceptedPaymentMethod.indexOf(chevre.factory.paymentMethodType.MovieTicket) < 0) {
             mvtkFlg = 0;
         }
+        let translationType = '';
+        if (event.subtitleLanguage !== undefined && event.subtitleLanguage !== null) {
+            translationType = '0';
+        }
+        if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
+            translationType = '1';
+        }
         const forms = {
             id: req.params.eventId,
             movieIdentifier: (_.isEmpty(req.body.movieIdentifier)) ? event.workPerformed.identifier : req.body.movieIdentifier,
@@ -155,7 +162,7 @@ function update(req, res) {
             duration: (_.isEmpty(req.body.duration)) ? moment.duration(event.duration).asMinutes() : req.body.duration,
             locationBranchCode: event.location.branchCode,
             contentRating: event.workPerformed.contentRating,
-            subtitleLanguage: event.subtitleLanguage,
+            translationType: translationType,
             videoFormatType: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf) : [],
             startDate: (_.isEmpty(req.body.startDate)) ?
                 (event.startDate !== null) ? moment(event.startDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
@@ -239,6 +246,14 @@ function createEventFromBody(body, movie, movieTheater) {
         priceCurrency: chevre.factory.priceCurrency.JPY,
         acceptedPaymentMethod: acceptedPaymentMethod
     };
+    let subtitleLanguage = null;
+    if (body.translationType === '0') {
+        subtitleLanguage = { typeOf: 'Language', name: 'Japanese' };
+    }
+    let dubLanguage = null;
+    if (body.translationType === '1') {
+        dubLanguage = { typeOf: 'Language', name: 'Japanese' };
+    }
     return {
         typeOf: chevre.factory.eventType.ScreeningEventSeries,
         name: {
@@ -262,7 +277,8 @@ function createEventFromBody(body, movie, movieTheater) {
         // },
         videoFormat: videoFormat,
         soundFormat: soundFormat,
-        subtitleLanguage: body.subtitleLanguage,
+        subtitleLanguage: subtitleLanguage,
+        dubLanguage: dubLanguage,
         workPerformed: movie,
         duration: movie.duration,
         startDate: (!_.isEmpty(body.startDate)) ? moment(`${body.startDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
@@ -311,7 +327,14 @@ function search(req, res) {
                     && event.offers.acceptedPaymentMethod.indexOf(chevre.factory.paymentMethodType.MovieTicket) < 0) {
                     mvtkFlg = 0;
                 }
-                return Object.assign({}, event, { id: event.id, movieIdentifier: event.workPerformed.identifier, filmNameJa: event.name.ja, filmNameEn: event.name.en, kanaName: event.kanaName, duration: moment.duration(event.duration).humanize(), contentRating: event.workPerformed.contentRating, subtitleLanguage: event.subtitleLanguage, videoFormat: event.videoFormat, mvtkFlg: mvtkFlg });
+                let translationType = '';
+                if (event.subtitleLanguage !== undefined && event.subtitleLanguage !== null) {
+                    translationType = '字幕';
+                }
+                if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
+                    translationType = '吹替';
+                }
+                return Object.assign({}, event, { id: event.id, movieIdentifier: event.workPerformed.identifier, filmNameJa: event.name.ja, filmNameEn: event.name.en, kanaName: event.kanaName, duration: moment.duration(event.duration).humanize(), contentRating: event.workPerformed.contentRating, translationType: translationType, videoFormat: event.videoFormat, mvtkFlg: mvtkFlg });
             });
             results.sort((event1, event2) => {
                 if (event1.filmNameJa > event2.filmNameJa) {
@@ -380,14 +403,20 @@ function getList(req, res) {
                 }
             });
             const results = data.map((event) => {
+                let translationType = '';
+                if (event.subtitleLanguage !== undefined && event.subtitleLanguage !== null) {
+                    translationType = '字幕';
+                }
+                if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
+                    translationType = '吹替';
+                }
                 return {
                     id: event.id,
                     movieIdentifier: event.workPerformed.identifier,
                     filmNameJa: event.name.ja,
                     duration: event.duration,
                     contentRating: event.workPerformed.contentRating,
-                    subtitleLanguage: (_.isNull(event.subtitleLanguage)) ?
-                        '' : ((event.subtitleLanguage === '1') ? '吹替' : '字幕'),
+                    translationType: translationType,
                     videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : '',
                     movieSubtitleName: (_.isEmpty(event.movieSubtitleName)) ? '' : event.movieSubtitleName
                 };

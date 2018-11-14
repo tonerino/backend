@@ -71,8 +71,8 @@ export async function add(req: Request, res: Response): Promise<void> {
                     nameForPrinting: req.body.nameForPrinting,
                     accounting: {
                         typeOf: 'Accounting',
-                        operatingRevenue: req.body.subject,
-                        nonOperatingRevenue: req.body.nonBoxOfficeSubject,
+                        operatingRevenue: { id: req.body.subject },
+                        nonOperatingRevenue: { id: req.body.nonBoxOfficeSubject },
                         accountsReceivable: Number(req.body.accounting.accountsReceivable)
                     },
                     typeOfNote: req.body.typeOfNote,
@@ -161,8 +161,8 @@ export async function update(req: Request, res: Response): Promise<void> {
                     eligibleMovieTicketType: req.body.eligibleMovieTicketType,
                     accounting: {
                         typeOf: 'Accounting',
-                        operatingRevenue: req.body.subject,
-                        nonOperatingRevenue: req.body.nonBoxOfficeSubject,
+                        operatingRevenue: { id: req.body.subject },
+                        nonOperatingRevenue: { id: req.body.nonBoxOfficeSubject },
                         accountsReceivable: Number(req.body.accounting.accountsReceivable)
                     },
                     typeOfNote: req.body.typeOfNote,
@@ -208,9 +208,9 @@ export async function update(req: Request, res: Response): Promise<void> {
         isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket,
         isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket,
         seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit,
-        subject: (_.isEmpty(req.body.subject)) ? ticketType.accounting.operatingRevenue : req.body.subject,
+        subject: (_.isEmpty(req.body.subject)) ? ticketType.accounting.operatingRevenue.id : req.body.subject,
         nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject))
-            ? ticketType.accounting.nonOperatingRevenue
+            ? (ticketType.accounting.nonOperatingRevenue !== undefined) ? ticketType.accounting.nonOperatingRevenue.id : undefined
             : req.body.nonBoxOfficeSubject
     };
     res.render('ticketType/update', {

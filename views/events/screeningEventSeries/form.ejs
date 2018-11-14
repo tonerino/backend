@@ -213,7 +213,7 @@
     </div>
 </div>
 <div class="form-group">
-    <label for="subtitleLanguage" class="col-sm-3 control-label label-title">
+    <label for="translationType" class="col-sm-3 control-label label-title">
         字幕/吹替
     </label>
     <div class="col-sm-9">
@@ -223,10 +223,10 @@
                 {code: '1', name: {ja: '吹替', en:'dubbing'}}
             ];
         %>
-        <select name="subtitleLanguage" id="subtitleLanguage" class="form-control">
+        <select name="translationType" id="translationType" class="form-control">
             <option value="">---</option>
             <% for (let subtitle of subtitles) { %>
-            <option value="<%= subtitle.code %>" <% if (forms.subtitleLanguage===subtitle.code) { %>
+            <option value="<%= subtitle.code %>" <% if (forms.translationType===subtitle.code) { %>
                 selected="selected"
                 <% } %>>
                 <%- subtitle.name.ja %>

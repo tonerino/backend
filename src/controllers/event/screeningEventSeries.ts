@@ -145,6 +145,13 @@ export async function update(req: Request, res: Response): Promise<void> {
         mvtkFlg = 0;
     }
 
+    let translationType = '';
+    if (event.subtitleLanguage !== undefined && event.subtitleLanguage !== null) {
+        translationType = '0';
+    }
+    if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
+        translationType = '1';
+    }
     const forms = {
         id: req.params.eventId,
         movieIdentifier: (_.isEmpty(req.body.movieIdentifier)) ? event.workPerformed.identifier : req.body.movieIdentifier,
@@ -154,7 +161,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         duration: (_.isEmpty(req.body.duration)) ? moment.duration(event.duration).asMinutes() : req.body.duration,
         locationBranchCode: event.location.branchCode,
         contentRating: event.workPerformed.contentRating,
-        subtitleLanguage: event.subtitleLanguage,
+        translationType: translationType,
         videoFormatType: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf) : [],
         startDate: (_.isEmpty(req.body.startDate)) ?
             (event.startDate !== null) ? moment(event.startDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
@@ -242,6 +249,16 @@ function createEventFromBody(
         acceptedPaymentMethod: acceptedPaymentMethod
     };
 
+    let subtitleLanguage: chevre.factory.language.ILanguage | null = null;
+    if (body.translationType === '0') {
+        subtitleLanguage = { typeOf: 'Language', name: 'Japanese' };
+    }
+
+    let dubLanguage: chevre.factory.language.ILanguage | null = null;
+    if (body.translationType === '1') {
+        dubLanguage = { typeOf: 'Language', name: 'Japanese' };
+    }
+
     return {
         typeOf: chevre.factory.eventType.ScreeningEventSeries,
         name: {
@@ -265,7 +282,8 @@ function createEventFromBody(
         // },
         videoFormat: videoFormat,
         soundFormat: soundFormat,
-        subtitleLanguage: body.subtitleLanguage,
+        subtitleLanguage: subtitleLanguage,
+        dubLanguage: dubLanguage,
         workPerformed: movie,
         duration: movie.duration,
         startDate: (!_.isEmpty(body.startDate)) ? moment(`${body.startDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
@@ -314,6 +332,14 @@ export async function search(req: Request, res: Response): Promise<void> {
                 mvtkFlg = 0;
             }
 
+            let translationType = '';
+            if (event.subtitleLanguage !== undefined && event.subtitleLanguage !== null) {
+                translationType = '字幕';
+            }
+            if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
+                translationType = '吹替';
+            }
+
             return {
                 ...event,
                 id: event.id,
@@ -323,7 +349,7 @@ export async function search(req: Request, res: Response): Promise<void> {
                 kanaName: event.kanaName,
                 duration: moment.duration(event.duration).humanize(),
                 contentRating: event.workPerformed.contentRating,
-                subtitleLanguage: event.subtitleLanguage,
+                translationType: translationType,
                 videoFormat: event.videoFormat,
                 mvtkFlg: mvtkFlg
             };
@@ -390,15 +416,23 @@ export async function getList(req: Request, res: Response): Promise<void> {
                 identifiers: (req.query.movieIdentifier !== '') ? [req.query.movieIdentifier] : undefined
             }
         });
+
         const results = data.map((event) => {
+            let translationType = '';
+            if (event.subtitleLanguage !== undefined && event.subtitleLanguage !== null) {
+                translationType = '字幕';
+            }
+            if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
+                translationType = '吹替';
+            }
+
             return {
                 id: event.id,
                 movieIdentifier: event.workPerformed.identifier,
                 filmNameJa: event.name.ja,
                 duration: event.duration,
                 contentRating: event.workPerformed.contentRating,
-                subtitleLanguage: (_.isNull(event.subtitleLanguage)) ?
-                    '' : ((event.subtitleLanguage === '1') ? '吹替' : '字幕'),
+                translationType: translationType,
                 videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : '',
                 movieSubtitleName: (_.isEmpty(event.movieSubtitleName)) ? '' : event.movieSubtitleName
             };
