@@ -71,8 +71,16 @@ export async function add(req: Request, res: Response): Promise<void> {
                     nameForPrinting: req.body.nameForPrinting,
                     accounting: {
                         typeOf: 'Accounting',
-                        operatingRevenue: { id: req.body.subject },
-                        nonOperatingRevenue: { id: req.body.nonBoxOfficeSubject },
+                        operatingRevenue: {
+                            typeOf: 'AccountTitle',
+                            identifier: req.body.subject,
+                            name: ''
+                        },
+                        nonOperatingRevenue: {
+                            typeOf: 'AccountTitle',
+                            identifier: req.body.nonBoxOfficeSubject,
+                            name: ''
+                        },
                         accountsReceivable: Number(req.body.accounting.accountsReceivable)
                     },
                     typeOfNote: req.body.typeOfNote,
@@ -161,8 +169,16 @@ export async function update(req: Request, res: Response): Promise<void> {
                     eligibleMovieTicketType: req.body.eligibleMovieTicketType,
                     accounting: {
                         typeOf: 'Accounting',
-                        operatingRevenue: { id: req.body.subject },
-                        nonOperatingRevenue: { id: req.body.nonBoxOfficeSubject },
+                        operatingRevenue: {
+                            typeOf: 'AccountTitle',
+                            identifier: req.body.subject,
+                            name: ''
+                        },
+                        nonOperatingRevenue: {
+                            typeOf: 'AccountTitle',
+                            identifier: req.body.nonBoxOfficeSubject,
+                            name: ''
+                        },
                         accountsReceivable: Number(req.body.accounting.accountsReceivable)
                     },
                     typeOfNote: req.body.typeOfNote,
@@ -208,9 +224,9 @@ export async function update(req: Request, res: Response): Promise<void> {
         isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket,
         isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket,
         seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit,
-        subject: (_.isEmpty(req.body.subject)) ? ticketType.accounting.operatingRevenue.id : req.body.subject,
+        subject: (_.isEmpty(req.body.subject)) ? ticketType.accounting.operatingRevenue.identifier : req.body.subject,
         nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject))
-            ? (ticketType.accounting.nonOperatingRevenue !== undefined) ? ticketType.accounting.nonOperatingRevenue.id : undefined
+            ? (ticketType.accounting.nonOperatingRevenue !== undefined) ? ticketType.accounting.nonOperatingRevenue.identifier : undefined
             : req.body.nonBoxOfficeSubject
     };
     res.render('ticketType/update', {
