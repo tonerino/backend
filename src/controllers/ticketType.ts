@@ -174,7 +174,7 @@ function createFromBody(body: any): chevre.factory.ticketType.ITicketType {
         availability: availability,
         priceSpecification: {
             typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
-            price: body.priceSpecification.price,
+            price: Number(body.priceSpecification.price),
             priceCurrency: chevre.factory.priceCurrency.JPY,
             valueAddedTaxIncluded: true,
             referenceQuantity: {
