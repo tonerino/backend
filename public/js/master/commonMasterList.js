@@ -97,7 +97,7 @@ $(function () {
                             value = $.fn.getStringValue(data, fieldId, "");
                             if (value) value = moment(value).format('YYYY-MM-DD HH:MM:SS');
                         } else {
-                            value = $.fn.getStringValue(data, fieldId, "?" + fieldId + "?");
+                            value = $.fn.getStringValue(data, fieldId, '');
                         }
                         temp = temp.replace("\$" + fieldId + "\$", value);
                         if (fieldId === 'edit') {

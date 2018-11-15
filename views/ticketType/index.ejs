@@ -79,7 +79,7 @@ Aa-6
           <th>券種コード</th>
           <!--<th>サイト表示用券種名</th>-->
           <th>管理用券種名</th>
-          <th>販売価格(円)<br>売掛金額(円)</th>
+          <th>販売価格(円)<br>売上金額(円)</th>
           <th>購入席単位</th>
           <th>対応ムビチケ券種区分</th>
           <th></th>
@@ -90,10 +90,10 @@ Aa-6
         <tr id="templateRow" _id="$id$">
           <td name="ticketCode">$ticketCode$</td>
           <!--<td name="ticketNameJa">$ticketNameJa$</td>-->
-          <td name="name.ja">$name.ja$</td>
-          <td name="price__accounting.accountsReceivable" style="text-align:right;">$price$<br>$accounting.accountsReceivable$</td>
-          <td name="eligibleQuantity.value">$eligibleQuantity.value$</td>
-          <td name="eligibleMovieTicketType">$eligibleMovieTicketType$</td>
+          <td name="name.ja__name.en">$name.ja$<br>$name.en$</td>
+          <td name="priceSpecification.price__priceSpecification.accounting.accountsReceivable" style="text-align:right;">$priceSpecification.price$<br>$priceSpecification.accounting.accountsReceivable$</td>
+          <td name="priceSpecification.referenceQuantity.value">$priceSpecification.referenceQuantity.value$</td>
+          <td name="priceSpecification.appliesToMovieTicketType">$priceSpecification.appliesToMovieTicketType$</td>
           <td name="edit" class="center">
             <div class="btn-area">
               <a class="btn btn-list edit" href="/ticketTypes/$id$/update">

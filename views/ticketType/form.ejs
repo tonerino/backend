@@ -90,18 +90,36 @@
     </div>
 </div>
 <div class="form-group ">
-    <label for="price" class="col-sm-3 control-label label-title">
-        金額<font color="red">＊</font>
+    <label for="priceSpecification[price]" class="col-sm-3 control-label label-title">
+        販売価格<font color="red">＊</font>
     </label>
     <div class="col-sm-9">
-        <input type="text" class="form-control" name="price" id="price" placeholder="" maxlength=10 value=<%=forms.price
-            %>>
+        <input type="text" class="form-control" name="priceSpecification[price]" id="priceSpecification[price]"
+            placeholder="" maxlength=10 value=<%=forms.priceSpecification.price %>>
         <p class="message">
             半角10文字以内でご入力ください。
         </p>
         <p class="error message text-danger">
-            <% if (errors && errors.price) { %>
-            <%- errors.price.msg %>
+            <% if (errors && errors['priceSpecification.price']) { %>
+            <%- errors['priceSpecification.price'].msg %>
+            <% } %>
+        </p>
+    </div>
+</div>
+<div class="form-group ">
+    <label for="priceSpecification[accounting][accountsReceivable]" class="col-sm-3 control-label label-title">
+        売上金額<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <input type="text" class="form-control" name="priceSpecification[accounting][accountsReceivable]" id="priceSpecification[accounting][accountsReceivable]"
+            placeholder="" maxlength=10 value=<%=(forms.priceSpecification !==undefined) ?
+            forms.priceSpecification.accounting.accountsReceivable : '' %>>
+        <p class="message">
+            半角10文字以内でご入力ください。
+        </p>
+        <p class="error message text-danger">
+            <% if (errors && errors['priceSpecification.accounting.accountsReceivable']) { %>
+            <%- errors['priceSpecification.accounting.accountsReceivable'].msg %>
             <% } %>
         </p>
     </div>
@@ -190,18 +208,18 @@
     </div>
 </div>
 <div class="form-group ">
-    <label for="eligibleMovieTicketType" class="col-sm-3 control-label label-title">
+    <label for="appliesToMovieTicketType" class="col-sm-3 control-label label-title">
         対応ムビチケ券種区分
     </label>
     <div class="col-sm-9">
-        <input type="text" class="form-control" name="eligibleMovieTicketType" id="eligibleMovieTicketType" placeholder=""
-            maxlength=10 value=<%=forms.eligibleMovieTicketType %>>
+        <input type="text" class="form-control" name="appliesToMovieTicketType" id="appliesToMovieTicketType"
+            placeholder="" maxlength=10 value=<%=forms.priceSpecification.appliesToMovieTicketType %>>
         <p class="message">
             半角10文字以内でご入力ください。
         </p>
         <p class="error message text-danger">
-            <% if (errors && errors.eligibleMovieTicketType) { %>
-            <%- errors.eligibleMovieTicketType.msg %>
+            <% if (errors && errors.appliesToMovieTicketType) { %>
+            <%- errors.appliesToMovieTicketType.msg %>
             <% } %>
         </p>
     </div>
@@ -227,6 +245,7 @@
         </p>
     </div>
 </div>
+<!--
 <div class="form-group ">
     <label for="nonBoxOfficeSubject" class="col-sm-3 control-label label-title">
         興行外細目
@@ -243,20 +262,4 @@
         </select>
     </div>
 </div>
-<div class="form-group ">
-    <label for="accounting[accountsReceivable]" class="col-sm-3 control-label label-title">
-        売掛金額<font color="red">＊</font>
-    </label>
-    <div class="col-sm-9">
-        <input type="text" class="form-control" name="accounting[accountsReceivable]" id="accounting[accountsReceivable]"
-            placeholder="" maxlength=10 value=<%=forms.accounting.accountsReceivable %>>
-        <p class="message">
-            半角10文字以内でご入力ください。
-        </p>
-        <p class="error message text-danger">
-            <% if (errors && errors['accounting.accountsReceivable']) { %>
-            <%- errors['accounting.accountsReceivable'].msg %>
-            <% } %>
-        </p>
-    </div>
-</div>
+ -->
