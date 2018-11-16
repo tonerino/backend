@@ -50,15 +50,16 @@
     <div class="col-sm-3 control-label label-title"></div>
     <div class="col-sm-9" id="price-list">
         <ul id="sortable1" class="connectedSortable">
-            
+
         </ul>
         <ul id="sortable2" class="connectedSortable">
             <% if (ticketTypes.count > 0) { %>
-                <% for (let x in ticketTypes.data) { %>
-                    <li class="ui-state-highlight" uid="<%= ticketTypes.data[x].id %>">
-                        <%= ticketTypes.data[x].name.ja %> （<%= ticketTypes.data[x].price %>）
-                    </li>
-                <% } %>
+            <% for (let x in ticketTypes.data) { %>
+            <li class="ui-state-highlight" uid="<%= ticketTypes.data[x].id %>">
+                <%= ticketTypes.data[x].name.ja %>
+                <%= `(${ticketTypes.data[x].priceSpecification.price})` %>
+            </li>
+            <% } %>
             <% } %>
         </ul>
     </div>
@@ -103,13 +104,19 @@
     <div class="col-sm-9">
         <select name="boxOfficeType" id="boxOfficeType" class="form-control">
             <% for (let boxOffice of boxOfficeTypeList) { %>
-                <% if (forms.boxOfficeType == boxOffice.id) { %>
-                    <option value="<%= boxOffice.id %>" selected><%= boxOffice.name %></option>
-                <% } else if (boxOffice.name === '通常興行') { %>
-                    <option value="<%= boxOffice.id %>" selected><%= boxOffice.name %></option>
-                <% } else { %>
-                    <option value="<%= boxOffice.id %>"><%= boxOffice.name %></option>
-                <% } %>
+            <% if (forms.boxOfficeType == boxOffice.id) { %>
+            <option value="<%= boxOffice.id %>" selected>
+                <%= boxOffice.name %>
+            </option>
+            <% } else if (boxOffice.name === '通常興行') { %>
+            <option value="<%= boxOffice.id %>" selected>
+                <%= boxOffice.name %>
+            </option>
+            <% } else { %>
+            <option value="<%= boxOffice.id %>">
+                <%= boxOffice.name %>
+            </option>
+            <% } %>
             <% } %>
         </select>
         <p class="error message text-danger">

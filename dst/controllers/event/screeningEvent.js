@@ -285,6 +285,10 @@ function createEventFromBody(body, user) {
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
+        const ticketTypeService = new chevre.service.TicketType({
+            endpoint: process.env.API_ENDPOINT,
+            auth: user.authClient
+        });
         const screeningEventSeries = yield eventService.findScreeningEventSeriesById({
             id: body.screeningEventId
         });
@@ -296,6 +300,7 @@ function createEventFromBody(body, user) {
         if (screeningRoom.name === undefined) {
             throw new Error('上映スクリーン名が見つかりません');
         }
+        const ticketTypeGroup = yield ticketTypeService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
         const offersValidAfterStart = (body.endSaleTimeAfterScreening !== undefined && body.endSaleTimeAfterScreening !== '')
             ? Number(body.endSaleTimeAfterScreening)
             : DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES;
@@ -321,11 +326,22 @@ function createEventFromBody(body, user) {
             priceCurrency: chevre.factory.priceCurrency.JPY,
             availabilityEnds: salesEndDate,
             availabilityStarts: onlineDisplayStartDate,
+            category: {
+                id: ticketTypeGroup.id,
+                name: ticketTypeGroup.name
+            },
             eligibleQuantity: {
                 typeOf: 'QuantitativeValue',
                 unitCode: chevre.factory.unitCode.C62,
                 maxValue: Number(body.maxSeatNumber),
                 value: 1
+            },
+            itemOffered: {
+                serviceType: {
+                    typeOf: 'ServiceType',
+                    id: ticketTypeGroup.boxOfficeType.id,
+                    name: ticketTypeGroup.boxOfficeType.name
+                }
             },
             validFrom: salesStartDate,
             validThrough: salesEndDate,
@@ -336,7 +352,6 @@ function createEventFromBody(body, user) {
             doorTime: moment(`${body.day}T${body.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
             startDate: startDate,
             endDate: moment(`${body.day}T${body.endTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
-            ticketTypeGroup: body.ticketTypeGroup,
             workPerformed: screeningEventSeries.workPerformed,
             location: {
                 typeOf: screeningRoom.typeOf,
@@ -357,6 +372,7 @@ function createEventFromBody(body, user) {
 /**
  * リクエストボディからイベントオブジェクトを作成する
  */
+// tslint:disable-next-line:max-func-body-length
 function createMultipleEventFromBody(body, user) {
     return __awaiter(this, void 0, void 0, function* () {
         const eventService = new chevre.service.Event({
@@ -364,6 +380,10 @@ function createMultipleEventFromBody(body, user) {
             auth: user.authClient
         });
         const placeService = new chevre.service.Place({
+            endpoint: process.env.API_ENDPOINT,
+            auth: user.authClient
+        });
+        const ticketTypeService = new chevre.service.TicketType({
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
@@ -381,9 +401,11 @@ function createMultipleEventFromBody(body, user) {
         const startDate = moment(`${body.startDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ').tz('Asia/Tokyo');
         const toDate = moment(`${body.toDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ').tz('Asia/Tokyo');
         const weekDays = body.weekDayData;
-        const ticketTypes = body.ticketData;
+        const ticketTypeIds = body.ticketData;
         const mvtkExcludeFlgs = body.mvtkExcludeFlgData;
         const timeData = body.timeData;
+        const searchTicketTypeGroupsResult = yield ticketTypeService.searchTicketTypeGroups({ limit: 100 });
+        const ticketTypeGroups = searchTicketTypeGroupsResult.data;
         const attributes = [];
         for (let date = startDate; date <= toDate; date = date.add(1, 'day')) {
             const formattedDate = date.format('YYYY/MM/DD');
@@ -411,16 +433,31 @@ function createMultipleEventFromBody(body, user) {
                             }
                         });
                     }
+                    const ticketTypeGroup = ticketTypeGroups.find((t) => t.id === ticketTypeIds[i]);
+                    if (ticketTypeGroup === undefined) {
+                        throw new Error('Ticket Type Group');
+                    }
                     const offers = {
                         typeOf: 'Offer',
                         priceCurrency: chevre.factory.priceCurrency.JPY,
                         availabilityEnds: salesEndDate,
                         availabilityStarts: onlineDisplayStartDate,
+                        category: {
+                            id: ticketTypeGroup.id,
+                            name: ticketTypeGroup.name
+                        },
                         eligibleQuantity: {
                             typeOf: 'QuantitativeValue',
                             unitCode: chevre.factory.unitCode.C62,
                             maxValue: Number(body.maxSeatNumber),
                             value: 1
+                        },
+                        itemOffered: {
+                            serviceType: {
+                                typeOf: 'ServiceType',
+                                id: ticketTypeGroup.boxOfficeType.id,
+                                name: ticketTypeGroup.boxOfficeType.name
+                            }
                         },
                         validFrom: salesStartDate,
                         validThrough: salesEndDate,
@@ -431,7 +468,6 @@ function createMultipleEventFromBody(body, user) {
                         doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
                         startDate: eventStartDate,
                         endDate: moment(`${formattedDate}T${data.endTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
-                        ticketTypeGroup: ticketTypes[i],
                         workPerformed: screeningEventSeries.workPerformed,
                         location: {
                             typeOf: screeningRoom.typeOf,

@@ -262,6 +262,10 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
+    const ticketTypeService = new chevre.service.TicketType({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: user.authClient
+    });
     const screeningEventSeries = await eventService.findScreeningEventSeriesById({
         id: body.screeningEventId
     });
@@ -273,6 +277,8 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
     if (screeningRoom.name === undefined) {
         throw new Error('上映スクリーン名が見つかりません');
     }
+
+    const ticketTypeGroup = await ticketTypeService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
 
     const offersValidAfterStart = (body.endSaleTimeAfterScreening !== undefined && body.endSaleTimeAfterScreening !== '')
         ? Number(body.endSaleTimeAfterScreening)
@@ -300,11 +306,22 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         priceCurrency: chevre.factory.priceCurrency.JPY,
         availabilityEnds: salesEndDate,
         availabilityStarts: onlineDisplayStartDate,
+        category: {
+            id: ticketTypeGroup.id,
+            name: ticketTypeGroup.name
+        },
         eligibleQuantity: {
             typeOf: 'QuantitativeValue',
             unitCode: chevre.factory.unitCode.C62,
             maxValue: Number(body.maxSeatNumber),
             value: 1
+        },
+        itemOffered: {
+            serviceType: {
+                typeOf: 'ServiceType',
+                id: ticketTypeGroup.boxOfficeType.id,
+                name: ticketTypeGroup.boxOfficeType.name
+            }
         },
         validFrom: salesStartDate,
         validThrough: salesEndDate,
@@ -316,7 +333,6 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         doorTime: moment(`${body.day}T${body.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
         startDate: startDate,
         endDate: moment(`${body.day}T${body.endTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
-        ticketTypeGroup: body.ticketTypeGroup,
         workPerformed: screeningEventSeries.workPerformed,
         location: {
             typeOf: <chevre.factory.placeType.ScreeningRoom>screeningRoom.typeOf,
@@ -336,12 +352,17 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
 /**
  * リクエストボディからイベントオブジェクトを作成する
  */
+// tslint:disable-next-line:max-func-body-length
 async function createMultipleEventFromBody(body: any, user: User): Promise<chevre.factory.event.screeningEvent.IAttributes[]> {
     const eventService = new chevre.service.Event({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
     const placeService = new chevre.service.Place({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: user.authClient
+    });
+    const ticketTypeService = new chevre.service.TicketType({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
@@ -360,9 +381,13 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
     const startDate = moment(`${body.startDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ').tz('Asia/Tokyo');
     const toDate = moment(`${body.toDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ').tz('Asia/Tokyo');
     const weekDays: string[] = body.weekDayData;
-    const ticketTypes: string[] = body.ticketData;
+    const ticketTypeIds: string[] = body.ticketData;
     const mvtkExcludeFlgs: string[] = body.mvtkExcludeFlgData;
     const timeData: { doorTime: string; startTime: string; endTime: string }[] = body.timeData;
+
+    const searchTicketTypeGroupsResult = await ticketTypeService.searchTicketTypeGroups({ limit: 100 });
+    const ticketTypeGroups = searchTicketTypeGroupsResult.data;
+
     const attributes: chevre.factory.event.screeningEvent.IAttributes[] = [];
     for (let date = startDate; date <= toDate; date = date.add(1, 'day')) {
         const formattedDate = date.format('YYYY/MM/DD');
@@ -391,16 +416,31 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                     });
                 }
 
+                const ticketTypeGroup = ticketTypeGroups.find((t) => t.id === ticketTypeIds[i]);
+                if (ticketTypeGroup === undefined) {
+                    throw new Error('Ticket Type Group');
+                }
                 const offers: chevre.factory.event.screeningEvent.IOffer = {
                     typeOf: 'Offer',
                     priceCurrency: chevre.factory.priceCurrency.JPY,
                     availabilityEnds: salesEndDate,
                     availabilityStarts: onlineDisplayStartDate,
+                    category: {
+                        id: ticketTypeGroup.id,
+                        name: ticketTypeGroup.name
+                    },
                     eligibleQuantity: {
                         typeOf: 'QuantitativeValue',
                         unitCode: chevre.factory.unitCode.C62,
                         maxValue: Number(body.maxSeatNumber),
                         value: 1
+                    },
+                    itemOffered: {
+                        serviceType: {
+                            typeOf: 'ServiceType',
+                            id: ticketTypeGroup.boxOfficeType.id,
+                            name: ticketTypeGroup.boxOfficeType.name
+                        }
                     },
                     validFrom: salesStartDate,
                     validThrough: salesEndDate,
@@ -412,7 +452,6 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                     doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
                     startDate: eventStartDate,
                     endDate: moment(`${formattedDate}T${data.endTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
-                    ticketTypeGroup: ticketTypes[i],
                     workPerformed: screeningEventSeries.workPerformed,
                     location: {
                         typeOf: <chevre.factory.placeType.ScreeningRoom>screeningRoom.typeOf,

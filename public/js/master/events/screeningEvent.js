@@ -862,11 +862,9 @@ function createScreen(performances, ticketGroups) {
             && performance.offers.acceptedPaymentMethod.indexOf('MovieTicket') < 0) {
             mvtkExcludeFlg = '1';
         }
-        /**
-        * 劇場上映作品名
-        * 興行区分名
-        * 券種グループ
-        */
+
+        var ticketTypeGroup = performance.offers.category.id;
+
         var performanceDom = $('<div class="performance">' +
             '<div ' +
             'data-performance="' + performance._id + '" ' +
@@ -877,7 +875,7 @@ function createScreen(performances, ticketGroups) {
             'data-screen="' + performance.location.branchCode + '" ' +
             'data-theater="' + performance.superEvent.location.branchCode + '" ' +
             'data-film="' + performance.superEvent.id + '" ' +
-            'data-ticketTypeGroup="' + performance.ticketTypeGroup + '" ' +
+            'data-ticketTypeGroup="' + ticketTypeGroup + '" ' +
             'data-saleStartDate="' + saleStartDate + '" ' +
             'data-saleStartTime="' + saleStartTime + '" ' +
             'data-onlineDisplayStartDate="' + onlineDisplayStartDate + '" ' +
