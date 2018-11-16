@@ -382,7 +382,7 @@ export async function searchScreeningEvents(req: Request, res: Response) {
         });
         const searchScreeningEventsResult = await eventService.searchScreeningEvents({
             ...req.query,
-            superEvent: { ids: [req.params.id] }
+            superEvent: { ids: [req.params.eventId] }
         });
         res.json(searchScreeningEventsResult);
     } catch (error) {

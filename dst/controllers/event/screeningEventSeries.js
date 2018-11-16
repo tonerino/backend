@@ -351,7 +351,7 @@ function searchScreeningEvents(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const searchScreeningEventsResult = yield eventService.searchScreeningEvents(Object.assign({}, req.query, { superEvent: { ids: [req.params.id] } }));
+            const searchScreeningEventsResult = yield eventService.searchScreeningEvents(Object.assign({}, req.query, { superEvent: { ids: [req.params.eventId] } }));
             res.json(searchScreeningEventsResult);
         }
         catch (error) {
