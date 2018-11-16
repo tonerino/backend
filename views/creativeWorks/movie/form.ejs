@@ -62,7 +62,6 @@
             ];
         %>
         <select name="contentRating" id="contentRating" class="form-control">
-            <option value="">---</option>
             <% for (let rating of ratings) { %>
             <option value="<%= rating.code %>" <% if (forms.contentRating===rating.code) { %> selected="selected"
                 <% } %>>

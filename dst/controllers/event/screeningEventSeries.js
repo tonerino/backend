@@ -58,7 +58,7 @@ function add(req, res) {
             if (validatorResult.isEmpty()) {
                 // 作品DB登録
                 try {
-                    const movie = yield creativeWorkService.findMovieByIdentifier({ identifier: req.body.movieIdentifier });
+                    const movie = yield creativeWorkService.findMovieByIdentifier({ identifier: req.body.workPerformed.identifier });
                     const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: req.body.locationBranchCode });
                     req.body.contentRating = movie.contentRating;
                     const attributes = createEventFromBody(req.body, movie, movieTheater);
@@ -73,7 +73,7 @@ function add(req, res) {
                 }
             }
         }
-        const forms = Object.assign({ videoFormatType: [] }, req.body);
+        const forms = Object.assign({ workPerformed: {}, videoFormatType: [] }, req.body);
         // 作品マスタ画面遷移
         debug('errors:', errors);
         res.render('events/screeningEventSeries/add', {
@@ -90,7 +90,7 @@ exports.add = add;
 /**
  * 編集
  */
-// tslint:disable-next-line:cyclomatic-complexity
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function update(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const creativeWorkService = new chevre.service.CreativeWork({
@@ -123,7 +123,7 @@ function update(req, res) {
             if (validatorResult.isEmpty()) {
                 // 作品DB登録
                 try {
-                    const movie = yield creativeWorkService.findMovieByIdentifier({ identifier: req.body.movieIdentifier });
+                    const movie = yield creativeWorkService.findMovieByIdentifier({ identifier: req.body.workPerformed.identifier });
                     const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: req.body.locationBranchCode });
                     req.body.contentRating = movie.contentRating;
                     const attributes = createEventFromBody(req.body, movie, movieTheater);
@@ -153,31 +153,11 @@ function update(req, res) {
         if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
             translationType = '1';
         }
-        const forms = {
-            id: req.params.eventId,
-            movieIdentifier: (_.isEmpty(req.body.movieIdentifier)) ? event.workPerformed.identifier : req.body.movieIdentifier,
-            nameJa: (_.isEmpty(req.body.nameJa)) ? event.name.ja : req.body.nameJa,
-            nameEn: (_.isEmpty(req.body.nameEn)) ? event.name.en : req.body.nameEn,
-            kanaName: (_.isEmpty(req.body.kanaName)) ? event.kanaName : req.body.kanaName,
-            duration: (_.isEmpty(req.body.duration)) ? moment.duration(event.duration).asMinutes() : req.body.duration,
-            locationBranchCode: event.location.branchCode,
-            contentRating: event.workPerformed.contentRating,
-            translationType: translationType,
-            videoFormatType: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf) : [],
-            startDate: (_.isEmpty(req.body.startDate)) ?
+        const forms = Object.assign({}, event, req.body, { nameJa: (_.isEmpty(req.body.nameJa)) ? event.name.ja : req.body.nameJa, nameEn: (_.isEmpty(req.body.nameEn)) ? event.name.en : req.body.nameEn, duration: (_.isEmpty(req.body.duration)) ? moment.duration(event.duration).asMinutes() : req.body.duration, locationBranchCode: event.location.branchCode, translationType: translationType, videoFormatType: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf) : [], startDate: (_.isEmpty(req.body.startDate)) ?
                 (event.startDate !== null) ? moment(event.startDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
-                req.body.startDate,
-            endDate: (_.isEmpty(req.body.endDate)) ?
+                req.body.startDate, endDate: (_.isEmpty(req.body.endDate)) ?
                 (event.endDate !== null) ? moment(event.endDate).tz('Asia/Tokyo').add(-1, 'day').format('YYYY/MM/DD') : '' :
-                req.body.endDate,
-            movieSubtitleName: (_.isEmpty(req.body.movieSubtitleName)) ? event.movieSubtitleName : req.body.movieSubtitleName,
-            signageDisplayName: (_.isEmpty(req.body.signageDisplayName)) ? event.signageDisplayName : req.body.signageDisplayName,
-            signageDislaySubtitleName: (_.isEmpty(req.body.signageDislaySubtitleName)) ?
-                event.signageDislaySubtitleName : req.body.signageDislaySubtitleName,
-            summaryStartDay: (_.isEmpty(req.body.summaryStartDay)) ? event.summaryStartDay : req.body.summaryStartDay,
-            mvtkFlg: (_.isEmpty(req.body.mvtkFlg)) ? mvtkFlg : req.body.mvtkFlg,
-            description: (_.isEmpty(req.body.description)) ? event.description : req.body.description
-        };
+                req.body.endDate, mvtkFlg: (_.isEmpty(req.body.mvtkFlg)) ? mvtkFlg : req.body.mvtkFlg });
         // 作品マスタ画面遷移
         debug('errors:', errors);
         res.render('events/screeningEventSeries/edit', {
@@ -334,7 +314,7 @@ function search(req, res) {
                 if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
                     translationType = '吹替';
                 }
-                return Object.assign({}, event, { id: event.id, movieIdentifier: event.workPerformed.identifier, filmNameJa: event.name.ja, filmNameEn: event.name.en, kanaName: event.kanaName, duration: moment.duration(event.duration).humanize(), contentRating: event.workPerformed.contentRating, translationType: translationType, videoFormat: event.videoFormat, mvtkFlg: mvtkFlg });
+                return Object.assign({}, event, { id: event.id, filmNameJa: event.name.ja, filmNameEn: event.name.en, kanaName: event.kanaName, duration: moment.duration(event.duration).humanize(), contentRating: event.workPerformed.contentRating, translationType: translationType, videoFormat: event.videoFormat, mvtkFlg: mvtkFlg });
             });
             results.sort((event1, event2) => {
                 if (event1.filmNameJa > event2.filmNameJa) {
@@ -410,16 +390,7 @@ function getList(req, res) {
                 if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
                     translationType = '吹替';
                 }
-                return {
-                    id: event.id,
-                    movieIdentifier: event.workPerformed.identifier,
-                    filmNameJa: event.name.ja,
-                    duration: event.duration,
-                    contentRating: event.workPerformed.contentRating,
-                    translationType: translationType,
-                    videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : '',
-                    movieSubtitleName: (_.isEmpty(event.movieSubtitleName)) ? '' : event.movieSubtitleName
-                };
+                return Object.assign({}, event, { translationType: translationType, videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : '', movieSubtitleName: (_.isEmpty(event.movieSubtitleName)) ? '' : event.movieSubtitleName });
             });
             res.json({
                 success: true,
@@ -459,41 +430,31 @@ exports.index = index;
  */
 function validate(req) {
     let colName = '';
-    // 作品コード
     colName = '作品コード';
-    req.checkBody('movieIdentifier', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('movieIdentifier', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_CODE });
+    req.checkBody('workPerformed.identifier', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('workPerformed.identifier', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE))
+        .len({ max: NAME_MAX_LENGTH_CODE });
     //.regex(/^[ -\~]+$/, req.__('Message.invalid{{fieldName}}', { fieldName: '%s' })),
-    // 作品名
     colName = '作品名';
     req.checkBody('nameJa', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     req.checkBody('nameJa', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_NAME_JA });
-    // 作品名カナ
     colName = '作品名カナ';
     req.checkBody('kanaName', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     req.checkBody('kanaName', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_JA)).len({ max: NAME_MAX_LENGTH_NAME_JA });
     // .regex(/^[ァ-ロワヲンーa-zA-Z]*$/, req.__('Message.invalid{{fieldName}}', { fieldName: '%s' })),
-    // 作品名英
     colName = '作品名英';
     req.checkBody('nameEn', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     req.checkBody('nameEn', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_EN)).len({ max: NAME_MAX_LENGTH_NAME_EN });
-    // 上映開始日
     colName = '上映開始日';
     if (!_.isEmpty(req.body.startDate)) {
         req.checkBody('startDate', Message.Common.invalidDateFormat.replace('$fieldName$', colName)).isDate();
     }
-    // 上映終了日
     colName = '上映終了日';
     if (!_.isEmpty(req.body.endDate)) {
         req.checkBody('endDate', Message.Common.invalidDateFormat.replace('$fieldName$', colName)).isDate();
     }
-    // レイティング
-    // colName = 'レイティング';
-    // req.checkBody('contentRating', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    // 上映作品サブタイトル名
     colName = '上映作品サブタイトル名';
     req.checkBody('movieSubtitleName', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_NAME_JA });
-    // 集計開始曜日
     colName = '集計開始曜日';
     req.checkBody('summaryStartDay', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 }

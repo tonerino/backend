@@ -45,8 +45,8 @@ $(function () {
         // サイネージ表示名自動保管
         var signageDisplayName = $('#signageDisplayName').val();
         if (signageDisplayName == null || signageDisplayName == '') {
-            var movieIdentifier = $('#movieIdentifier option:selected').val();
-            var movieName = $('#movieIdentifier option:selected').attr('data-name');
+            var movieIdentifier = $('#workPerformed\\[identifier\\] option:selected').val();
+            var movieName = $('#workPerformed\\[identifier\\] option:selected').attr('data-name');
             if (movieIdentifier !== '') {
                 $('#signageDisplayName').val(movieName);
             }
@@ -55,14 +55,13 @@ $(function () {
         $('form').submit();
     }
 
-    $('body').on('change', '#movieIdentifier', function () {
+    $('body').on('change', '#workPerformed\\[identifier\\]', function () {
         var identifier = $(this).val();
         if (identifier == undefined) {
             return false;
         } else {
-            var movieName = $('#movieIdentifier option:selected').attr('data-name');
+            var movieName = $('#workPerformed\\[identifier\\] option:selected').attr('data-name');
             // 上映作品名
-            $('#nameJa').val('');
             $('#nameJa').val(movieName);
             var url = '/events/screeningEventSeries/getrating';
             $.ajax({
