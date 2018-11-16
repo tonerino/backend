@@ -275,6 +275,7 @@ exports.cancelPerformance = cancelPerformance;
 /**
  * リクエストボディからイベントオブジェクトを作成する
  */
+// tslint:disable-next-line:max-func-body-length
 function createEventFromBody(body, user) {
     return __awaiter(this, void 0, void 0, function* () {
         const eventService = new chevre.service.Event({
@@ -286,6 +287,10 @@ function createEventFromBody(body, user) {
             auth: user.authClient
         });
         const ticketTypeService = new chevre.service.TicketType({
+            endpoint: process.env.API_ENDPOINT,
+            auth: user.authClient
+        });
+        const boxOfficeTypeService = new chevre.service.BoxOfficeType({
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
@@ -301,6 +306,11 @@ function createEventFromBody(body, user) {
             throw new Error('上映スクリーン名が見つかりません');
         }
         const ticketTypeGroup = yield ticketTypeService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
+        const searchBoxOfficeTypeResult = yield boxOfficeTypeService.searchBoxOfficeType({ id: ticketTypeGroup.boxOfficeType.id });
+        if (searchBoxOfficeTypeResult.totalCount === 0) {
+            throw new Error('興行区分が見つかりません');
+        }
+        const serviceType = searchBoxOfficeTypeResult.data[0];
         const offersValidAfterStart = (body.endSaleTimeAfterScreening !== undefined && body.endSaleTimeAfterScreening !== '')
             ? Number(body.endSaleTimeAfterScreening)
             : DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES;
@@ -339,8 +349,8 @@ function createEventFromBody(body, user) {
             itemOffered: {
                 serviceType: {
                     typeOf: 'ServiceType',
-                    id: ticketTypeGroup.boxOfficeType.id,
-                    name: ticketTypeGroup.boxOfficeType.name
+                    id: serviceType.id,
+                    name: serviceType.name
                 }
             },
             validFrom: salesStartDate,
@@ -387,6 +397,10 @@ function createMultipleEventFromBody(body, user) {
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
+        const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+            endpoint: process.env.API_ENDPOINT,
+            auth: user.authClient
+        });
         const screeningEventSeries = yield eventService.findScreeningEventSeriesById({
             id: body.screeningEventId
         });
@@ -406,6 +420,8 @@ function createMultipleEventFromBody(body, user) {
         const timeData = body.timeData;
         const searchTicketTypeGroupsResult = yield ticketTypeService.searchTicketTypeGroups({ limit: 100 });
         const ticketTypeGroups = searchTicketTypeGroupsResult.data;
+        const searchBoxOfficeTypeGroupsResult = yield boxOfficeTypeService.searchBoxOfficeType({ limit: 100 });
+        const boxOfficeTypes = searchBoxOfficeTypeGroupsResult.data;
         const attributes = [];
         for (let date = startDate; date <= toDate; date = date.add(1, 'day')) {
             const formattedDate = date.format('YYYY/MM/DD');
@@ -437,6 +453,10 @@ function createMultipleEventFromBody(body, user) {
                     if (ticketTypeGroup === undefined) {
                         throw new Error('Ticket Type Group');
                     }
+                    const boxOfficeType = boxOfficeTypes.find((t) => t.id === ticketTypeGroup.boxOfficeType.id);
+                    if (boxOfficeType === undefined) {
+                        throw new Error('Box Office Type');
+                    }
                     const offers = {
                         typeOf: 'Offer',
                         priceCurrency: chevre.factory.priceCurrency.JPY,
@@ -455,8 +475,8 @@ function createMultipleEventFromBody(body, user) {
                         itemOffered: {
                             serviceType: {
                                 typeOf: 'ServiceType',
-                                id: ticketTypeGroup.boxOfficeType.id,
-                                name: ticketTypeGroup.boxOfficeType.name
+                                id: boxOfficeType.id,
+                                name: boxOfficeType.name
                             }
                         },
                         validFrom: salesStartDate,

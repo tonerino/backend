@@ -90,7 +90,7 @@ function add(req, res) {
             ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? [] : ticketTypeIds,
             description: (_.isEmpty(req.body.description)) ? {} : req.body.description,
             alternateName: (_.isEmpty(req.body.alternateName)) ? {} : req.body.alternateName,
-            boxOfficeType: (_.isEmpty(req.body.boxOfficeType)) ? '' : req.body.boxOfficeType
+            boxOfficeType: (_.isEmpty(req.body.boxOfficeType)) ? {} : req.body.boxOfficeType
         };
         // 券種マスタから取得
         const searchTicketTypesResult = {
@@ -171,14 +171,7 @@ function update(req, res) {
         }
         // 券種グループ取得
         const ticketGroup = yield ticketTypeService.findTicketTypeGroupById({ id: req.params.id });
-        const forms = {
-            id: (_.isEmpty(req.body.id)) ? ticketGroup.id : req.body.id,
-            name: (_.isEmpty(req.body.name)) ? ticketGroup.name : req.body.name,
-            ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : ticketTypeIds,
-            description: (_.isEmpty(req.body.description)) ? ticketGroup.description : req.body.description,
-            alternateName: (_.isEmpty(req.body.alternamteName)) ? ticketGroup.alternateName : req.body.alternateName,
-            boxOfficeType: (_.isEmpty(req.body.boxOfficeType)) ? ticketGroup.boxOfficeType : req.body.boxOfficeType
-        };
+        const forms = Object.assign({ boxOfficeType: {} }, ticketGroup, req.body, { ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : ticketTypeIds });
         // 券種マスタから取得
         const searchTicketTypesResult = {
             count: 0,
@@ -224,11 +217,7 @@ function getList(req, res) {
                 success: true,
                 count: totalCount,
                 results: data.map((g) => {
-                    return {
-                        id: g.id,
-                        ticketGroupCode: g.id,
-                        ticketGroupNameJa: g.name.ja
-                    };
+                    return Object.assign({}, g, { ticketGroupCode: g.id });
                 })
             });
         }
@@ -361,7 +350,7 @@ function validate(req) {
     req.checkBody('name.en', Message.Common.getMaxLength(colName, 128)).len({ max: 128 });
     // 興行区分
     colName = '興行区分';
-    req.checkBody('boxOfficeType', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('boxOfficeType.id', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     //対象券種名
     colName = '対象券種名';
     req.checkBody('ticketTypes', Message.Common.required.replace('$fieldName$', colName)).notEmpty();

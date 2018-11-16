@@ -253,6 +253,7 @@ export async function cancelPerformance(req: Request, res: Response): Promise<vo
 /**
  * リクエストボディからイベントオブジェクトを作成する
  */
+// tslint:disable-next-line:max-func-body-length
 async function createEventFromBody(body: any, user: User): Promise<chevre.factory.event.screeningEvent.IAttributes> {
     const eventService = new chevre.service.Event({
         endpoint: <string>process.env.API_ENDPOINT,
@@ -263,6 +264,10 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         auth: user.authClient
     });
     const ticketTypeService = new chevre.service.TicketType({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: user.authClient
+    });
+    const boxOfficeTypeService = new chevre.service.BoxOfficeType({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
@@ -279,6 +284,11 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
     }
 
     const ticketTypeGroup = await ticketTypeService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
+    const searchBoxOfficeTypeResult = await boxOfficeTypeService.searchBoxOfficeType({ id: ticketTypeGroup.boxOfficeType.id });
+    if (searchBoxOfficeTypeResult.totalCount === 0) {
+        throw new Error('興行区分が見つかりません');
+    }
+    const serviceType = searchBoxOfficeTypeResult.data[0];
 
     const offersValidAfterStart = (body.endSaleTimeAfterScreening !== undefined && body.endSaleTimeAfterScreening !== '')
         ? Number(body.endSaleTimeAfterScreening)
@@ -319,8 +329,8 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         itemOffered: {
             serviceType: {
                 typeOf: 'ServiceType',
-                id: ticketTypeGroup.boxOfficeType.id,
-                name: ticketTypeGroup.boxOfficeType.name
+                id: serviceType.id,
+                name: serviceType.name
             }
         },
         validFrom: salesStartDate,
@@ -366,6 +376,11 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
+    const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: user.authClient
+    });
+
     const screeningEventSeries = await eventService.findScreeningEventSeriesById({
         id: body.screeningEventId
     });
@@ -387,6 +402,9 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
 
     const searchTicketTypeGroupsResult = await ticketTypeService.searchTicketTypeGroups({ limit: 100 });
     const ticketTypeGroups = searchTicketTypeGroupsResult.data;
+
+    const searchBoxOfficeTypeGroupsResult = await boxOfficeTypeService.searchBoxOfficeType({ limit: 100 });
+    const boxOfficeTypes = searchBoxOfficeTypeGroupsResult.data;
 
     const attributes: chevre.factory.event.screeningEvent.IAttributes[] = [];
     for (let date = startDate; date <= toDate; date = date.add(1, 'day')) {
@@ -420,6 +438,11 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                 if (ticketTypeGroup === undefined) {
                     throw new Error('Ticket Type Group');
                 }
+                const boxOfficeType = boxOfficeTypes.find((t) => t.id === ticketTypeGroup.boxOfficeType.id);
+                if (boxOfficeType === undefined) {
+                    throw new Error('Box Office Type');
+                }
+
                 const offers: chevre.factory.event.screeningEvent.IOffer = {
                     typeOf: 'Offer',
                     priceCurrency: chevre.factory.priceCurrency.JPY,
@@ -438,8 +461,8 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                     itemOffered: {
                         serviceType: {
                             typeOf: 'ServiceType',
-                            id: ticketTypeGroup.boxOfficeType.id,
-                            name: ticketTypeGroup.boxOfficeType.name
+                            id: boxOfficeType.id,
+                            name: boxOfficeType.name
                         }
                     },
                     validFrom: salesStartDate,

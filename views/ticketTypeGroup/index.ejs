@@ -12,19 +12,21 @@ Aa-8
 <%- contentFor('body') %>
 <% /* フォーム */ %>
 <div class="col-sm-12 form-container search">
-  <form method="post" class="form-horizontal" >
+  <form method="post" class="form-horizontal">
     <% /* 共通Hiddenコントロール */ %>
     <%- include('../common/master/_hidden') %>
     <div class="menu-group">
       <% /* メッセージ */ %>
       <% if (message !== '') { %>
-      <p class="error message text-danger panel-body bg-danger"><%= message %></p>
+      <p class="error message text-danger panel-body bg-danger">
+        <%= message %>
+      </p>
       <% } %>
     </div>
     <% /* 券種グループコード */ %>
     <div class="form-group ">
       <label for="id" class="col-sm-3 control-label label-title">
-      券種グループコード
+        券種グループコード
       </label>
       <div class="col-sm-9">
         <input type="text" class="form-control" name="id" id="id" placeholder="" maxlength=64>
@@ -33,7 +35,7 @@ Aa-8
     <% /* 券種グループ名 */ %>
     <div class="form-group ">
       <label for="name" class="col-sm-3 control-label label-title">
-      券種グループ名
+        券種グループ名
       </label>
       <div class="col-sm-9">
         <input type="text" class="form-control" name="name" id="name" placeholder="" maxlength=64>
@@ -52,7 +54,7 @@ Aa-8
 <div class="col-sm-12 form-container search">
   <div>
     <p id="searchedCount" style="display:none;">
-      検索結果$searched_count$件 
+      検索結果$searched_count$件
     </p>
   </div>
   <div id="list" class="table-responsive" style="display:none;">
@@ -61,17 +63,16 @@ Aa-8
         <tr>
           <th>券種グループコード</th>
           <th>券種グループ名</th>
+          <th>興行区分コード</th>
           <th></th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         <tr id="templateRow" _id="$_id$">
-          <% /* 券種グループコード */ %>
           <td name="ticketGroupCode">$ticketGroupCode$</td>
-          <% /* 券種グループ名 */ %>
-          <td name="ticketGroupNameJa">$ticketGroupNameJa$</td>
-          <% /* 編集ボタン */ %>
+          <td name="name.ja">$name.ja$</td>
+          <td name="boxOfficeType.id">$boxOfficeType.id$</td>
           <td name="edit" class="center">
             <div class="btn-area">
               <a class="btn btn-list edit" href="/ticketTypeGroups/$id$/update">
@@ -90,7 +91,7 @@ Aa-8
       </tbody>
     </table>
   </div>
-  <div id="pager" class="div_pager_parent"></div>  
+  <div id="pager" class="div_pager_parent"></div>
 </div>
 <%- include('_listTicketTypes') %>
 <% /* 共通Loading */ %>

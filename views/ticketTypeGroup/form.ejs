@@ -98,13 +98,13 @@
     </div>
 </div>
 <div class="form-group ">
-    <label for="boxOfficeType" class="col-sm-3 control-label label-title">
+    <label for="boxOfficeType[id]" class="col-sm-3 control-label label-title">
         興行区分<font color="red">＊</font>
     </label>
     <div class="col-sm-9">
-        <select name="boxOfficeType" id="boxOfficeType" class="form-control">
+        <select name="boxOfficeType[id]" id="boxOfficeType[id]" class="form-control">
             <% for (let boxOffice of boxOfficeTypeList) { %>
-            <% if (forms.boxOfficeType == boxOffice.id) { %>
+            <% if (forms.boxOfficeType.id === boxOffice.id) { %>
             <option value="<%= boxOffice.id %>" selected>
                 <%= boxOffice.name %>
             </option>
@@ -120,8 +120,8 @@
             <% } %>
         </select>
         <p class="error message text-danger">
-            <% if (errors && errors.boxOfficeType) { %>
-            <%- errors.boxOfficeType.msg %>
+            <% if (errors && errors['boxOfficeType.id']) { %>
+            <%- errors['boxOfficeType.id'].msg %>
             <% } %>
         </p>
     </div>
