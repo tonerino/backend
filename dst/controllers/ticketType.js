@@ -237,7 +237,7 @@ function getList(req, res) {
             const result = yield ticketTypeService.searchTicketTypes({
                 limit: req.query.limit,
                 page: req.query.page,
-                id: ticketTypeIds,
+                ids: ticketTypeIds,
                 name: req.query.name
             });
             res.json({

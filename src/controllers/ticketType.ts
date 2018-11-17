@@ -242,7 +242,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
         const result = await ticketTypeService.searchTicketTypes({
             limit: req.query.limit,
             page: req.query.page,
-            id: ticketTypeIds,
+            ids: ticketTypeIds,
             name: req.query.name
         });
         res.json({

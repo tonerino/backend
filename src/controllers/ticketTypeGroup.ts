@@ -91,7 +91,7 @@ export async function add(req: Request, res: Response): Promise<void> {
     };
     if (forms.ticketTypes.length > 0) {
         const ticketTypes = await ticketTypeService.searchTicketTypes({
-            id: forms.ticketTypes
+            ids: forms.ticketTypes
         });
         for (let x = 0; x < forms.ticketTypes.length;) {
             searchTicketTypesResult.data[x] = ticketTypes.data.find((y) => y.id === forms.ticketTypes[x]);
@@ -165,29 +165,19 @@ export async function update(req: Request, res: Response): Promise<void> {
         ...req.body,
         ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : ticketTypeIds
     };
+
     // 券種マスタから取得
-    const searchTicketTypesResult: {
-        count: number;
-        data: any;
-    } = {
-        count: 0,
-        data: []
-    };
-    if (forms.ticketTypes.length > 0) {
-        const ticketTypes = await ticketTypeService.searchTicketTypes({
-            id: forms.ticketTypes
-        });
-        for (let x = 0; x < forms.ticketTypes.length;) {
-            searchTicketTypesResult.data[x] = ticketTypes.data.find((y) => y.id === forms.ticketTypes[x]);
-            x = x + 1;
-        }
-        searchTicketTypesResult.count = forms.ticketTypes.length;
-    }
+    const searchTicketTypesResult = await ticketTypeService.searchTicketTypes({
+        sort: {
+            'priceSpecification.price': chevre.factory.sortType.Descending
+        },
+        ids: forms.ticketTypes
+    });
 
     res.render('ticketTypeGroup/update', {
         message: message,
         errors: errors,
-        ticketTypes: searchTicketTypesResult,
+        ticketTypes: searchTicketTypesResult.data,
         forms: forms,
         boxOfficeTypeList: boxOfficeTypeList
     });
@@ -269,8 +259,13 @@ export async function getTicketTypePriceList(req: Request, res: Response): Promi
         });
         // 券種グループ取得
         const searchTicketTypesResult = await ticketTypeService.searchTicketTypes({
-            price: req.query.price,
-            idHasChoose: req.query.ticketTypeChoose
+            limit: 100,
+            sort: {
+                'priceSpecification.price': chevre.factory.sortType.Descending
+            },
+            priceSpecification: {
+                maxPrice: Number(req.query.price)
+            }
         });
         res.json({
             success: true,

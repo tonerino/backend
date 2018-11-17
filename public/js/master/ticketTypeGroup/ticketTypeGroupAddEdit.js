@@ -17,8 +17,7 @@ $(function () {
             cache: false,
             type: 'GET',
             data: {
-                price: price,
-                ticketTypeChoose: ticketTypeArray
+                price: Number(price)
             },
             beforeSend: function () {
                 $('#price').prop('disabled', true);
@@ -27,6 +26,10 @@ $(function () {
             var ticketType = data.results;
             if (data.success) {
                 var i;
+                // すでに選択済の券種を除外
+                ticketType = ticketType.filter(function (t) {
+                    return ticketTypeArray.indexOf(t.id) < 0;
+                });
                 for (i in ticketType) {
                     $('#sortable1').append(
                         '<li class="ui-state-default" uid=' + ticketType[i].id + '>' +
