@@ -181,12 +181,12 @@ function getRating(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const data = yield creativeWorkService.getMovieRatingByIdentifier({
+            const movie = yield creativeWorkService.findMovieByIdentifier({
                 identifier: req.query.identifier
             });
             res.json({
                 success: true,
-                results: data
+                results: movie.contentRating
             });
         }
         catch (error) {

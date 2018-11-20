@@ -235,20 +235,14 @@ function getTicketTypeList(req, res) {
             });
             // 券種グループ取得
             const ticketGroup = yield ticketTypeService.findTicketTypeGroupById({ id: req.query.id });
-            // 券種
-            const ticketTypeNameList = [];
-            let countData = 0;
-            if (ticketGroup.ticketTypes !== null) {
-                countData = ticketGroup.ticketTypes.length;
-                for (const ticketType of ticketGroup.ticketTypes) {
-                    const ticketTypeData = yield ticketTypeService.findTicketTypeById({ id: ticketType });
-                    ticketTypeNameList.push(ticketTypeData.name.ja);
-                }
-            }
+            const searchTicketTypesResult = yield ticketTypeService.searchTicketTypes({
+                limit: 100,
+                ids: ticketGroup.ticketTypes
+            });
             res.json({
                 success: true,
-                count: countData,
-                results: ticketTypeNameList
+                count: searchTicketTypesResult.totalCount,
+                results: searchTicketTypesResult.data.map((t) => t.name.ja)
             });
         }
         catch (err) {

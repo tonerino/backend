@@ -226,20 +226,14 @@ export async function getTicketTypeList(req: Request, res: Response): Promise<vo
         });
         // 券種グループ取得
         const ticketGroup = await ticketTypeService.findTicketTypeGroupById({ id: req.query.id });
-        // 券種
-        const ticketTypeNameList: any = [];
-        let countData: number = 0;
-        if (ticketGroup.ticketTypes !== null) {
-            countData = ticketGroup.ticketTypes.length;
-            for (const ticketType of ticketGroup.ticketTypes) {
-                const ticketTypeData = await ticketTypeService.findTicketTypeById({ id: ticketType });
-                ticketTypeNameList.push(ticketTypeData.name.ja);
-            }
-        }
+        const searchTicketTypesResult = await ticketTypeService.searchTicketTypes({
+            limit: 100,
+            ids: ticketGroup.ticketTypes
+        });
         res.json({
             success: true,
-            count: countData,
-            results: ticketTypeNameList
+            count: searchTicketTypesResult.totalCount,
+            results: searchTicketTypesResult.data.map((t) => t.name.ja)
         });
     } catch (err) {
         res.json({

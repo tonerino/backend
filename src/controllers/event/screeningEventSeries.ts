@@ -192,12 +192,12 @@ export async function getRating(req: Request, res: Response): Promise<void> {
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const data = await creativeWorkService.getMovieRatingByIdentifier({
+        const movie = await creativeWorkService.findMovieByIdentifier({
             identifier: req.query.identifier
         });
         res.json({
             success: true,
-            results: data
+            results: movie.contentRating
         });
     } catch (error) {
         res.json({
