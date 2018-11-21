@@ -80,28 +80,23 @@ export async function add(req: Request, res: Response): Promise<void> {
         alternateName: (_.isEmpty(req.body.alternateName)) ? {} : req.body.alternateName,
         boxOfficeType: (_.isEmpty(req.body.boxOfficeType)) ? {} : req.body.boxOfficeType
     };
+
     // 券種マスタから取得
-    const searchTicketTypesResult: {
-        count: number;
-        data: any;
-    } = {
-        count: 0,
-        data: []
-    };
+    let ticketTypes: chevre.factory.ticketType.ITicketType[] = [];
     if (forms.ticketTypes.length > 0) {
-        const ticketTypes = await ticketTypeService.searchTicketTypes({
+        const searchTicketTypesResult = await ticketTypeService.searchTicketTypes({
+            sort: {
+                'priceSpecification.price': chevre.factory.sortType.Descending
+            },
             ids: forms.ticketTypes
         });
-        for (let x = 0; x < forms.ticketTypes.length;) {
-            searchTicketTypesResult.data[x] = ticketTypes.data.find((y) => y.id === forms.ticketTypes[x]);
-            x = x + 1;
-        }
-        searchTicketTypesResult.count = forms.ticketTypes.length;
+        ticketTypes = searchTicketTypesResult.data;
     }
+
     res.render('ticketTypeGroup/add', {
         message: message,
         errors: errors,
-        ticketTypes: searchTicketTypesResult,
+        ticketTypes: ticketTypes,
         forms: forms,
         boxOfficeTypeList: boxOfficeTypeList
     });
@@ -166,17 +161,21 @@ export async function update(req: Request, res: Response): Promise<void> {
     };
 
     // 券種マスタから取得
-    const searchTicketTypesResult = await ticketTypeService.searchTicketTypes({
-        sort: {
-            'priceSpecification.price': chevre.factory.sortType.Descending
-        },
-        ids: forms.ticketTypes
-    });
+    let ticketTypes: chevre.factory.ticketType.ITicketType[] = [];
+    if (forms.ticketTypes.length > 0) {
+        const searchTicketTypesResult = await ticketTypeService.searchTicketTypes({
+            sort: {
+                'priceSpecification.price': chevre.factory.sortType.Descending
+            },
+            ids: forms.ticketTypes
+        });
+        ticketTypes = searchTicketTypesResult.data;
+    }
 
     res.render('ticketTypeGroup/update', {
         message: message,
         errors: errors,
-        ticketTypes: searchTicketTypesResult.data,
+        ticketTypes: ticketTypes,
         forms: forms,
         boxOfficeTypeList: boxOfficeTypeList
     });

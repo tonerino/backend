@@ -18,8 +18,6 @@ const debug = createDebug('chevre-backend:controllers');
 const NAME_MAX_LENGTH_CODE: number = 64;
 // 作品名・日本語 全角64
 const NAME_MAX_LENGTH_NAME_JA: number = 64;
-// 作品名・英語 半角128
-const NAME_MAX_LENGTH_NAME_EN: number = 128;
 
 /**
  * 新規登録

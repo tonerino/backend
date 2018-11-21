@@ -92,24 +92,20 @@ function add(req, res) {
             boxOfficeType: (_.isEmpty(req.body.boxOfficeType)) ? {} : req.body.boxOfficeType
         };
         // 券種マスタから取得
-        const searchTicketTypesResult = {
-            count: 0,
-            data: []
-        };
+        let ticketTypes = [];
         if (forms.ticketTypes.length > 0) {
-            const ticketTypes = yield ticketTypeService.searchTicketTypes({
+            const searchTicketTypesResult = yield ticketTypeService.searchTicketTypes({
+                sort: {
+                    'priceSpecification.price': chevre.factory.sortType.Descending
+                },
                 ids: forms.ticketTypes
             });
-            for (let x = 0; x < forms.ticketTypes.length;) {
-                searchTicketTypesResult.data[x] = ticketTypes.data.find((y) => y.id === forms.ticketTypes[x]);
-                x = x + 1;
-            }
-            searchTicketTypesResult.count = forms.ticketTypes.length;
+            ticketTypes = searchTicketTypesResult.data;
         }
         res.render('ticketTypeGroup/add', {
             message: message,
             errors: errors,
-            ticketTypes: searchTicketTypesResult,
+            ticketTypes: ticketTypes,
             forms: forms,
             boxOfficeTypeList: boxOfficeTypeList
         });
@@ -172,16 +168,20 @@ function update(req, res) {
         const ticketGroup = yield ticketTypeService.findTicketTypeGroupById({ id: req.params.id });
         const forms = Object.assign({ boxOfficeType: {} }, ticketGroup, req.body, { ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : ticketTypeIds });
         // 券種マスタから取得
-        const searchTicketTypesResult = yield ticketTypeService.searchTicketTypes({
-            sort: {
-                'priceSpecification.price': chevre.factory.sortType.Descending
-            },
-            ids: forms.ticketTypes
-        });
+        let ticketTypes = [];
+        if (forms.ticketTypes.length > 0) {
+            const searchTicketTypesResult = yield ticketTypeService.searchTicketTypes({
+                sort: {
+                    'priceSpecification.price': chevre.factory.sortType.Descending
+                },
+                ids: forms.ticketTypes
+            });
+            ticketTypes = searchTicketTypesResult.data;
+        }
         res.render('ticketTypeGroup/update', {
             message: message,
             errors: errors,
-            ticketTypes: searchTicketTypesResult.data,
+            ticketTypes: ticketTypes,
             forms: forms,
             boxOfficeTypeList: boxOfficeTypeList
         });
