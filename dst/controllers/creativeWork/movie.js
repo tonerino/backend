@@ -116,24 +116,17 @@ function update(req, res) {
             auth: req.user.authClient
         });
         const distributions = yield distributionsService.getDistributionsList();
-        const forms = {
-            identifier: (_.isEmpty(req.body.identifier)) ? movie.identifier : req.body.identifier,
-            name: (_.isEmpty(req.body.nameJa)) ? movie.name : req.body.name,
-            duration: (_.isEmpty(req.body.duration)) ? moment.duration(movie.duration).asMinutes() : req.body.duration,
-            contentRating: movie.contentRating,
-            subtitle: (_.isEmpty(req.body.subtitle)) ? movie.subtitle : req.body.subtitle,
-            datePublished: (_.isEmpty(req.body.datePublished)) ?
+        const forms = Object.assign({}, movie, req.body, { duration: (_.isEmpty(req.body.duration))
+                ? (typeof movie.duration === 'string') ? moment.duration(movie.duration).asMinutes() : ''
+                : req.body.duration, datePublished: (_.isEmpty(req.body.datePublished)) ?
                 (movie.datePublished !== undefined) ? moment(movie.datePublished).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
-                req.body.datePublished,
-            offers: (_.isEmpty(req.body.offers)) ?
+                req.body.datePublished, offers: (_.isEmpty(req.body.offers)) ?
                 (movie.offers !== undefined && movie.offers.availabilityEnds !== undefined)
                     ? {
                         availabilityEnds: moment(movie.offers.availabilityEnds).add(-1, 'day').tz('Asia/Tokyo').format('YYYY/MM/DD')
                     }
                     : undefined
-                : req.body.offers,
-            distribution: (_.isEmpty(req.body.distribution)) ? movie.distribution : req.body.distribution
-        };
+                : req.body.offers });
         // 作品マスタ画面遷移
         debug('errors:', errors);
         res.render('creativeWorks/movie/edit', {
@@ -150,8 +143,8 @@ function createMovieFromBody(body) {
         typeOf: chevre.factory.creativeWorkType.Movie,
         identifier: body.identifier,
         name: body.name,
-        duration: moment.duration(Number(body.duration), 'm').toISOString(),
-        contentRating: body.contentRating,
+        duration: (body.duration !== '') ? moment.duration(Number(body.duration), 'm').toISOString() : null,
+        contentRating: (body.contentRating !== '') ? body.contentRating : null,
         subtitle: body.subtitle,
         datePublished: (!_.isEmpty(body.datePublished)) ?
             moment(`${body.datePublished}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
@@ -223,32 +216,22 @@ exports.index = index;
  */
 function validate(req, checkType) {
     let colName = '';
-    // 作品コード
     if (checkType === 'add') {
         colName = '作品コード';
         req.checkBody('identifier', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
         req.checkBody('identifier', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_CODE });
     }
     //.regex(/^[ -\~]+$/, req.__('Message.invalid{{fieldName}}', { fieldName: '%s' })),
-    // 作品名
     colName = '作品名';
     req.checkBody('name', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     req.checkBody('name', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_NAME_JA });
-    // 上映時間
     colName = '上映時間';
-    req.checkBody('duration', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('duration', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_NAME_MINUTES))
-        .isNumeric()
-        .len({ max: NAME_MAX_LENGTH_NAME_MINUTES });
-    // レイティング
-    colName = 'レイティング';
-    req.checkBody('contentRating', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    // サブタイトル
+    if (req.body.duration !== '') {
+        req.checkBody('duration', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_NAME_MINUTES)).optional()
+            .isNumeric().len({ max: NAME_MAX_LENGTH_NAME_MINUTES });
+    }
     colName = 'サブタイトル';
     req.checkBody('subtitle', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_NAME_JA });
-    // 公開日
-    // 興行終了予定日
-    // 配給
     colName = '配給';
     req.checkBody('distribution', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 }

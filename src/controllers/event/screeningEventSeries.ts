@@ -253,6 +253,10 @@ function createEventFromBody(
         dubLanguage = { typeOf: 'Language', name: 'Japanese' };
     }
 
+    if (typeof movie.duration !== 'string') {
+        throw new Error('作品の上映時間が未登録です');
+    }
+
     return {
         typeOf: chevre.factory.eventType.ScreeningEventSeries,
         name: {

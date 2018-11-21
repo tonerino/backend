@@ -110,11 +110,11 @@ export async function update(req: Request, res: Response): Promise<void> {
     });
     const distributions = await distributionsService.getDistributionsList();
     const forms = {
-        identifier: (_.isEmpty(req.body.identifier)) ? movie.identifier : req.body.identifier,
-        name: (_.isEmpty(req.body.nameJa)) ? movie.name : req.body.name,
-        duration: (_.isEmpty(req.body.duration)) ? moment.duration(movie.duration).asMinutes() : req.body.duration,
-        contentRating: movie.contentRating,
-        subtitle: (_.isEmpty(req.body.subtitle)) ? movie.subtitle : req.body.subtitle,
+        ...movie,
+        ...req.body,
+        duration: (_.isEmpty(req.body.duration))
+            ? (typeof movie.duration === 'string') ? moment.duration(movie.duration).asMinutes() : ''
+            : req.body.duration,
         datePublished: (_.isEmpty(req.body.datePublished)) ?
             (movie.datePublished !== undefined) ? moment(movie.datePublished).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
             req.body.datePublished,
@@ -124,8 +124,7 @@ export async function update(req: Request, res: Response): Promise<void> {
                     availabilityEnds: moment(movie.offers.availabilityEnds).add(-1, 'day').tz('Asia/Tokyo').format('YYYY/MM/DD')
                 }
                 : undefined
-            : req.body.offers,
-        distribution: (_.isEmpty(req.body.distribution)) ? movie.distribution : req.body.distribution
+            : req.body.offers
     };
     // 作品マスタ画面遷移
     debug('errors:', errors);
@@ -141,8 +140,8 @@ function createMovieFromBody(body: any): chevre.factory.creativeWork.movie.ICrea
         typeOf: chevre.factory.creativeWorkType.Movie,
         identifier: body.identifier,
         name: body.name,
-        duration: moment.duration(Number(body.duration), 'm').toISOString(),
-        contentRating: body.contentRating,
+        duration: (body.duration !== '') ? moment.duration(Number(body.duration), 'm').toISOString() : null,
+        contentRating: (body.contentRating !== '') ? body.contentRating : null,
         subtitle: body.subtitle,
         datePublished: (!_.isEmpty(body.datePublished)) ?
             moment(`${body.datePublished}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
@@ -209,32 +208,26 @@ export async function index(__: Request, res: Response): Promise<void> {
  */
 function validate(req: Request, checkType: string): void {
     let colName: string = '';
-    // 作品コード
     if (checkType === 'add') {
         colName = '作品コード';
         req.checkBody('identifier', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
         req.checkBody('identifier', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_CODE });
     }
     //.regex(/^[ -\~]+$/, req.__('Message.invalid{{fieldName}}', { fieldName: '%s' })),
-    // 作品名
+
     colName = '作品名';
     req.checkBody('name', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     req.checkBody('name', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_NAME_JA });
-    // 上映時間
+
     colName = '上映時間';
-    req.checkBody('duration', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('duration', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_NAME_MINUTES))
-        .isNumeric()
-        .len({ max: NAME_MAX_LENGTH_NAME_MINUTES });
-    // レイティング
-    colName = 'レイティング';
-    req.checkBody('contentRating', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    // サブタイトル
+    if (req.body.duration !== '') {
+        req.checkBody('duration', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_NAME_MINUTES)).optional()
+            .isNumeric().len({ max: NAME_MAX_LENGTH_NAME_MINUTES });
+    }
+
     colName = 'サブタイトル';
     req.checkBody('subtitle', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_NAME_JA });
-    // 公開日
-    // 興行終了予定日
-    // 配給
+
     colName = '配給';
     req.checkBody('distribution', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 }
