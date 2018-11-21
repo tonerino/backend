@@ -46,8 +46,8 @@ export async function add(req: Request, res: Response): Promise<void> {
 
                 debug('saving an movie...', movie);
                 await creativeWorkService.createMovie(movie);
-                res.redirect('/complete');
-                // res.redirect(`/creativeWorks/movie/${movie.identifier}/update`);
+                req.flash('message', '登録しました');
+                res.redirect(`/creativeWorks/movie/${movie.identifier}/update`);
 
                 return;
             } catch (error) {
@@ -94,6 +94,7 @@ export async function update(req: Request, res: Response): Promise<void> {
                 movie = createMovieFromBody(req.body);
                 debug('saving an movie...', movie);
                 await creativeWorkService.updateMovie(movie);
+                req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
 
                 return;

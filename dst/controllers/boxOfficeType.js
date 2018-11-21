@@ -43,7 +43,8 @@ function add(req, res) {
                         name: req.body.name
                     };
                     yield boxOfficeTypeService.createBoxOfficeType(boxOfficeType);
-                    res.redirect('/complete');
+                    req.flash('message', '作成しました');
+                    res.redirect('/boxOfficeTypes');
                     return;
                 }
                 catch (error) {

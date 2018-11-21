@@ -7,7 +7,6 @@ import authentication from '../middlewares/authentication';
 
 import authRouter from './auth';
 import boxOfficeTypeMasterRouter from './boxOfficeType';
-import commonRouter from './common';
 import movieRouter from './creativeWork/movie';
 import distributionsMasterRouter from './distributions';
 import screeningEventRouter from './event/screeningEvent';
@@ -35,7 +34,6 @@ router.use('/subjects', subjectRouter);
 router.use('/timeMeter', timeMeterRouter);
 router.use('/ticketTypes', ticketTypeMasterRouter);
 router.use('/ticketTypeGroups', ticketTypeGroupMasterRouter);
-router.use(commonRouter);
 
 router.get('/', (req, res, next) => {
     if (req.query.next !== undefined) {

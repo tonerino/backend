@@ -52,9 +52,8 @@ function add(req, res) {
                 try {
                     const ticketType = createFromBody(req.body);
                     yield ticketTypeService.createTicketType(ticketType);
-                    message = '登録完了';
-                    res.redirect('/complete');
-                    // res.redirect(`/ticketTypes/${ticketType.id}/update`);
+                    req.flash('message', '登録しました');
+                    res.redirect(`/ticketTypes/${ticketType.id}/update`);
                     return;
                 }
                 catch (error) {
@@ -101,8 +100,8 @@ function update(req, res) {
                 try {
                     ticketType = createFromBody(req.body);
                     yield ticketTypeService.updateTicketType(ticketType);
-                    message = '編集完了';
-                    res.redirect(`/ticketTypes/${ticketType.id}/update`);
+                    req.flash('message', '更新しました');
+                    res.redirect(req.originalUrl);
                     return;
                 }
                 catch (error) {

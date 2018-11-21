@@ -10,12 +10,10 @@ Aa-18
 <%- contentFor('body') %>
 <div class="col-sm-12 form-container">
     <% /* フォーム */ %>
-    <form method="post" class="form-horizontal" >
+    <form method="post" class="form-horizontal">
         <div class="menu-group">
-            <% /* メッセージ */ %>
-            <% if (message !== '') { %>
-            <p class="error message text-danger panel-body bg-danger"><%= message %></p>
-            <% } %>
+            <%- include('../common/errorMessage') %>
+            <%- include('../common/successMessage') %>
         </div>
         <% /* 興行区分コード */ %>
         <div class="form-group ">
@@ -26,9 +24,9 @@ Aa-18
                 <input type="text" class="form-control" name="id" id="id" placeholder="" maxlength=64 value="<%= forms.id %>">
                 <p class="message">半角64文字以内でご入力ください。</p>
                 <p class="error message text-danger">
-                <% if (errors && errors.id) { %>
-                <%- errors.id.msg %>
-                <% } %>
+                    <% if (errors && errors.id) { %>
+                    <%- errors.id.msg %>
+                    <% } %>
                 </p>
             </div>
         </div>
@@ -41,9 +39,9 @@ Aa-18
                 <input type="text" class="form-control" name="name" id="name" placeholder="" maxlength=64 value="<%= forms.name %>">
                 <p class="message">64文字以内でご入力ください。</p>
                 <p class="error message text-danger">
-                <% if (errors && errors.name) { %>
-                <%- errors.name.msg %>
-                <% } %>
+                    <% if (errors && errors.name) { %>
+                    <%- errors.name.msg %>
+                    <% } %>
                 </p>
             </div>
         </div>
@@ -57,9 +55,9 @@ Aa-18
     </form>
 </div>
 <script>
-$(function(){
-    $('.btn-ok').on('click', function(){
-        $('form').submit();
+    $(function () {
+        $('.btn-ok').on('click', function () {
+            $('form').submit();
+        });
     });
-});
 </script>

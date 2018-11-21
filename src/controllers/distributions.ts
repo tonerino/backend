@@ -42,8 +42,8 @@ export async function add(req: Request, res: Response): Promise<void> {
                     message = '配給コードが既に登録されています。';
                 } else {
                     await distributionService.createDistribution(distribution);
-                    message = '登録完了';
-                    res.redirect('/complete');
+                    req.flash('message', '登録しました');
+                    res.redirect('/distributions');
 
                     return;
                 }

@@ -38,16 +38,17 @@ function add(req, res) {
             errors = req.validationErrors(true);
             if (validatorResult.isEmpty()) {
                 try {
-                    const subject = createSubjectFromBody(req.body);
-                    debug('saving an subject...', subject);
+                    const subjectAttributest = createSubjectFromBody(req.body);
+                    debug('saving an subject...', subjectAttributest);
                     const subjectService = new chevre.service.Subject({
                         endpoint: process.env.API_ENDPOINT,
                         auth: req.user.authClient
                     });
                     yield subjectService.createSubject({
-                        attributes: subject
+                        attributes: subjectAttributest
                     });
-                    res.redirect('/complete');
+                    req.flash('message', '登録しました');
+                    res.redirect(`/subjects/${subjectAttributest.detailCd}/update`);
                     return;
                 }
                 catch (error) {
@@ -76,9 +77,13 @@ function update(req, res) {
         });
         let message = '';
         let errors = {};
-        const subject = yield subjectService.findSubjectById({
-            id: req.params.id
+        const searchSubjectsResult = yield subjectService.searchSubject({
+            detailCd: req.params.id
         });
+        if (searchSubjectsResult.totalCount === 0) {
+            throw new Error('Subject Not Found');
+        }
+        const subject = searchSubjectsResult.data[0];
         if (req.method === 'POST') {
             // バリデーション
             validate(req);
@@ -90,9 +95,10 @@ function update(req, res) {
                     const subjectData = createSubjectFromBody(req.body);
                     debug('saving an subject...', subjectData);
                     yield subjectService.updateSubject({
-                        id: req.params.id,
+                        id: subject.id,
                         attributes: subjectData
                     });
+                    req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
                     return;
                 }
@@ -155,7 +161,7 @@ function getList(req, res) {
                 count: totalCount,
                 results: data.map((g) => {
                     return {
-                        id: g.id,
+                        id: g.detailCd,
                         subjectClassificationCd: g.subjectClassificationCd,
                         subjectClassificationName: g.subjectClassificationName,
                         subjectCd: g.subjectCd,

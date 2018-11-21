@@ -11,12 +11,10 @@ Aa-7
 <%- contentFor('body') %>
 <div class="col-sm-12 form-container">
     <% /* フォーム */ %>
-    <form method="post" class="form-horizontal" id="ticketTypeGroupsForm" >
+    <form method="post" class="form-horizontal" id="ticketTypeGroupsForm">
         <div class="menu-group">
-            <% /* メッセージ */ %>
-            <% if (message != '') { %>
-            <p class="error message text-danger panel-body bg-danger"><%= message %></p>
-            <% } %>
+            <%- include('../common/errorMessage') %>
+            <%- include('../common/successMessage') %>
         </div>
 
         <% /* 券種グループコード */ %>
@@ -27,12 +25,12 @@ Aa-7
             <div class="col-sm-9">
                 <input type="text" class="form-control" name="id" id="id" placeholder="" maxlength=64 value="<%= forms.id %>">
                 <p class="message">
-                半角64文字以内でご入力ください。
+                    半角64文字以内でご入力ください。
                 </p>
                 <p class="error message text-danger">
-                <% if (errors && errors.id) { %>
-                <%- errors.id.msg %>
-                <% } %>
+                    <% if (errors && errors.id) { %>
+                    <%- errors.id.msg %>
+                    <% } %>
                 </p>
             </div>
         </div>
@@ -48,9 +46,9 @@ Aa-7
     </form>
 </div>
 <script>
-$(function(){
-    $('.btn-ok').on('click', function(){
-        $('form').submit();
+    $(function () {
+        $('.btn-ok').on('click', function () {
+            $('form').submit();
+        });
     });
-});
 </script>

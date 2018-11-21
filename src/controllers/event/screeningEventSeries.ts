@@ -57,9 +57,9 @@ export async function add(req: Request, res: Response): Promise<void> {
                 req.body.contentRating = movie.contentRating;
                 const attributes = createEventFromBody(req.body, movie, movieTheater);
                 debug('saving an event...', attributes);
-                await eventService.createScreeningEventSeries(attributes);
-                res.redirect('/complete');
-                // res.redirect(`/events/screeningEventSeries/${event.id}/update`);
+                const event = await eventService.createScreeningEventSeries(attributes);
+                req.flash('message', '登録しました');
+                res.redirect(`/events/screeningEventSeries/${event.id}/update`);
 
                 return;
             } catch (error) {
@@ -130,6 +130,7 @@ export async function update(req: Request, res: Response): Promise<void> {
                     id: eventId,
                     attributes: attributes
                 });
+                req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
 
                 return;

@@ -36,7 +36,8 @@ export async function add(req: Request, res: Response): Promise<void> {
                     name: req.body.name
                 };
                 await boxOfficeTypeService.createBoxOfficeType(boxOfficeType);
-                res.redirect('/complete');
+                req.flash('message', '作成しました');
+                res.redirect('/boxOfficeTypes');
 
                 return;
             } catch (error) {

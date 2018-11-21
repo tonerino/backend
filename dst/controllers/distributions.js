@@ -50,8 +50,8 @@ function add(req, res) {
                     }
                     else {
                         yield distributionService.createDistribution(distribution);
-                        message = '登録完了';
-                        res.redirect('/complete');
+                        req.flash('message', '登録しました');
+                        res.redirect('/distributions');
                         return;
                     }
                 }

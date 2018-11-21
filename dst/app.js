@@ -6,6 +6,8 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const express = require("express");
+// tslint:disable-next-line:no-require-imports no-var-requires
+const flash = require("express-flash");
 // tslint:disable-next-line:no-require-imports
 const expressValidator = require("express-validator");
 const helmet = require("helmet");
@@ -24,6 +26,7 @@ const app = express();
 app.use(cors()); // enable All CORS Requests
 app.use(helmet());
 app.use(session_1.default); // セッション
+app.use(flash());
 app.use(locals_1.default); // テンプレート変数
 // view engine setup
 app.set('views', `${__dirname}/../views`);

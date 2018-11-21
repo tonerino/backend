@@ -7,7 +7,6 @@ const express = require("express");
 const authentication_1 = require("../middlewares/authentication");
 const auth_1 = require("./auth");
 const boxOfficeType_1 = require("./boxOfficeType");
-const common_1 = require("./common");
 const movie_1 = require("./creativeWork/movie");
 const distributions_1 = require("./distributions");
 const screeningEvent_1 = require("./event/screeningEvent");
@@ -34,7 +33,6 @@ router.use('/subjects', subject_1.default);
 router.use('/timeMeter', timeMeter_1.default);
 router.use('/ticketTypes', ticketType_1.default);
 router.use('/ticketTypeGroups', ticketTypeGroup_1.default);
-router.use(common_1.default);
 router.get('/', (req, res, next) => {
     if (req.query.next !== undefined) {
         next(new Error(req.param('next')));

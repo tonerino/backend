@@ -11,12 +11,10 @@ Aa-9
 <%- contentFor('body') %>
 <div class="col-sm-12 form-container">
     <% /* フォーム */ %>
-    <form method="post" class="form-horizontal" >
+    <form method="post" class="form-horizontal">
         <div class="menu-group">
-            <% /* メッセージ */ %>
-            <% if (message !== '') { %>
-            <p class="error message text-danger panel-body bg-danger"><%= message %></p>
-            <% } %>
+            <%- include('../../common/errorMessage') %>
+            <%- include('../../common/successMessage') %>
         </div>
         <% /* 作品コード */ %>
         <div class="form-group ">
@@ -24,15 +22,16 @@ Aa-9
                 作品コード<font color="red">＊</font>
             </label>
             <div class="col-sm-9">
-                <input type="text" class="form-control" name="identifier" id="identifier" placeholder="" maxlength=64 value="<%= forms.identifier %>">
+                <input type="text" class="form-control" name="identifier" id="identifier" placeholder="" maxlength=64
+                    value="<%= forms.identifier %>">
                 <p class="message">
-                <% /*半角64文字以内でご入力ください。*/ %>
-                半角64文字以内でご入力ください。
+                    <% /*半角64文字以内でご入力ください。*/ %>
+                    半角64文字以内でご入力ください。
                 </p>
                 <p class="error message text-danger">
-                <% if (errors && errors.identifier) { %>
-                <%- errors.identifier.msg %>
-                <% } %>
+                    <% if (errors && errors.identifier) { %>
+                    <%- errors.identifier.msg %>
+                    <% } %>
                 </p>
             </div>
         </div>
@@ -49,13 +48,13 @@ Aa-9
     </form>
 </div>
 <script>
-$(function(){
-    $('.btn-ok').on('click', function(){
-        $('form').submit();
+    $(function () {
+        $('.btn-ok').on('click', function () {
+            $('form').submit();
+        });
+        // datepickerセット
+        $('.datepicker').datepicker({
+            language: 'ja'
+        })
     });
-    // datepickerセット
-    $('.datepicker').datepicker({
-        language: 'ja'
-    })
-});
 </script>

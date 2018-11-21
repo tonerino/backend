@@ -64,9 +64,8 @@ function add(req, res) {
                         boxOfficeType: req.body.boxOfficeType
                     };
                     yield ticketTypeService.createTicketTypeGroup(ticketTypeGroup);
-                    // message = '登録完了';
-                    res.redirect('/complete');
-                    // res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
+                    req.flash('message', '登録しました');
+                    res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
                     return;
                 }
                 catch (error) {
@@ -160,8 +159,8 @@ function update(req, res) {
                         boxOfficeType: req.body.boxOfficeType
                     };
                     yield ticketTypeService.updateTicketTypeGroup(ticketTypeGroup);
-                    // message = '編集完了';
-                    res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
+                    req.flash('message', '更新しました');
+                    res.redirect(req.originalUrl);
                     return;
                 }
                 catch (error) {

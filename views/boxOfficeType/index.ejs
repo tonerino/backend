@@ -11,11 +11,15 @@ Aa-19
 <script src="/js/master/boxOfficeTypeList.js"></script>
 <%- contentFor('body') %>
 <div class="col-sm-12 form-container search">
-    <form method="post" class="form-horizontal search" >
-    <%- include('../common/master/_hidden') %>
+    <form method="post" class="form-horizontal search">
+        <div class="menu-group">
+            <%- include('../common/errorMessage') %>
+            <%- include('../common/successMessage') %>
+        </div>
+        <%- include('../common/master/_hidden') %>
         <div class="form-group ">
             <label for="name" class="col-sm-3 control-label label-title">
-            名称
+                名称
             </label>
             <div class="col-sm-9">
                 <input type="text" class="form-control" name="name" id="name" placeholder="" maxlength=64>
@@ -32,7 +36,7 @@ Aa-19
 <div class="col-sm-12 form-container search">
     <div>
         <p id="searchedCount" style="display:none;">
-        検索結果 $searched_count$件
+            検索結果 $searched_count$件
         </p>
     </div>
     <div id="list" class="table-responsive" style="display:none;">
@@ -59,7 +63,7 @@ Aa-19
             </tbody>
         </table>
     </div>
-    <div id="pager" class="div_pager_parent"></div>  
+    <div id="pager" class="div_pager_parent"></div>
 </div>
 <%- include('edit') %>
 <%- include('../common/master/_loading') %>

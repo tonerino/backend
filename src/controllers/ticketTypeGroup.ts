@@ -54,9 +54,8 @@ export async function add(req: Request, res: Response): Promise<void> {
                     boxOfficeType: req.body.boxOfficeType
                 };
                 await ticketTypeService.createTicketTypeGroup(ticketTypeGroup);
-                // message = '登録完了';
-                res.redirect('/complete');
-                // res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
+                req.flash('message', '登録しました');
+                res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
 
                 return;
             } catch (error) {
@@ -148,8 +147,8 @@ export async function update(req: Request, res: Response): Promise<void> {
                     boxOfficeType: req.body.boxOfficeType
                 };
                 await ticketTypeService.updateTicketTypeGroup(ticketTypeGroup);
-                // message = '編集完了';
-                res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
+                req.flash('message', '更新しました');
+                res.redirect(req.originalUrl);
 
                 return;
             } catch (error) {

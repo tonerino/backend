@@ -12,11 +12,13 @@ Aa-17
 
 <%- contentFor('body') %>
 <div class="col-sm-12 form-container search">
-    <form method="post" class="form-horizontal" >
-    <%- include('../common/master/_hidden') %>
+    <form method="post" class="form-horizontal">
+        <%- include('../common/master/_hidden') %>
         <div class="menu-group">
             <% if (subjectModel.message !== undefined) { %>
-            <p class="error message text-danger panel-body bg-danger"><%= subjectModel.message %></p>
+            <p class="error message text-danger panel-body bg-danger">
+                <%= subjectModel.message %>
+            </p>
             <% } %>
         </div>
         <div class="form-group ">
@@ -38,7 +40,7 @@ Aa-17
 <div class="col-sm-12 form-container search">
     <div>
         <p id="searchedCount" style="display:none;">
-        検索結果 $searched_count$件
+            検索結果 $searched_count$件
         </p>
     </div>
     <div id="list" class="table-responsive" style="display:none;">
@@ -64,15 +66,15 @@ Aa-17
                     <td name="detailName">$detailName$</td>
                     <td name="edit" class="center">
                         <div class="btn-area">
-                          <a class="btn btn-list edit" href="/subjects/$id$/update">
-                            <span>編集</span>
-                          </a>
+                            <a class="btn btn-list edit" href="/subjects/$id$/update">
+                                <span>編集</span>
+                            </a>
                         </div>
                     </td>
                 </tr>
             </tbody>
         </table>
     </div>
-    <div id="pager" class="div_pager_parent"></div>  
+    <div id="pager" class="div_pager_parent"></div>
 </div>
 <%- include('../common/master/_loading') %>

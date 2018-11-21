@@ -13,12 +13,8 @@ Aa-7
     <% /* フォーム */ %>
     <form method="post" class="form-horizontal" id="ticketTypeGroupsForm">
         <div class="menu-group">
-            <% /* メッセージ */ %>
-            <% if (message != '') { %>
-            <p class="error message text-danger panel-body bg-danger">
-                <%= message %>
-            </p>
-            <% } %>
+            <%- include('../common/errorMessage') %>
+            <%- include('../common/successMessage') %>
         </div>
 
         <% /* 券種グループコード */ %>

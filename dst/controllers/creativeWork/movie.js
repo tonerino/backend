@@ -50,8 +50,8 @@ function add(req, res) {
                     }
                     debug('saving an movie...', movie);
                     yield creativeWorkService.createMovie(movie);
-                    res.redirect('/complete');
-                    // res.redirect(`/creativeWorks/movie/${movie.identifier}/update`);
+                    req.flash('message', '登録しました');
+                    res.redirect(`/creativeWorks/movie/${movie.identifier}/update`);
                     return;
                 }
                 catch (error) {
@@ -101,6 +101,7 @@ function update(req, res) {
                     movie = createMovieFromBody(req.body);
                     debug('saving an movie...', movie);
                     yield creativeWorkService.updateMovie(movie);
+                    req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
                     return;
                 }
