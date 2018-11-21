@@ -64,9 +64,6 @@ $(function () {
                 } else {
                     $('#list').hide();
                 }
-                $('td[name="duration"]').each(function (i, obj) {
-                    $(this).text(moment.duration($(this).text()).asMinutes() + '分');
-                });
                 // 検索条件表示
                 $.fn.setDataToForm('form', conditions);
             }
