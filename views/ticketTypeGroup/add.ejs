@@ -10,14 +10,12 @@ Aa-7
 
 <%- contentFor('body') %>
 <div class="col-sm-12 form-container">
-    <% /* フォーム */ %>
     <form method="post" class="form-horizontal" id="ticketTypeGroupsForm">
         <div class="menu-group">
             <%- include('../common/errorMessage') %>
             <%- include('../common/successMessage') %>
         </div>
 
-        <% /* 券種グループコード */ %>
         <div class="form-group ">
             <label for="id" class="col-sm-3 control-label label-title">
                 券種グループコード<font color="red">＊</font>
@@ -37,7 +35,6 @@ Aa-7
 
         <%- include('form', { forms: forms }) %>
 
-        <% /* 登録ボタン */ %>
         <div class="form-group">
             <div class="btn-area panel-body">
                 <a class="btn btn-ok btn-primary">登録する</a>
@@ -45,10 +42,3 @@ Aa-7
         </div>
     </form>
 </div>
-<script>
-    $(function () {
-        $('.btn-ok').on('click', function () {
-            $('form').submit();
-        });
-    });
-</script>

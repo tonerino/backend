@@ -10,7 +10,6 @@ Aa-5
 <script src="/js/master/ticketTypeAdd.js"></script>
 <%- contentFor('body') %>
 <div class="col-sm-12 form-container">
-  <% /* フォーム */ %>
   <form method="post" class="form-horizontal">
     <div class="menu-group">
       <%- include('../common/errorMessage') %>
@@ -21,7 +20,6 @@ Aa-5
 
     <%- include('form', {forms: forms}) %>
 
-    <% /* 登録ボタン */ %>
     <div class="form-group">
       <div class="btn-area panel-body">
         <a class="btn btn-ok btn-primary">更新する</a>
@@ -29,10 +27,3 @@ Aa-5
     </div>
   </form>
 </div>
-<script>
-  $(function () {
-    $('.btn-ok').on('click', function () {
-      $('form').submit();
-    });
-  });
-</script>
