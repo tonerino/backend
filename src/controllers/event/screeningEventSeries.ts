@@ -36,7 +36,9 @@ export async function add(req: Request, res: Response): Promise<void> {
         auth: req.user.authClient
     });
     const searchMoviesResult = await creativeWorkService.searchMovies({
-        checkScheduleEndDate: true
+        offers: {
+            availableFrom: new Date()
+        }
     });
     const movies = searchMoviesResult.data;
     const searchMovieTheatersResult = await placeService.searchMovieTheaters({});
@@ -103,7 +105,9 @@ export async function update(req: Request, res: Response): Promise<void> {
         auth: req.user.authClient
     });
     const searchMoviesResult = await creativeWorkService.searchMovies({
-        checkScheduleEndDate: true
+        offers: {
+            availableFrom: new Date()
+        }
     });
     const searchMovieTheatersResult = await placeService.searchMovieTheaters({});
     let message = '';

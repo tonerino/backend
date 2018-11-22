@@ -42,7 +42,9 @@ function add(req, res) {
             auth: req.user.authClient
         });
         const searchMoviesResult = yield creativeWorkService.searchMovies({
-            checkScheduleEndDate: true
+            offers: {
+                availableFrom: new Date()
+            }
         });
         const movies = searchMoviesResult.data;
         const searchMovieTheatersResult = yield placeService.searchMovieTheaters({});
@@ -107,7 +109,9 @@ function update(req, res) {
             auth: req.user.authClient
         });
         const searchMoviesResult = yield creativeWorkService.searchMovies({
-            checkScheduleEndDate: true
+            offers: {
+                availableFrom: new Date()
+            }
         });
         const searchMovieTheatersResult = yield placeService.searchMovieTheaters({});
         let message = '';
