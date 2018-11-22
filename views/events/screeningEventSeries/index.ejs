@@ -46,7 +46,7 @@ Aa-3
         </div>
         <div class="form-group">
             <label for="name" class="col-sm-3 control-label label-title">
-                イベント名
+                上映作品名
             </label>
             <div class="col-sm-9">
                 <input class="form-control" name="name" id="name" placeholder="" maxlength=64 value="<%= filmModel.name %>">
@@ -85,7 +85,7 @@ Aa-3
                 <tr>
                     <th>作品コード</th>
                     <th style="text-align:left;">作品名<br>サブタイトル</th>
-                    <th>上映<br>時間(分)</th>
+                    <th>上映開始日<br>上映終了日</th>
                     <th>字幕</th>
                     <th>上映形態</th>
                     <th></th>
@@ -98,7 +98,7 @@ Aa-3
                         $name.ja$<br>
                         $movieSubtitleName$<br>
                     </td>
-                    <td name="duration" style="text-align:right;">$duration$</td>
+                    <td name="startDay__endDay">$startDay$<br>$endDay$</td>
                     <td name="translationType">$translationType$</td>
                     <td name="videoFormat">$videoFormat$</td>
                     <td name="edit" class="center">

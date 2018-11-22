@@ -743,6 +743,18 @@ function create(screens, performances, dates, ticketGroups) {
  * @returns {JQuery} 
  */
 function createHeader(screens, dates) {
+    // スクリーンをコード順に
+    var sortedScreens = screens.sort(function (a, b) {
+        if (a.branchCode < b.branchCode) {
+            return -1;
+        }
+        if (a.branchCode > b.branchCode) {
+            return 1;
+        }
+
+        return 0;
+    });
+    console.log(sortedScreens);
     var dom = $('<thead class="header"></thead>');
     var tr1 = $('<tr></tr>');
     tr1.css({ borderBottom: '1px solid #ccc' })
@@ -751,10 +763,10 @@ function createHeader(screens, dates) {
     for (var j = 0; j < dates.length; j++) {
         var td = $('<td></td>');
         td.html(dates[j]);
-        td.attr('colspan', screens.length);
+        td.attr('colspan', sortedScreens.length);
         tr1.append(td);
-        for (var i = 0; i < screens.length; i++) {
-            var screen = screens[i];
+        for (var i = 0; i < sortedScreens.length; i++) {
+            var screen = sortedScreens[i];
             tr2.append('<td style="min-width: ' + SCREEN_WIDTH + 'px;">' + screen.name.ja + '</td>');
         }
     }

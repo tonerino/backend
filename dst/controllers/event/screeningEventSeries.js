@@ -303,8 +303,8 @@ function search(req, res) {
                 throw new Error();
             }
             const { totalCount, data } = yield eventService.searchScreeningEventSeries({
-                startThrough: moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
-                endFrom: moment(`${toDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
+                inSessionFrom: moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
+                inSessionThrough: moment(`${toDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
                 location: {
                     branchCodes: branchCode
                 }
@@ -398,7 +398,7 @@ function getList(req, res) {
                 if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
                     translationType = '吹替';
                 }
-                return Object.assign({}, event, { translationType: translationType, videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : '', movieSubtitleName: (_.isEmpty(event.movieSubtitleName)) ? '' : event.movieSubtitleName });
+                return Object.assign({}, event, { translationType: translationType, startDay: (event.startDate !== undefined) ? moment(event.startDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '', endDay: (event.endDate !== undefined) ? moment(event.endDate).tz('Asia/Tokyo').add(-1, 'day').format('YYYY/MM/DD') : '', videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : '', movieSubtitleName: (_.isEmpty(event.movieSubtitleName)) ? '' : event.movieSubtitleName });
             });
             res.json({
                 success: true,

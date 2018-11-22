@@ -231,7 +231,7 @@ export async function getTicketTypeList(req: Request, res: Response): Promise<vo
         res.json({
             success: true,
             count: searchTicketTypesResult.totalCount,
-            results: searchTicketTypesResult.data.map((t) => t.name.ja)
+            results: searchTicketTypesResult.data.map((t) => t.nameForManagementSite)
         });
     } catch (err) {
         res.json({

@@ -321,8 +321,8 @@ export async function search(req: Request, res: Response): Promise<void> {
             throw new Error();
         }
         const { totalCount, data } = await eventService.searchScreeningEventSeries({
-            startThrough: moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
-            endFrom: moment(`${toDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
+            inSessionFrom: moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
+            inSessionThrough: moment(`${toDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
             location: {
                 branchCodes: branchCode
             }
@@ -430,6 +430,8 @@ export async function getList(req: Request, res: Response): Promise<void> {
             return {
                 ...event,
                 translationType: translationType,
+                startDay: (event.startDate !== undefined) ? moment(event.startDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '',
+                endDay: (event.endDate !== undefined) ? moment(event.endDate).tz('Asia/Tokyo').add(-1, 'day').format('YYYY/MM/DD') : '',
                 videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : '',
                 movieSubtitleName: (_.isEmpty(event.movieSubtitleName)) ? '' : event.movieSubtitleName
             };

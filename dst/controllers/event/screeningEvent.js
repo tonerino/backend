@@ -528,9 +528,9 @@ function addValidation(req) {
 function updateValidation(req) {
     req.checkBody('screeningEventId', '上映イベントシリーズが未選択です').notEmpty();
     req.checkBody('day', '上映日が未選択です').notEmpty();
-    req.checkBody('doorTime', '開場時間が未選択です').notEmpty();
-    req.checkBody('startTime', '開始時間が未選択です').notEmpty();
-    req.checkBody('endTime', '終了時間が未選択です').notEmpty();
+    req.checkBody('doorTime', '開場時刻が未選択です').notEmpty();
+    req.checkBody('startTime', '開始時刻が未選択です').notEmpty();
+    req.checkBody('endTime', '終了時刻が未選択です').notEmpty();
     req.checkBody('screen', 'スクリーンが未選択です').notEmpty();
     req.checkBody('ticketTypeGroup', '券種グループが未選択です').notEmpty();
 }

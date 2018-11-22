@@ -332,7 +332,7 @@ function validateFormAdd(req: Request): void {
     colName = '購入席単位追加';
     req.checkBody('seatReservationUnit', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 
-    colName = '発生価格';
+    colName = '発生金額';
     req.checkBody('priceSpecification.price', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     req.checkBody('priceSpecification.price', Message.Common.getMaxLengthHalfByte(colName, CHAGE_MAX_LENGTH))
         .isNumeric().len({ max: CHAGE_MAX_LENGTH });
