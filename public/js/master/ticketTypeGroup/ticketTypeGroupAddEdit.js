@@ -59,14 +59,31 @@ $(function () {
 
     // form submit
     $('.btn-ok').on('click', function () {
+        // 券種リストに含まれるムビチケ券種区分リスト
+        var appliesToMovieTicketTypes = [];
+
         // 対象券種名の処理
         $('#sortable2 > li').each(function () {
             var uid = $(this).attr('uid');
+            var appliesToMovieTicketType = $(this).attr('appliesToMovieTicketType');
+            if (appliesToMovieTicketType !== '') {
+                appliesToMovieTicketTypes.push(appliesToMovieTicketType);
+            }
             $('<input />').attr('type', 'hidden')
                 .attr('name', 'ticketTypes')
                 .attr('value', uid)
                 .appendTo('#ticketTypeGroupsForm');
         });
+
+        // ムビチケ券種区分の重複を確認
+        var uniqueAppliesToMovieTicketTypes = appliesToMovieTicketTypes.filter(function (value, index, self) {
+            return self.indexOf(value) === index;
+        });
+        if (appliesToMovieTicketTypes.length !== uniqueAppliesToMovieTicketTypes.length) {
+            alert('ムビチケ券種区分が重複しています');
+
+            return false;
+        }
 
         $('form').submit();
     });

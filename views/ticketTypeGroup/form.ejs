@@ -54,9 +54,11 @@
         </ul>
         <ul id="sortable2" class="connectedSortable">
             <% ticketTypes.forEach((ticketType) => { %>
-            <li class="ui-state-highlight" uid="<%= ticketType.id %>">
+            <li class="ui-state-highlight" uid="<%= ticketType.id %>" appliesToMovieTicketType="<%= ticketType.priceSpecification.appliesToMovieTicketType %>"
+                accountsReceivable="<%= ticketType.priceSpecification.accounting.accountsReceivable %>">
                 <%= ticketType.name.ja %>
                 <%= `(${ticketType.priceSpecification.price})` %>
+                <%= (ticketType.priceSpecification.appliesToMovieTicketType !== '') ? `(${ticketType.priceSpecification.appliesToMovieTicketType})` : '' %>
             </li>
             <% }) %>
         </ul>
