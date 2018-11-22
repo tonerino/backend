@@ -42,6 +42,10 @@ function add(req, res) {
                         id: req.body.id,
                         name: req.body.name
                     };
+                    const { totalCount } = yield boxOfficeTypeService.searchBoxOfficeType({ id: boxOfficeType.id });
+                    if (totalCount > 0) {
+                        throw new Error('既に存在する興行区分コードです');
+                    }
                     yield boxOfficeTypeService.createBoxOfficeType(boxOfficeType);
                     req.flash('message', '作成しました');
                     res.redirect('/boxOfficeTypes');

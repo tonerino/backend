@@ -34,12 +34,12 @@ export async function add(req: Request, res: Response): Promise<void> {
         if (validatorResult.isEmpty()) {
             try {
                 const movie = createMovieFromBody(req.body);
-
                 const creativeWorkService = new chevre.service.CreativeWork({
                     endpoint: <string>process.env.API_ENDPOINT,
                     auth: req.user.authClient
                 });
-                const { totalCount } = await creativeWorkService.searchMovies({ identifier: movie.identifier });
+
+                const { totalCount } = await creativeWorkService.searchMovies({ identifier: `^${movie.identifier}$` });
                 if (totalCount > 0) {
                     throw new Error('既に存在する作品コードです');
                 }

@@ -9,7 +9,19 @@ $(function () {
             return;
         }
 
-        // 登録済スケジュールの存在を確認
+        // 作品の興行終了予定日と上映終了日を比較
+        var movieAvailabilityEnds = $('#workPerformed\\[identifier\\] option:selected').attr('data-availabilityEnds');
+        var endDateValue = $('#endDate').val();
+        if (movieAvailabilityEnds !== '' && endDate !== '') {
+            var endDate = moment(`${endDateValue}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day').toDate();
+            if (endDate > moment(movieAvailabilityEnds).toDate()) {
+                alert('上映終了日は作品の興行終了予定日以前としてください');
+
+                return false;
+            }
+        }
+
+        // 登録済スケジュールの存在を確認        
         $.ajax({
             dataType: 'json',
             url: '/events/screeningEventSeries/' + eventId + '/screeningEvents',
@@ -60,9 +72,12 @@ $(function () {
         if (identifier == undefined) {
             return false;
         } else {
+            // 作品情報を自動補完
             var movieName = $('#workPerformed\\[identifier\\] option:selected').attr('data-name');
-            // 上映作品名
+            var movieSubtitle = $('#workPerformed\\[identifier\\] option:selected').attr('data-subtitle');
             $('#nameJa').val(movieName);
+            $('#movieSubtitleName').val(movieSubtitle);
+
             var url = '/events/screeningEventSeries/getrating';
             $.ajax({
                 dataType: 'json',

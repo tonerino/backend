@@ -70,6 +70,9 @@ function add(req, res) {
                     message = error.message;
                 }
             }
+            else {
+                message = '入力に誤りがあります';
+            }
         }
         const forms = Object.assign({ workPerformed: {}, videoFormatType: [] }, req.body);
         // 作品マスタ画面遷移
@@ -137,6 +140,9 @@ function update(req, res) {
                 catch (error) {
                     message = error.message;
                 }
+            }
+            else {
+                message = '入力に誤りがあります';
             }
         }
         let mvtkFlg = 1;

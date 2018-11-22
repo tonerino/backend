@@ -23,7 +23,8 @@
         <select class="form-control" name="workPerformed[identifier]" id="workPerformed[identifier]">
             <option value="">選択してください</option>
             <% for (const movie of movies) { %>
-            <option value="<%= movie.identifier %>" data-name="<%= movie.name %>" <% if (forms.workPerformed.identifier===movie.identifier)
+            <option value="<%= movie.identifier %>" data-name="<%= movie.name %>" data-subtitle="<%= movie.subtitle %>"
+                data-availabilityEnds="<%= movie.offers.availabilityEnds %>" <% if (forms.workPerformed.identifier===movie.identifier)
                 { %> selected
                 <% } %>>
                 <%= movie.name %>
@@ -176,9 +177,9 @@
             <% } %>
         </select>
         <p class="error message text-danger">
-            <!-- <% if (errors && errors.summaryStartDay) { %>
-        <%- errors.summaryStartDay.msg %>
-        <% } %> -->
+            <% if (errors && errors.summaryStartDay) { %>
+            <%- errors.summaryStartDay.msg %>
+            <% } %>
         </p>
     </div>
 </div>

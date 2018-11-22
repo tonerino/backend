@@ -63,6 +63,8 @@ export async function add(req: Request, res: Response): Promise<void> {
             } catch (error) {
                 message = error.message;
             }
+        } else {
+            message = '入力に誤りがあります';
         }
     }
 
@@ -135,6 +137,8 @@ export async function update(req: Request, res: Response): Promise<void> {
             } catch (error) {
                 message = error.message;
             }
+        } else {
+            message = '入力に誤りがあります';
         }
     }
 
