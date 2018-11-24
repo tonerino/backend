@@ -61,7 +61,13 @@ function add(req, res) {
                         description: req.body.description,
                         alternateName: req.body.alternateName,
                         ticketTypes: req.body.ticketTypes,
-                        boxOfficeType: req.body.boxOfficeType
+                        itemOffered: {
+                            serviceType: {
+                                typeOf: 'ServiceType',
+                                id: req.body.serviceType,
+                                name: ''
+                            }
+                        }
                     };
                     yield ticketTypeService.createTicketTypeGroup(ticketTypeGroup);
                     req.flash('message', '登録しました');
@@ -85,11 +91,10 @@ function add(req, res) {
         }
         const forms = {
             id: (_.isEmpty(req.body.id)) ? '' : req.body.id,
-            name: (_.isEmpty(req.body.name)) ? '' : req.body.name,
+            name: (_.isEmpty(req.body.name)) ? {} : req.body.name,
             ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? [] : ticketTypeIds,
             description: (_.isEmpty(req.body.description)) ? {} : req.body.description,
-            alternateName: (_.isEmpty(req.body.alternateName)) ? {} : req.body.alternateName,
-            boxOfficeType: (_.isEmpty(req.body.boxOfficeType)) ? {} : req.body.boxOfficeType
+            alternateName: (_.isEmpty(req.body.alternateName)) ? {} : req.body.alternateName
         };
         // 券種マスタから取得
         let ticketTypes = [];
@@ -152,7 +157,13 @@ function update(req, res) {
                         description: req.body.description,
                         alternateName: req.body.alternateName,
                         ticketTypes: ticketTypeIds,
-                        boxOfficeType: req.body.boxOfficeType
+                        itemOffered: {
+                            serviceType: {
+                                typeOf: 'ServiceType',
+                                id: req.body.serviceType,
+                                name: ''
+                            }
+                        }
                     };
                     yield ticketTypeService.updateTicketTypeGroup(ticketTypeGroup);
                     req.flash('message', '更新しました');
@@ -166,7 +177,7 @@ function update(req, res) {
         }
         // 券種グループ取得
         const ticketGroup = yield ticketTypeService.findTicketTypeGroupById({ id: req.params.id });
-        const forms = Object.assign({ boxOfficeType: {} }, ticketGroup, req.body, { ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : ticketTypeIds });
+        const forms = Object.assign({}, ticketGroup, { serviceType: ticketGroup.itemOffered.serviceType.id }, req.body, { ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : ticketTypeIds });
         // 券種マスタから取得
         let ticketTypes = [];
         if (forms.ticketTypes.length > 0) {
@@ -241,7 +252,7 @@ function getTicketTypeList(req, res) {
             res.json({
                 success: true,
                 count: searchTicketTypesResult.totalCount,
-                results: searchTicketTypesResult.data.map((t) => t.nameForManagementSite)
+                results: searchTicketTypesResult.data.map((t) => (t.alternateName !== undefined) ? t.alternateName.ja : t.name.ja)
             });
         }
         catch (err) {
@@ -306,7 +317,9 @@ function deleteById(req, res) {
             // 削除して問題ない券種グループかどうか検証
             const searchEventsResult = yield eventService.searchScreeningEvents({
                 limit: 1,
-                ticketTypeGroups: [ticketTypeGroupId],
+                offers: {
+                    ids: [ticketTypeGroupId]
+                },
                 sort: { endDate: chevre.factory.sortType.Descending }
             });
             if (searchEventsResult.data.length > 0) {
@@ -340,7 +353,7 @@ function validate(req) {
     req.checkBody('name.en', Message.Common.getMaxLength(colName, 128)).len({ max: 128 });
     // 興行区分
     colName = '興行区分';
-    req.checkBody('boxOfficeType.id', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('serviceType', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     //対象券種名
     colName = '対象券種名';
     req.checkBody('ticketTypes', Message.Common.required.replace('$fieldName$', colName)).notEmpty();

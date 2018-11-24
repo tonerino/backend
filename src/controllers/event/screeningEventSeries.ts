@@ -71,6 +71,7 @@ export async function add(req: Request, res: Response): Promise<void> {
     }
 
     const forms = {
+        headline: {},
         workPerformed: {},
         videoFormatType: [],
         ...req.body
@@ -160,9 +161,17 @@ export async function update(req: Request, res: Response): Promise<void> {
     if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
         translationType = '1';
     }
+    const additionalProperty = (event.additionalProperty !== undefined) ? event.additionalProperty : [];
+    const signageDisplayName = additionalProperty.find((p) => p.name === 'signageDisplayName');
+    const signageDislaySubtitleName = additionalProperty.find((p) => p.name === 'signageDislaySubtitleName');
+    const summaryStartDay = additionalProperty.find((p) => p.name === 'summaryStartDay');
 
     const forms = {
+        headline: {},
         ...event,
+        signageDisplayName: (signageDisplayName !== undefined) ? signageDisplayName.value : '',
+        signageDislaySubtitleName: (signageDislaySubtitleName !== undefined) ? signageDislaySubtitleName.value : '',
+        summaryStartDay: (summaryStartDay !== undefined) ? summaryStartDay.value : '',
         ...req.body,
         nameJa: (_.isEmpty(req.body.nameJa)) ? event.name.ja : req.body.nameJa,
         nameEn: (_.isEmpty(req.body.nameEn)) ? event.name.en : req.body.nameEn,
@@ -218,6 +227,7 @@ export async function getRating(req: Request, res: Response): Promise<void> {
 /**
  * リクエストボディからイベントオブジェクトを作成する
  */
+// tslint:disable-next-line:max-func-body-length
 function createEventFromBody(
     body: any,
     movie: chevre.factory.creativeWork.movie.ICreativeWork,
@@ -273,7 +283,6 @@ function createEventFromBody(
             kr: ''
         },
         kanaName: body.kanaName,
-        alternativeHeadline: body.nameJa,
         location: {
             id: movieTheater.id,
             typeOf: <chevre.factory.placeType.MovieTheater>movieTheater.typeOf,
@@ -297,10 +306,24 @@ function createEventFromBody(
             ? moment(`${body.endDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day').toDate()
             : undefined,
         eventStatus: chevre.factory.eventStatusType.EventScheduled,
-        movieSubtitleName: body.movieSubtitleName,
-        signageDisplayName: body.signageDisplayName,
-        signageDislaySubtitleName: body.signageDislaySubtitleName,
-        summaryStartDay: body.summaryStartDay,
+        headline: {
+            ja: <string>body.headline.ja,
+            en: ''
+        },
+        additionalProperty: [
+            {
+                name: 'signageDisplayName',
+                value: body.signageDisplayName
+            },
+            {
+                name: 'signageDislaySubtitleName',
+                value: body.signageDislaySubtitleName
+            },
+            {
+                name: 'summaryStartDay',
+                value: body.summaryStartDay
+            }
+        ],
         offers: offers,
         description: {
             ja: body.description,
@@ -436,8 +459,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
                 translationType: translationType,
                 startDay: (event.startDate !== undefined) ? moment(event.startDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '',
                 endDay: (event.endDate !== undefined) ? moment(event.endDate).tz('Asia/Tokyo').add(-1, 'day').format('YYYY/MM/DD') : '',
-                videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : '',
-                movieSubtitleName: (_.isEmpty(event.movieSubtitleName)) ? '' : event.movieSubtitleName
+                videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : ''
             };
         });
         res.json({
@@ -494,7 +516,8 @@ function validate(req: Request): void {
     req.checkBody('endDate', Message.Common.invalidDateFormat.replace('$fieldName$', colName)).isDate();
 
     colName = '上映作品サブタイトル名';
-    req.checkBody('movieSubtitleName', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_NAME_JA });
+    req.checkBody('headline.ja', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE))
+        .len({ max: NAME_MAX_LENGTH_NAME_JA });
 
     colName = '集計開始曜日';
     req.checkBody('summaryStartDay', Message.Common.required.replace('$fieldName$', colName)).notEmpty();

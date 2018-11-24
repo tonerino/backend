@@ -875,7 +875,7 @@ function createScreen(performances, ticketGroups) {
             mvtkExcludeFlg = '1';
         }
 
-        var ticketTypeGroup = performance.offers.category.id;
+        var ticketTypeGroup = performance.offers.id;
 
         var performanceDom = $('<div class="performance">' +
             '<div ' +

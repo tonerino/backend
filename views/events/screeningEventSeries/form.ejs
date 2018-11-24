@@ -23,7 +23,7 @@
         <select class="form-control" name="workPerformed[identifier]" id="workPerformed[identifier]">
             <option value="">選択してください</option>
             <% for (const movie of movies) { %>
-            <option value="<%= movie.identifier %>" data-name="<%= movie.name %>" data-subtitle="<%= movie.subtitle %>"
+            <option value="<%= movie.identifier %>" data-name="<%= movie.name %>" data-headline="<%= movie.headline %>"
                 data-availabilityEnds="<%= movie.offers.availabilityEnds %>" <% if (forms.workPerformed.identifier===movie.identifier)
                 { %> selected
                 <% } %>>
@@ -88,18 +88,18 @@
 </div>
 
 <div class="form-group">
-    <label for="movieSubtitleName" class="col-sm-3 control-label label-title">
+    <label for="headline[ja]" class="col-sm-3 control-label label-title">
         上映作品サブタイトル名
     </label>
     <div class="col-sm-9">
-        <input class="form-control" name="movieSubtitleName" id="movieSubtitleName" placeholder="" maxlength=64 value="<%- forms.movieSubtitleName %>">
+        <input class="form-control" name="headline[ja]" id="headline[ja]" placeholder="" maxlength=64 value="<%- forms.headline.ja %>">
         <p class="message">
             全角64文字以内でご入力ください。
         </p>
         <p class="error message text-danger">
-            <!-- <% if (errors && errors.movieSubtitleName) { %>
-        <%- errors.movieSubtitleName.msg %>
-        <% } %> -->
+            <% if (errors && errors['headline.ja']) { %>
+            <%- errors['headline.ja'].msg %>
+            <% } %>
         </p>
     </div>
 </div>
@@ -157,13 +157,13 @@
     <div class="col-sm-9">
         <%
             let dayInWeeks = [
-                {code: 1, name: {ja: '月', en:'monday'}},
-                {code: 2, name: {ja: '火', en:'PG-12'}},
-                {code: 3, name: {ja: '水', en:'R-15'}},
-                {code: 4, name: {ja: '木', en:'R-18'}},
-                {code: 5, name: {ja: '金', en:'monday'}},
-                {code: 6, name: {ja: '土', en:'monday'}},
-                {code: 7, name: {ja: '日', en:'monday'}}
+                {code: '1', name: {ja: '月', en:'monday'}},
+                {code: '2', name: {ja: '火', en:'PG-12'}},
+                {code: '3', name: {ja: '水', en:'R-15'}},
+                {code: '4', name: {ja: '木', en:'R-18'}},
+                {code: '5', name: {ja: '金', en:'monday'}},
+                {code: '6', name: {ja: '土', en:'monday'}},
+                {code: '7', name: {ja: '日', en:'monday'}}
             ];
         %>
         <select name="summaryStartDay" id="summaryStartDay" class="form-control">

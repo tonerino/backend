@@ -284,7 +284,7 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
     }
 
     const ticketTypeGroup = await ticketTypeService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
-    const searchBoxOfficeTypeResult = await boxOfficeTypeService.searchBoxOfficeType({ id: ticketTypeGroup.boxOfficeType.id });
+    const searchBoxOfficeTypeResult = await boxOfficeTypeService.searchBoxOfficeType({ id: ticketTypeGroup.itemOffered.serviceType.id });
     if (searchBoxOfficeTypeResult.totalCount === 0) {
         throw new Error('興行区分が見つかりません');
     }
@@ -312,14 +312,12 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
     }
 
     const offers: chevre.factory.event.screeningEvent.IOffer = {
+        id: ticketTypeGroup.id,
+        name: ticketTypeGroup.name,
         typeOf: 'Offer',
         priceCurrency: chevre.factory.priceCurrency.JPY,
         availabilityEnds: salesEndDate,
         availabilityStarts: onlineDisplayStartDate,
-        category: {
-            id: ticketTypeGroup.id,
-            name: ticketTypeGroup.name
-        },
         eligibleQuantity: {
             typeOf: 'QuantitativeValue',
             unitCode: chevre.factory.unitCode.C62,
@@ -438,20 +436,18 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                 if (ticketTypeGroup === undefined) {
                     throw new Error('Ticket Type Group');
                 }
-                const boxOfficeType = boxOfficeTypes.find((t) => t.id === ticketTypeGroup.boxOfficeType.id);
+                const boxOfficeType = boxOfficeTypes.find((t) => t.id === ticketTypeGroup.itemOffered.serviceType.id);
                 if (boxOfficeType === undefined) {
                     throw new Error('Box Office Type');
                 }
 
                 const offers: chevre.factory.event.screeningEvent.IOffer = {
+                    id: ticketTypeGroup.id,
+                    name: ticketTypeGroup.name,
                     typeOf: 'Offer',
                     priceCurrency: chevre.factory.priceCurrency.JPY,
                     availabilityEnds: salesEndDate,
                     availabilityStarts: onlineDisplayStartDate,
-                    category: {
-                        id: ticketTypeGroup.id,
-                        name: ticketTypeGroup.name
-                    },
                     eligibleQuantity: {
                         typeOf: 'QuantitativeValue',
                         unitCode: chevre.factory.unitCode.C62,

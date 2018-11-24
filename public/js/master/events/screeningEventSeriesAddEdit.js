@@ -74,9 +74,9 @@ $(function () {
         } else {
             // 作品情報を自動補完
             var movieName = $('#workPerformed\\[identifier\\] option:selected').attr('data-name');
-            var movieSubtitle = $('#workPerformed\\[identifier\\] option:selected').attr('data-subtitle');
+            var movieHeadline = $('#workPerformed\\[identifier\\] option:selected').attr('data-headline');
             $('#nameJa').val(movieName);
-            $('#movieSubtitleName').val(movieSubtitle);
+            $('#headline\\[ja\\]').val(movieHeadline);
 
             var url = '/events/screeningEventSeries/getrating';
             $.ajax({

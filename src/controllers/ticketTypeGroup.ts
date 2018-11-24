@@ -51,7 +51,13 @@ export async function add(req: Request, res: Response): Promise<void> {
                     description: req.body.description,
                     alternateName: req.body.alternateName,
                     ticketTypes: req.body.ticketTypes,
-                    boxOfficeType: req.body.boxOfficeType
+                    itemOffered: {
+                        serviceType: {
+                            typeOf: <'ServiceType'>'ServiceType',
+                            id: req.body.serviceType,
+                            name: ''
+                        }
+                    }
                 };
                 await ticketTypeService.createTicketTypeGroup(ticketTypeGroup);
                 req.flash('message', '登録しました');
@@ -74,11 +80,10 @@ export async function add(req: Request, res: Response): Promise<void> {
     }
     const forms = {
         id: (_.isEmpty(req.body.id)) ? '' : req.body.id,
-        name: (_.isEmpty(req.body.name)) ? '' : req.body.name,
+        name: (_.isEmpty(req.body.name)) ? {} : req.body.name,
         ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? [] : ticketTypeIds,
         description: (_.isEmpty(req.body.description)) ? {} : req.body.description,
-        alternateName: (_.isEmpty(req.body.alternateName)) ? {} : req.body.alternateName,
-        boxOfficeType: (_.isEmpty(req.body.boxOfficeType)) ? {} : req.body.boxOfficeType
+        alternateName: (_.isEmpty(req.body.alternateName)) ? {} : req.body.alternateName
     };
 
     // 券種マスタから取得
@@ -133,13 +138,19 @@ export async function update(req: Request, res: Response): Promise<void> {
             // 券種グループDB登録
             try {
                 // 券種グループDB登録
-                const ticketTypeGroup = {
+                const ticketTypeGroup: chevre.factory.ticketType.ITicketTypeGroup = {
                     id: req.params.id,
                     name: req.body.name,
                     description: req.body.description,
                     alternateName: req.body.alternateName,
                     ticketTypes: ticketTypeIds,
-                    boxOfficeType: req.body.boxOfficeType
+                    itemOffered: {
+                        serviceType: {
+                            typeOf: 'ServiceType',
+                            id: req.body.serviceType,
+                            name: ''
+                        }
+                    }
                 };
                 await ticketTypeService.updateTicketTypeGroup(ticketTypeGroup);
                 req.flash('message', '更新しました');
@@ -154,8 +165,8 @@ export async function update(req: Request, res: Response): Promise<void> {
     // 券種グループ取得
     const ticketGroup = await ticketTypeService.findTicketTypeGroupById({ id: req.params.id });
     const forms = {
-        boxOfficeType: {},
         ...ticketGroup,
+        serviceType: ticketGroup.itemOffered.serviceType.id,
         ...req.body,
         ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : ticketTypeIds
     };
@@ -231,7 +242,7 @@ export async function getTicketTypeList(req: Request, res: Response): Promise<vo
         res.json({
             success: true,
             count: searchTicketTypesResult.totalCount,
-            results: searchTicketTypesResult.data.map((t) => t.nameForManagementSite)
+            results: searchTicketTypesResult.data.map((t) => (t.alternateName !== undefined) ? t.alternateName.ja : t.name.ja)
         });
     } catch (err) {
         res.json({
@@ -290,7 +301,9 @@ export async function deleteById(req: Request, res: Response): Promise<void> {
         // 削除して問題ない券種グループかどうか検証
         const searchEventsResult = await eventService.searchScreeningEvents({
             limit: 1,
-            ticketTypeGroups: [ticketTypeGroupId],
+            offers: {
+                ids: [ticketTypeGroupId]
+            },
             sort: { endDate: chevre.factory.sortType.Descending }
         });
         if (searchEventsResult.data.length > 0) {
@@ -322,7 +335,7 @@ function validate(req: Request): void {
     req.checkBody('name.en', Message.Common.getMaxLength(colName, 128)).len({ max: 128 });
     // 興行区分
     colName = '興行区分';
-    req.checkBody('boxOfficeType.id', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('serviceType', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     //対象券種名
     colName = '対象券種名';
     req.checkBody('ticketTypes', Message.Common.required.replace('$fieldName$', colName)).notEmpty();

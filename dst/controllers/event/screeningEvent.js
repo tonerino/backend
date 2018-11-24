@@ -306,7 +306,7 @@ function createEventFromBody(body, user) {
             throw new Error('上映スクリーン名が見つかりません');
         }
         const ticketTypeGroup = yield ticketTypeService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
-        const searchBoxOfficeTypeResult = yield boxOfficeTypeService.searchBoxOfficeType({ id: ticketTypeGroup.boxOfficeType.id });
+        const searchBoxOfficeTypeResult = yield boxOfficeTypeService.searchBoxOfficeType({ id: ticketTypeGroup.itemOffered.serviceType.id });
         if (searchBoxOfficeTypeResult.totalCount === 0) {
             throw new Error('興行区分が見つかりません');
         }
@@ -332,14 +332,12 @@ function createEventFromBody(body, user) {
             });
         }
         const offers = {
+            id: ticketTypeGroup.id,
+            name: ticketTypeGroup.name,
             typeOf: 'Offer',
             priceCurrency: chevre.factory.priceCurrency.JPY,
             availabilityEnds: salesEndDate,
             availabilityStarts: onlineDisplayStartDate,
-            category: {
-                id: ticketTypeGroup.id,
-                name: ticketTypeGroup.name
-            },
             eligibleQuantity: {
                 typeOf: 'QuantitativeValue',
                 unitCode: chevre.factory.unitCode.C62,
@@ -453,19 +451,17 @@ function createMultipleEventFromBody(body, user) {
                     if (ticketTypeGroup === undefined) {
                         throw new Error('Ticket Type Group');
                     }
-                    const boxOfficeType = boxOfficeTypes.find((t) => t.id === ticketTypeGroup.boxOfficeType.id);
+                    const boxOfficeType = boxOfficeTypes.find((t) => t.id === ticketTypeGroup.itemOffered.serviceType.id);
                     if (boxOfficeType === undefined) {
                         throw new Error('Box Office Type');
                     }
                     const offers = {
+                        id: ticketTypeGroup.id,
+                        name: ticketTypeGroup.name,
                         typeOf: 'Offer',
                         priceCurrency: chevre.factory.priceCurrency.JPY,
                         availabilityEnds: salesEndDate,
                         availabilityStarts: onlineDisplayStartDate,
-                        category: {
-                            id: ticketTypeGroup.id,
-                            name: ticketTypeGroup.name
-                        },
                         eligibleQuantity: {
                             typeOf: 'QuantitativeValue',
                             unitCode: chevre.factory.unitCode.C62,

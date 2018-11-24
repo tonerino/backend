@@ -5,15 +5,15 @@
     <div class="col-sm-9">
         <%
             let noteTypes = [
-                {code: 1, name: '有料券'},
-                {code: 2, name: '前売券'},
-                {code: 3, name: '無料券'}
+                {code: '1', name: '有料券'},
+                {code: '2', name: '前売券'},
+                {code: '3', name: '無料券'}
             ];
         %>
-        <select class="form-control" name="typeOfNote">
+        <select class="form-control" name="category">
             <option value="" disabled selected>選択してください</option>
             <% for (let noteType of noteTypes) { %>
-            <option value="<%= noteType.code %>" <% if (forms.typeOfNote==noteType.code ) { %> selected
+            <option value="<%= noteType.code %>" <% if (forms.category==noteType.code ) { %> selected
                 <% } %> >
                 <%= noteType.name %>
             </option>
@@ -56,18 +56,18 @@
     </div>
 </div>
 <div class="form-group ">
-    <label for="nameForManagementSite" class="col-sm-3 control-label label-title">
+    <label for="alternateName[ja]" class="col-sm-3 control-label label-title">
         サイト管理用券種名<font color="red">＊</font>
     </label>
     <div class="col-sm-9">
-        <input type="text" class="form-control" name="nameForManagementSite" id="nameForManagementSite" placeholder=""
-            maxlength=64 value="<%= forms.nameForManagementSite %>">
+        <input type="text" class="form-control" name="alternateName[ja]" id="alternateName[ja]" placeholder=""
+            maxlength=64 value="<%= forms.alternateName.ja %>">
         <p class="message">
             全角64文字以内でご入力ください。
         </p>
         <p class="error message text-danger">
-            <% if (errors && errors.nameForManagementSite) { %>
-            <%- errors.nameForManagementSite.msg %>
+            <% if (errors && errors['alternateName.ja']) { %>
+            <%- errors['alternateName.ja'].msg %>
             <% } %>
         </p>
     </div>

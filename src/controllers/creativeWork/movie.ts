@@ -142,7 +142,7 @@ function createMovieFromBody(body: any): chevre.factory.creativeWork.movie.ICrea
         name: body.name,
         duration: (body.duration !== '') ? moment.duration(Number(body.duration), 'm').toISOString() : null,
         contentRating: (body.contentRating !== '') ? body.contentRating : null,
-        subtitle: body.subtitle,
+        headline: body.headline,
         datePublished: (!_.isEmpty(body.datePublished)) ?
             moment(`${body.datePublished}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
         offers: {
@@ -151,7 +151,10 @@ function createMovieFromBody(body: any): chevre.factory.creativeWork.movie.ICrea
             availabilityEnds: (!_.isEmpty(body.offers) && !_.isEmpty(body.offers.availabilityEnds)) ?
                 moment(`${body.offers.availabilityEnds}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day').toDate() : undefined
         },
-        distribution: body.distribution
+        distributor: {
+            id: <string>body.distribution,
+            name: ''
+        }
     };
 
     if (movie.offers !== undefined
@@ -226,7 +229,7 @@ function validate(req: Request, checkType: string): void {
     }
 
     colName = 'サブタイトル';
-    req.checkBody('subtitle', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_NAME_JA });
+    req.checkBody('headline', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_NAME_JA });
 
     colName = '配給';
     req.checkBody('distribution', Message.Common.required.replace('$fieldName$', colName)).notEmpty();

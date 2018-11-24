@@ -55,6 +55,7 @@ export async function add(req: Request, res: Response): Promise<void> {
     }
     const forms = {
         name: {},
+        alternateName: {},
         description: {},
         priceSpecification: { accounting: {} },
         isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? '' : req.body.isBoxTicket,
@@ -128,8 +129,15 @@ export async function update(req: Request, res: Response): Promise<void> {
     if (ticketType.eligibleQuantity !== undefined && ticketType.eligibleQuantity.value !== undefined) {
         seatReservationUnit = ticketType.eligibleQuantity.value;
     }
+
+    const additionalProperty = (ticketType.additionalProperty !== undefined) ? ticketType.additionalProperty : [];
+    const nameForPrinting = additionalProperty.find((p) => p.name === 'nameForPrinting');
+
     const forms = {
+        alternateName: {},
         ...ticketType,
+        category: (ticketType.category !== undefined) ? ticketType.category.id : '',
+        nameForPrinting: (nameForPrinting !== undefined) ? nameForPrinting.value : '',
         ...req.body,
         isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket,
         isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket,
@@ -169,7 +177,7 @@ function createFromBody(body: any): chevre.factory.ticketType.ITicketType {
         id: body.id,
         name: body.name,
         description: body.description,
-        alternateName: body.alternateName,
+        alternateName: { ja: <string>body.alternateName.ja, en: '' },
         availability: availability,
         priceSpecification: {
             typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
@@ -197,10 +205,16 @@ function createFromBody(body: any): chevre.factory.ticketType.ITicketType {
                 accountsReceivable: Number(body.priceSpecification.accounting.accountsReceivable)
             }
         },
-        nameForManagementSite: body.nameForManagementSite,
-        nameForPrinting: body.nameForPrinting,
-        typeOfNote: body.typeOfNote,
-        indicatorColor: body.indicatorColor
+        additionalProperty: [
+            {
+                name: 'nameForPrinting',
+                value: <string>body.nameForPrinting
+            }
+        ],
+        category: {
+            id: <string>body.category
+        },
+        color: <string>body.indicatorColor
     };
 }
 
@@ -320,8 +334,8 @@ function validateFormAdd(req: Request): void {
     req.checkBody('name.en', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_EN)).len({ max: NAME_MAX_LENGTH_NAME_EN });
     // サイト管理用券種名
     colName = 'サイト管理用券種名';
-    req.checkBody('nameForManagementSite', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('nameForManagementSite', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_JA))
+    req.checkBody('alternateName.ja', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('alternateName.ja', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_JA))
         .len({ max: NAME_MAX_LENGTH_NAME_JA });
     // 印刷用券種名
     colName = '印刷用券種名';

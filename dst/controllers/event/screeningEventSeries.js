@@ -76,7 +76,7 @@ function add(req, res) {
                 message = '入力に誤りがあります';
             }
         }
-        const forms = Object.assign({ workPerformed: {}, videoFormatType: [] }, req.body);
+        const forms = Object.assign({ headline: {}, workPerformed: {}, videoFormatType: [] }, req.body);
         // 作品マスタ画面遷移
         debug('errors:', errors);
         res.render('events/screeningEventSeries/add', {
@@ -162,7 +162,11 @@ function update(req, res) {
         if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
             translationType = '1';
         }
-        const forms = Object.assign({}, event, req.body, { nameJa: (_.isEmpty(req.body.nameJa)) ? event.name.ja : req.body.nameJa, nameEn: (_.isEmpty(req.body.nameEn)) ? event.name.en : req.body.nameEn, duration: (_.isEmpty(req.body.duration)) ? moment.duration(event.duration).asMinutes() : req.body.duration, locationBranchCode: event.location.branchCode, translationType: translationType, videoFormatType: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf) : [], startDate: (_.isEmpty(req.body.startDate)) ?
+        const additionalProperty = (event.additionalProperty !== undefined) ? event.additionalProperty : [];
+        const signageDisplayName = additionalProperty.find((p) => p.name === 'signageDisplayName');
+        const signageDislaySubtitleName = additionalProperty.find((p) => p.name === 'signageDislaySubtitleName');
+        const summaryStartDay = additionalProperty.find((p) => p.name === 'summaryStartDay');
+        const forms = Object.assign({ headline: {} }, event, { signageDisplayName: (signageDisplayName !== undefined) ? signageDisplayName.value : '', signageDislaySubtitleName: (signageDislaySubtitleName !== undefined) ? signageDislaySubtitleName.value : '', summaryStartDay: (summaryStartDay !== undefined) ? summaryStartDay.value : '' }, req.body, { nameJa: (_.isEmpty(req.body.nameJa)) ? event.name.ja : req.body.nameJa, nameEn: (_.isEmpty(req.body.nameEn)) ? event.name.en : req.body.nameEn, duration: (_.isEmpty(req.body.duration)) ? moment.duration(event.duration).asMinutes() : req.body.duration, locationBranchCode: event.location.branchCode, translationType: translationType, videoFormatType: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf) : [], startDate: (_.isEmpty(req.body.startDate)) ?
                 (event.startDate !== null) ? moment(event.startDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
                 req.body.startDate, endDate: (_.isEmpty(req.body.endDate)) ?
                 (event.endDate !== null) ? moment(event.endDate).tz('Asia/Tokyo').add(-1, 'day').format('YYYY/MM/DD') : '' :
@@ -211,6 +215,7 @@ exports.getRating = getRating;
 /**
  * リクエストボディからイベントオブジェクトを作成する
  */
+// tslint:disable-next-line:max-func-body-length
 function createEventFromBody(body, movie, movieTheater) {
     const videoFormat = (Array.isArray(body.videoFormatType)) ? body.videoFormatType.map((f) => {
         return { typeOf: f, name: f };
@@ -254,7 +259,6 @@ function createEventFromBody(body, movie, movieTheater) {
             kr: ''
         },
         kanaName: body.kanaName,
-        alternativeHeadline: body.nameJa,
         location: {
             id: movieTheater.id,
             typeOf: movieTheater.typeOf,
@@ -278,10 +282,24 @@ function createEventFromBody(body, movie, movieTheater) {
             ? moment(`${body.endDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day').toDate()
             : undefined,
         eventStatus: chevre.factory.eventStatusType.EventScheduled,
-        movieSubtitleName: body.movieSubtitleName,
-        signageDisplayName: body.signageDisplayName,
-        signageDislaySubtitleName: body.signageDislaySubtitleName,
-        summaryStartDay: body.summaryStartDay,
+        headline: {
+            ja: body.headline.ja,
+            en: ''
+        },
+        additionalProperty: [
+            {
+                name: 'signageDisplayName',
+                value: body.signageDisplayName
+            },
+            {
+                name: 'signageDislaySubtitleName',
+                value: body.signageDislaySubtitleName
+            },
+            {
+                name: 'summaryStartDay',
+                value: body.summaryStartDay
+            }
+        ],
         offers: offers,
         description: {
             ja: body.description,
@@ -402,7 +420,7 @@ function getList(req, res) {
                 if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
                     translationType = '吹替';
                 }
-                return Object.assign({}, event, { translationType: translationType, startDay: (event.startDate !== undefined) ? moment(event.startDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '', endDay: (event.endDate !== undefined) ? moment(event.endDate).tz('Asia/Tokyo').add(-1, 'day').format('YYYY/MM/DD') : '', videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : '', movieSubtitleName: (_.isEmpty(event.movieSubtitleName)) ? '' : event.movieSubtitleName });
+                return Object.assign({}, event, { translationType: translationType, startDay: (event.startDate !== undefined) ? moment(event.startDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '', endDay: (event.endDate !== undefined) ? moment(event.endDate).tz('Asia/Tokyo').add(-1, 'day').format('YYYY/MM/DD') : '', videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : '' });
             });
             res.json({
                 success: true,
@@ -459,7 +477,8 @@ function validate(req) {
     colName = '上映終了日';
     req.checkBody('endDate', Message.Common.invalidDateFormat.replace('$fieldName$', colName)).isDate();
     colName = '上映作品サブタイトル名';
-    req.checkBody('movieSubtitleName', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_NAME_JA });
+    req.checkBody('headline.ja', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE))
+        .len({ max: NAME_MAX_LENGTH_NAME_JA });
     colName = '集計開始曜日';
     req.checkBody('summaryStartDay', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 }
