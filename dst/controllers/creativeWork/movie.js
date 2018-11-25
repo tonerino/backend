@@ -208,9 +208,7 @@ exports.getList = getList;
  */
 function index(__, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        res.render('creativeWorks/movie/index', {
-            filmModel: {}
-        });
+        res.render('creativeWorks/movie/index', {});
     });
 }
 exports.index = index;

@@ -187,9 +187,7 @@ exports.getList = getList;
  */
 function index(__, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        res.render('subject/index', {
-            subjectModel: {}
-        });
+        res.render('subject/index', {});
     });
 }
 exports.index = index;

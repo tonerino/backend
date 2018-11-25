@@ -28,7 +28,9 @@ Aa-13
                 <select class="form-control" name="theater">
                     <option value="" selected disabled>選択してください</option>
                     <% for (const movieTheater of movieTheaters) { %>
-                    <option value="<%= movieTheater.branchCode %>"><%= movieTheater.name.ja %></option>
+                    <option value="<%= movieTheater.branchCode %>">
+                        <%= movieTheater.name.ja %>
+                    </option>
                     <% } %>
                 </select>
             </div>

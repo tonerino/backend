@@ -203,9 +203,10 @@ export async function getList(req: Request, res: Response): Promise<void> {
  * 一覧
  */
 export async function index(__: Request, res: Response): Promise<void> {
-    res.render('creativeWorks/movie/index', {
-        filmModel: {}
-    });
+    res.render(
+        'creativeWorks/movie/index',
+        {}
+    );
 }
 /**
  * 作品マスタ新規登録画面検証

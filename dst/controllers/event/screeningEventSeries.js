@@ -449,7 +449,6 @@ function index(req, res) {
         });
         const searchMovieTheatersResult = yield placeService.searchMovieTheaters({});
         res.render('events/screeningEventSeries/index', {
-            filmModel: {},
             movieTheaters: searchMovieTheatersResult.data
         });
     });

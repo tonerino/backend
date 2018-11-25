@@ -73,6 +73,8 @@ export async function getList(req: Request, res: Response): Promise<void> {
         });
 
         const result = await distributionService.searchDistribution({
+            limit: req.query.limit,
+            page: req.query.page,
             id: req.query.id,
             name: req.query.name
         });

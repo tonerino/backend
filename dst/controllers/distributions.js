@@ -83,6 +83,8 @@ function getList(req, res) {
                 auth: req.user.authClient
             });
             const result = yield distributionService.searchDistribution({
+                limit: req.query.limit,
+                page: req.query.page,
                 id: req.query.id,
                 name: req.query.name
             });

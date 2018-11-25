@@ -175,7 +175,6 @@ export async function getList(req: Request, res: Response): Promise<void> {
  */
 export async function index(__: Request, res: Response): Promise<void> {
     res.render('subject/index', {
-        subjectModel: {}
     });
 }
 /**

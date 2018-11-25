@@ -485,7 +485,6 @@ export async function index(req: Request, res: Response): Promise<void> {
     });
     const searchMovieTheatersResult = await placeService.searchMovieTheaters({});
     res.render('events/screeningEventSeries/index', {
-        filmModel: {},
         movieTheaters: searchMovieTheatersResult.data
     });
 }
