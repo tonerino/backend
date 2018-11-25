@@ -116,7 +116,7 @@ function update(req, res) {
             auth: req.user.authClient
         });
         const distributions = yield distributionsService.getDistributionsList();
-        const forms = Object.assign({}, movie, req.body, { duration: (_.isEmpty(req.body.duration))
+        const forms = Object.assign({}, movie, { distribution: (movie.distributor !== undefined) ? movie.distributor.id : '' }, req.body, { duration: (_.isEmpty(req.body.duration))
                 ? (typeof movie.duration === 'string') ? moment.duration(movie.duration).asMinutes() : ''
                 : req.body.duration, datePublished: (_.isEmpty(req.body.datePublished)) ?
                 (movie.datePublished !== undefined) ? moment(movie.datePublished).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :

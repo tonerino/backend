@@ -111,6 +111,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     const distributions = await distributionsService.getDistributionsList();
     const forms = {
         ...movie,
+        distribution: (movie.distributor !== undefined) ? movie.distributor.id : '',
         ...req.body,
         duration: (_.isEmpty(req.body.duration))
             ? (typeof movie.duration === 'string') ? moment.duration(movie.duration).asMinutes() : ''
