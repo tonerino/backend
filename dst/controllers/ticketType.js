@@ -293,12 +293,14 @@ function getTicketTypeGroupList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            // const ticketType = await ticketTypeService.findTicketTypeById({ id: req.params.id });
-            const ticketTypeGroups = yield ticketTypeService.getTicketTypeGroupList({ ticketTypeId: req.params.ticketTypeId });
+            const { totalCount, data } = yield ticketTypeService.searchTicketTypeGroups({
+                limit: 100,
+                ticketTypes: [req.params.ticketTypeId]
+            });
             res.json({
                 success: true,
-                count: ticketTypeGroups.length,
-                results: ticketTypeGroups
+                count: totalCount,
+                results: data
             });
         }
         catch (err) {

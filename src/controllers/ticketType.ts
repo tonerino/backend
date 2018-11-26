@@ -300,12 +300,14 @@ export async function getTicketTypeGroupList(req: Request, res: Response): Promi
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        // const ticketType = await ticketTypeService.findTicketTypeById({ id: req.params.id });
-        const ticketTypeGroups = await ticketTypeService.getTicketTypeGroupList({ ticketTypeId: req.params.ticketTypeId });
+        const { totalCount, data } = await ticketTypeService.searchTicketTypeGroups({
+            limit: 100,
+            ticketTypes: [req.params.ticketTypeId]
+        });
         res.json({
             success: true,
-            count: ticketTypeGroups.length,
-            results: ticketTypeGroups
+            count: totalCount,
+            results: data
         });
     } catch (err) {
         res.json({
