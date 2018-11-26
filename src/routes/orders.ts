@@ -2,10 +2,12 @@
  * 注文ルーター
  */
 import * as chevre from '@toei-jp/chevre-api-nodejs-client';
-import * as cinerino from '@toei-jp/cinerino-api-nodejs-client';
+import * as cinerino from '@cinerino/api-nodejs-client';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 import * as moment from 'moment';
+import * as util from 'util';
+
 import { getOptions } from '../controllers/base/base.controller';
 import { ApiEndpoint } from '../user';
 
@@ -49,6 +51,7 @@ ordersRouter.get('/cancel', async (req, res) => {
         res.json({ success: false });
     }
 });
+// tslint:disable-next-line:max-func-body-length
 ordersRouter.get('/search', async (req, res) => {
     try {
         const options = getOptions(req, ApiEndpoint.cinerino);
@@ -133,8 +136,28 @@ ordersRouter.get('/search', async (req, res) => {
         res.json({
             success: true,
             count: searchResult.totalCount,
-            results: searchResult.data.map((t: cinerino.factory.order.IOrder) => {
-                return t;
+            results: searchResult.data.map((o) => {
+                return {
+                    ...o,
+                    paymentMethodId: o.paymentMethods.map((p) => p.paymentMethodId).join(','),
+                    ticketInfo: o.acceptedOffers.map((offer) => {
+                        // tslint:disable-next-line:max-line-length
+                        const priceComponent = <chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.UnitPriceSpecification> | undefined>
+                            offer.itemOffered.price.priceComponent.find(
+                                (component) => component.typeOf === chevre.factory.priceSpecificationType.UnitPriceSpecification
+                            );
+                        const price = (priceComponent !== undefined)
+                            ? `${priceComponent.price}(${priceComponent.referenceQuantity.value}枚)円`
+                            : '';
+
+                        return util.format(
+                            '%s / %s / %s',
+                            offer.itemOffered.reservedTicket.ticketedSeat.seatNumber,
+                            offer.itemOffered.additionalTicketText,
+                            price
+                        );
+                    }).join('<br>')
+                };
             }),
             orderCancellings: orderCancellings
         });

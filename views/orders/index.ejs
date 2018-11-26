@@ -141,8 +141,8 @@ Aa-20
             <thead>
                 <tr>
                     <th>購入日時<br>上映日時</th>
-                    <th>購入者名<br>購入者電話番号<br>購入者メアド<br>購入番号</th>
-                    <th>座席<br>券種<br>金額<br>入場</th>
+                    <th>購入者名<br>購入者電話番号<br>購入者メアド<br>購入番号<br>決済ID</th>
+                    <th>座席/券種/金額</th>
                     <th>上映作品名<br>劇場<br></th>
                     <th style="width: 120px">キャンセル処理<br>キャンセル</th>
                 </tr>
@@ -154,14 +154,15 @@ Aa-20
                         $acceptedOffers.0.itemOffered.reservationFor.startDate$
                         <input type="hidden" name="orderNumber" value="$orderNumber$">
                     </td>
-                    <td name="customer.name__customer.telephone__customer.email__confirmationNumber">
+                    <td name="customer.name__customer.telephone__customer.email__confirmationNumber__paymentMethodId">
                         $customer.name$<br>
                         $customer.telephone$<br>
                         $customer.email$<br>
-                        $confirmationNumber$
+                        $confirmationNumber$<br>
+                        $paymentMethodId$
                     </td>
                     <td name="ticketInfo">
-
+                        $ticketInfo$
                     </td>
                     <td name="acceptedOffers.0.itemOffered.reservationFor.superEvent.name.ja__acceptedOffers.0.itemOffered.reservationFor.superEvent.location.name.ja">
                         $acceptedOffers.0.itemOffered.reservationFor.superEvent.name.ja$<br>

@@ -274,13 +274,14 @@ function getTicketTypePriceList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            // 券種グループ取得
+            // 指定価格の券種検索
             const searchTicketTypesResult = yield ticketTypeService.searchTicketTypes({
                 limit: 100,
                 sort: {
                     'priceSpecification.price': chevre.factory.sortType.Descending
                 },
                 priceSpecification: {
+                    minPrice: Number(req.query.price),
                     maxPrice: Number(req.query.price)
                 }
             });

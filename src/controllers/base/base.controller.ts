@@ -2,7 +2,7 @@
  * base
  */
 import * as chevre from '@toei-jp/chevre-api-nodejs-client';
-import * as cinerino from '@toei-jp/cinerino-api-nodejs-client';
+import * as cinerino from '@cinerino/api-nodejs-client';
 import * as debug from 'debug';
 import { Request, Response } from 'express';
 import * as httpStatus from 'http-status';

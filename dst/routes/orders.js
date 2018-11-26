@@ -12,10 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 注文ルーター
  */
 const chevre = require("@toei-jp/chevre-api-nodejs-client");
-const cinerino = require("@toei-jp/cinerino-api-nodejs-client");
+const cinerino = require("@cinerino/api-nodejs-client");
 const createDebug = require("debug");
 const express_1 = require("express");
 const moment = require("moment");
+const util = require("util");
 const base_controller_1 = require("../controllers/base/base.controller");
 const user_1 = require("../user");
 const ordersRouter = express_1.Router();
@@ -56,6 +57,7 @@ ordersRouter.get('/cancel', (req, res) => __awaiter(this, void 0, void 0, functi
         res.json({ success: false });
     }
 }));
+// tslint:disable-next-line:max-func-body-length
 ordersRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, function* () {
     try {
         const options = base_controller_1.getOptions(req, user_1.ApiEndpoint.cinerino);
@@ -133,8 +135,15 @@ ordersRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, functi
         res.json({
             success: true,
             count: searchResult.totalCount,
-            results: searchResult.data.map((t) => {
-                return t;
+            results: searchResult.data.map((o) => {
+                return Object.assign({}, o, { paymentMethodId: o.paymentMethods.map((p) => p.paymentMethodId).join(','), ticketInfo: o.acceptedOffers.map((offer) => {
+                        // tslint:disable-next-line:max-line-length
+                        const priceComponent = offer.itemOffered.price.priceComponent.find((component) => component.typeOf === chevre.factory.priceSpecificationType.UnitPriceSpecification);
+                        const price = (priceComponent !== undefined)
+                            ? `${priceComponent.price}(${priceComponent.referenceQuantity.value}枚)円`
+                            : '';
+                        return util.format('%s / %s / %s', offer.itemOffered.reservedTicket.ticketedSeat.seatNumber, offer.itemOffered.additionalTicketText, price);
+                    }).join('<br>') });
             }),
             orderCancellings: orderCancellings
         });

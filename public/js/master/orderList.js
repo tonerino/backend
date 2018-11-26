@@ -38,7 +38,7 @@ $(function () {
         }
     });
 
-    $(document).on('click', '.cancelButton a.btn.btn-danger', function() {
+    $(document).on('click', '.cancelButton a.btn.btn-danger', function () {
         var self = this;
         var orderNumber = $(this).closest('tr').find('[name=orderNumber]').val();
         if (!confirm('キャンセル処理を実行してよろしいですか?\n\nオータ番号: ' + orderNumber)) return false;
@@ -50,7 +50,7 @@ $(function () {
             url: url,
             cache: false,
             type: 'GET',
-            data: {orderNumber: orderNumber},
+            data: { orderNumber: orderNumber },
             beforeSend: function () {
                 $('.loading').modal();
             }
@@ -87,7 +87,7 @@ $(function () {
                 var dataCount = (data.count) ? (data.count) : 0;
                 // 一覧表示
                 if ($.CommonMasterList.bind(data.results, dataCount, pageNumber)) {
-                    showTicket(data.results);
+                    // showTicket(data.results);
                     showCancelButton(data.results, data.orderCancellings);
                     $('#list').show();
                 } else {
@@ -106,7 +106,7 @@ $(function () {
     /**
      * デフォルトをセットする
      */
-    function setStartDateHourMinute () {
+    function setStartDateHourMinute() {
         if (!startDateHourFrom.val()) startDateHourFrom.val('00');
         if (!startDateMinuteFrom.val()) startDateMinuteFrom.val('00');
         if (!startDateHourThrough.val()) startDateHourThrough.val('23');
@@ -118,7 +118,7 @@ $(function () {
      * @param {*} rows 
      */
     function showCancelButton(rows, orderCancellings) {
-        $('#list tbody tr').each(function() {
+        $('#list tbody tr').each(function () {
             var trId = $(this).attr('_id');
             var cancelBtn = $(this).find('.cancelButton a.btn-cancel');
             var cancelling = $(this).find('.cancelButton p.btn-disabled');
@@ -134,28 +134,6 @@ $(function () {
                     }
                 }
             }
-        });
-    }
-
-    function showTicket(rows) {
-        $('#list tbody tr').each(function() {
-            var trId = $(this).attr('_id');
-            var showTd = $(this).find('[name=ticketInfo]');
-            var content = [[], [], []];
-            for(var x in rows) {
-                if (rows[x]._id === trId) {
-                    if (!$.isArray(rows[x].acceptedOffers)) break;
-                    for(var y in rows[x].acceptedOffers) {
-                        content[0].push(rows[x].acceptedOffers[y].itemOffered.reservedTicket.ticketedSeat.seatNumber);
-                        content[1].push(rows[x].acceptedOffers[y].itemOffered.additionalTicketText);
-                        content[2].push(rows[x].acceptedOffers[y].itemOffered.price + ' ' + rows[x].acceptedOffers[y].itemOffered.priceCurrency);
-                    }
-                    break;
-                }
-            }
-            showTd.html(content[0].join(' / ') + '<br>');
-            showTd.append(content[1].join(' / ') + '<br>');
-            showTd.append(content[2].join(' / '));
         });
     }
 
@@ -202,7 +180,7 @@ $(function () {
         var screeningEventSeriesDom = $('[name=screeningEventSeriesId]');
         screeningEventSeriesDom.html('<option value="" selected="">---</option>');
         for (var x in datas) {
-            screeningEventSeriesDom.append('<option value="'+ datas[x].id +'" filmNameEn="'+ datas[x].filmNameEn +'">'+ datas[x].filmNameJa +'</option>');
+            screeningEventSeriesDom.append('<option value="' + datas[x].id + '" filmNameEn="' + datas[x].filmNameEn + '">' + datas[x].filmNameJa + '</option>');
         }
     }
 });

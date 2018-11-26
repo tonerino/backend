@@ -33,7 +33,7 @@ $(function () {
                 for (i in ticketType) {
                     $('#sortable1').append(
                         '<li class="ui-state-default" uid=' + ticketType[i].id + '>' +
-                        ticketType[i].name.ja + '(' + ticketType[i].priceSpecification.price + ')' + '</li>'
+                        ticketType[i].alternateName.ja + '(' + ticketType[i].priceSpecification.price + ')' + '</li>'
                     );
                 }
                 $('#sortable1').show();

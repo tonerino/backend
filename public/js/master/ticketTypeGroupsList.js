@@ -91,7 +91,6 @@ $(function () {
                 listTicketTypeGroup.empty();
                 if (data.results.length > 0) {
                     for (let i = 0; i < data.results.length; i++) {
-                        console.log(data.results[i]);
                         listTicketTypeGroup.append(`<tr><td>${data.results[i]}</td></tr>`);
                     }
                 } else {
