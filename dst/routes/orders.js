@@ -11,8 +11,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 注文ルーター
  */
-const chevre = require("@toei-jp/chevre-api-nodejs-client");
 const cinerino = require("@cinerino/api-nodejs-client");
+const chevre = require("@toei-jp/chevre-api-nodejs-client");
 const createDebug = require("debug");
 const express_1 = require("express");
 const moment = require("moment");
