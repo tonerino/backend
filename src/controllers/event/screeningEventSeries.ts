@@ -505,8 +505,8 @@ function validate(req: Request): void {
     req.checkBody('nameJa', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_NAME_JA });
 
     colName = '作品名カナ';
-    req.checkBody('kanaName', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('kanaName', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_JA)).len({ max: NAME_MAX_LENGTH_NAME_JA });
+    req.checkBody('kanaName', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_JA)).optional()
+        .len({ max: NAME_MAX_LENGTH_NAME_JA });
     // .regex(/^[ァ-ロワヲンーa-zA-Z]*$/, req.__('Message.invalid{{fieldName}}', { fieldName: '%s' })),
 
     colName = '上映開始日';
