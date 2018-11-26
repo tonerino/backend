@@ -79,10 +79,8 @@ $(function () {
 
     $(document).on('change', '#newModal select[name="theater"]', _.debounce(function () {
         var theater = $(this).val();
-        var fromDate = $('#newModal input[name=screeningDateStart]').val();
-        var toDate = $('#newModal input[name=screeningDateThrough]').val();
         getScreens(theater, 'add');
-        getEventSeries(theater, fromDate, toDate);
+        getEventSeries(theater);
     }, 500));
 
     $(document).on('change', 'form.search input[name="date"]', _.debounce(function () {
@@ -115,8 +113,8 @@ $(function () {
  * @param {date}
  * @returns {void}
  */
-function getEventSeries(theater, fromDate, toDate) {
-    if (!fromDate || !theater || !toDate) {
+function getEventSeries(theater) {
+    if (!theater) {
         return;
     }
     var screeningEventSeriesSelect = $('#newModal select[name="screeningEventSeriesId"]');
@@ -126,8 +124,6 @@ function getEventSeries(theater, fromDate, toDate) {
         url: '/events/screeningEventSeries/search',
         type: 'GET',
         data: {
-            fromDate: fromDate,
-            toDate: toDate,
             branchCode: theater
         }
     }).done(function (data) {

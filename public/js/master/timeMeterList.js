@@ -11,7 +11,7 @@ $(function () {
         if (window.event.keyCode == 13) $('.btn-ok').click();
     });
 
-    $('select[name=theater], input[name=startDateFrom], input[name=startDateThrough]').on('change', function() {
+    $('select[name=theater], input[name=startDateFrom], input[name=startDateThrough]').on('change', function () {
         var theater = $('select[name=theater]').val();
         var startDateFrom = $('input[name=startFrom]').val();
         var startDateThrough = $('input[name=startThrough]').val();
@@ -119,7 +119,7 @@ $(function () {
             }
         }).fail(function (jqxhr, textStatus, error) {
             console.error(jqxhr, textStatus, error);
-        }).always(function() { screeningEventSeriesSelector.removeAttr('disabled'); });
+        }).always(function () { screeningEventSeriesSelector.removeAttr('disabled'); });
     }
 });
 

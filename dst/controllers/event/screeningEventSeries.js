@@ -321,12 +321,13 @@ function search(req, res) {
             const branchCode = req.query.branchCode;
             const fromDate = req.query.fromDate;
             const toDate = req.query.toDate;
-            if (branchCode === undefined || fromDate === undefined || toDate === undefined) {
+            if (branchCode === undefined) {
                 throw new Error();
             }
+            // 上映終了して「いない」劇場上映作品を検索
             const { totalCount, data } = yield eventService.searchScreeningEventSeries({
-                inSessionFrom: moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
-                inSessionThrough: moment(`${toDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
+                inSessionFrom: (fromDate !== undefined) ? moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : new Date(),
+                inSessionThrough: (toDate !== undefined) ? moment(`${toDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : undefined,
                 location: {
                     branchCodes: branchCode
                 }
