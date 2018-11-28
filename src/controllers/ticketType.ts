@@ -126,18 +126,23 @@ export async function update(req: Request, res: Response): Promise<void> {
     }
 
     let seatReservationUnit = 1;
-    if (ticketType.eligibleQuantity !== undefined && ticketType.eligibleQuantity.value !== undefined) {
-        seatReservationUnit = ticketType.eligibleQuantity.value;
+    if (ticketType.priceSpecification.referenceQuantity.value !== undefined) {
+        seatReservationUnit = ticketType.priceSpecification.referenceQuantity.value;
     }
 
     const additionalProperty = (ticketType.additionalProperty !== undefined) ? ticketType.additionalProperty : [];
     const nameForPrinting = additionalProperty.find((p) => p.name === 'nameForPrinting');
+    const accountsReceivable = (ticketType.priceSpecification.accounting !== undefined)
+        ? ticketType.priceSpecification.accounting.accountsReceivable
+        : '';
 
     const forms = {
         alternateName: {},
         ...ticketType,
         category: (ticketType.category !== undefined) ? ticketType.category.id : '',
         nameForPrinting: (nameForPrinting !== undefined) ? nameForPrinting.value : '',
+        price: Math.floor(Number(ticketType.priceSpecification.price) / seatReservationUnit),
+        accountsReceivable: Math.floor(Number(accountsReceivable) / seatReservationUnit),
         ...req.body,
         isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket,
         isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket,
@@ -171,6 +176,12 @@ function createFromBody(body: any): chevre.factory.ticketType.ITicketType {
         availability = chevre.factory.itemAvailability.OnlineOnly;
     }
 
+    const referenceQuantity = {
+        typeOf: <'QuantitativeValue'>'QuantitativeValue',
+        value: Number(body.seatReservationUnit),
+        unitCode: chevre.factory.unitCode.C62
+    };
+
     return {
         typeOf: <chevre.factory.offerType>'Offer',
         priceCurrency: chevre.factory.priceCurrency.JPY,
@@ -181,14 +192,10 @@ function createFromBody(body: any): chevre.factory.ticketType.ITicketType {
         availability: availability,
         priceSpecification: {
             typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
-            price: Number(body.priceSpecification.price),
+            price: Number(body.price) * referenceQuantity.value,
             priceCurrency: chevre.factory.priceCurrency.JPY,
             valueAddedTaxIncluded: true,
-            referenceQuantity: {
-                typeOf: 'QuantitativeValue',
-                value: Number(body.seatReservationUnit),
-                unitCode: chevre.factory.unitCode.C62
-            },
+            referenceQuantity: referenceQuantity,
             appliesToMovieTicketType: body.appliesToMovieTicketType,
             accounting: {
                 typeOf: 'Accounting',
@@ -202,7 +209,7 @@ function createFromBody(body: any): chevre.factory.ticketType.ITicketType {
                     identifier: body.nonBoxOfficeSubject,
                     name: ''
                 },
-                accountsReceivable: Number(body.priceSpecification.accounting.accountsReceivable)
+                accountsReceivable: Number(body.accountsReceivable) * referenceQuantity.value
             }
         },
         additionalProperty: [
@@ -349,13 +356,13 @@ function validateFormAdd(req: Request): void {
     req.checkBody('seatReservationUnit', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 
     colName = '発生金額';
-    req.checkBody('priceSpecification.price', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('priceSpecification.price', Message.Common.getMaxLengthHalfByte(colName, CHAGE_MAX_LENGTH))
+    req.checkBody('price', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('price', Message.Common.getMaxLengthHalfByte(colName, CHAGE_MAX_LENGTH))
         .isNumeric().len({ max: CHAGE_MAX_LENGTH });
 
     colName = '売上金額';
-    req.checkBody('priceSpecification.accounting.accountsReceivable', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('priceSpecification.accounting.accountsReceivable', Message.Common.getMaxLengthHalfByte(colName, CHAGE_MAX_LENGTH))
+    req.checkBody('accountsReceivable', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('accountsReceivable', Message.Common.getMaxLengthHalfByte(colName, CHAGE_MAX_LENGTH))
         .isNumeric().len({ max: CHAGE_MAX_LENGTH });
 
     colName = '細目';

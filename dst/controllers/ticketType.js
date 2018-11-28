@@ -125,12 +125,15 @@ function update(req, res) {
             default:
         }
         let seatReservationUnit = 1;
-        if (ticketType.eligibleQuantity !== undefined && ticketType.eligibleQuantity.value !== undefined) {
-            seatReservationUnit = ticketType.eligibleQuantity.value;
+        if (ticketType.priceSpecification.referenceQuantity.value !== undefined) {
+            seatReservationUnit = ticketType.priceSpecification.referenceQuantity.value;
         }
         const additionalProperty = (ticketType.additionalProperty !== undefined) ? ticketType.additionalProperty : [];
         const nameForPrinting = additionalProperty.find((p) => p.name === 'nameForPrinting');
-        const forms = Object.assign({ alternateName: {} }, ticketType, { category: (ticketType.category !== undefined) ? ticketType.category.id : '', nameForPrinting: (nameForPrinting !== undefined) ? nameForPrinting.value : '' }, req.body, { isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket, isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket, seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit, subject: (_.isEmpty(req.body.subject))
+        const accountsReceivable = (ticketType.priceSpecification.accounting !== undefined)
+            ? ticketType.priceSpecification.accounting.accountsReceivable
+            : '';
+        const forms = Object.assign({ alternateName: {} }, ticketType, { category: (ticketType.category !== undefined) ? ticketType.category.id : '', nameForPrinting: (nameForPrinting !== undefined) ? nameForPrinting.value : '', price: Math.floor(Number(ticketType.priceSpecification.price) / seatReservationUnit), accountsReceivable: Math.floor(Number(accountsReceivable) / seatReservationUnit) }, req.body, { isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket, isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket, seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit, subject: (_.isEmpty(req.body.subject))
                 ? (ticketType.priceSpecification.accounting !== undefined)
                     ? ticketType.priceSpecification.accounting.operatingRevenue.identifier : undefined
                 : req.body.subject, nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject))
@@ -159,6 +162,11 @@ function createFromBody(body) {
     else if (body.isOnlineTicket === '1') {
         availability = chevre.factory.itemAvailability.OnlineOnly;
     }
+    const referenceQuantity = {
+        typeOf: 'QuantitativeValue',
+        value: Number(body.seatReservationUnit),
+        unitCode: chevre.factory.unitCode.C62
+    };
     return {
         typeOf: 'Offer',
         priceCurrency: chevre.factory.priceCurrency.JPY,
@@ -169,14 +177,10 @@ function createFromBody(body) {
         availability: availability,
         priceSpecification: {
             typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
-            price: Number(body.priceSpecification.price),
+            price: Number(body.price) * referenceQuantity.value,
             priceCurrency: chevre.factory.priceCurrency.JPY,
             valueAddedTaxIncluded: true,
-            referenceQuantity: {
-                typeOf: 'QuantitativeValue',
-                value: Number(body.seatReservationUnit),
-                unitCode: chevre.factory.unitCode.C62
-            },
+            referenceQuantity: referenceQuantity,
             appliesToMovieTicketType: body.appliesToMovieTicketType,
             accounting: {
                 typeOf: 'Accounting',
@@ -190,7 +194,7 @@ function createFromBody(body) {
                     identifier: body.nonBoxOfficeSubject,
                     name: ''
                 },
-                accountsReceivable: Number(body.priceSpecification.accounting.accountsReceivable)
+                accountsReceivable: Number(body.accountsReceivable) * referenceQuantity.value
             }
         },
         additionalProperty: [
@@ -344,12 +348,12 @@ function validateFormAdd(req) {
     colName = '購入席単位追加';
     req.checkBody('seatReservationUnit', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     colName = '発生金額';
-    req.checkBody('priceSpecification.price', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('priceSpecification.price', Message.Common.getMaxLengthHalfByte(colName, CHAGE_MAX_LENGTH))
+    req.checkBody('price', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('price', Message.Common.getMaxLengthHalfByte(colName, CHAGE_MAX_LENGTH))
         .isNumeric().len({ max: CHAGE_MAX_LENGTH });
     colName = '売上金額';
-    req.checkBody('priceSpecification.accounting.accountsReceivable', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('priceSpecification.accounting.accountsReceivable', Message.Common.getMaxLengthHalfByte(colName, CHAGE_MAX_LENGTH))
+    req.checkBody('accountsReceivable', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('accountsReceivable', Message.Common.getMaxLengthHalfByte(colName, CHAGE_MAX_LENGTH))
         .isNumeric().len({ max: CHAGE_MAX_LENGTH });
     colName = '細目';
     req.checkBody('subject', Message.Common.required.replace('$fieldName$', colName)).notEmpty();

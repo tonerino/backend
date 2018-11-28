@@ -90,36 +90,35 @@
     </div>
 </div>
 <div class="form-group ">
-    <label for="priceSpecification[price]" class="col-sm-3 control-label label-title">
+    <label for="price" class="col-sm-3 control-label label-title">
         発生金額<font color="red">＊</font>
     </label>
     <div class="col-sm-9">
-        <input type="text" class="form-control" name="priceSpecification[price]" id="priceSpecification[price]"
-            placeholder="" maxlength=10 value=<%=forms.priceSpecification.price %>>
+        <input type="text" class="form-control" name="price" id="price" placeholder="" maxlength=10 value=<%=forms.price
+            %>>
         <p class="message">
             半角10文字以内でご入力ください。
         </p>
         <p class="error message text-danger">
-            <% if (errors && errors['priceSpecification.price']) { %>
-            <%- errors['priceSpecification.price'].msg %>
+            <% if (errors && errors.price) { %>
+            <%- errors.price.msg %>
             <% } %>
         </p>
     </div>
 </div>
 <div class="form-group ">
-    <label for="priceSpecification[accounting][accountsReceivable]" class="col-sm-3 control-label label-title">
+    <label for="accountsReceivable" class="col-sm-3 control-label label-title">
         売上金額<font color="red">＊</font>
     </label>
     <div class="col-sm-9">
-        <input type="text" class="form-control" name="priceSpecification[accounting][accountsReceivable]" id="priceSpecification[accounting][accountsReceivable]"
-            placeholder="" maxlength=10 value=<%=(forms.priceSpecification !==undefined) ?
-            forms.priceSpecification.accounting.accountsReceivable : '' %>>
+        <input type="text" class="form-control" name="accountsReceivable" id="accountsReceivable" placeholder=""
+            maxlength=10 value=<%=forms.accountsReceivable %>>
         <p class="message">
             半角10文字以内でご入力ください。
         </p>
         <p class="error message text-danger">
-            <% if (errors && errors['priceSpecification.accounting.accountsReceivable']) { %>
-            <%- errors['priceSpecification.accounting.accountsReceivable'].msg %>
+            <% if (errors && errors.accountsReceivable) { %>
+            <%- errors.accountsReceivable.msg %>
             <% } %>
         </p>
     </div>
