@@ -481,4 +481,6 @@ function validate(req) {
         .len({ max: NAME_MAX_LENGTH_NAME_JA });
     colName = '集計開始曜日';
     req.checkBody('summaryStartDay', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    colName = '上映形態';
+    req.checkBody('videoFormatType', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 }

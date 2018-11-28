@@ -238,7 +238,7 @@
 </div>
 <div class="form-group">
     <label for="videoFormat" class="col-sm-3 control-label label-title">
-        上映形態
+        上映形態<font color="red">＊</font>
     </label>
     <div class="col-sm-9">
         <% Object.keys(VideoFormatType).forEach((key) => { %>
@@ -249,8 +249,8 @@
         <% }) %>
 
         <p class="error message text-danger">
-            <% if (errors && errors.videoFormat) { %>
-            <%- errors.videoFormat.msg %>
+            <% if (errors && errors.videoFormatType) { %>
+            <%- errors.videoFormatType.msg %>
             <% } %>
         </p>
     </div>

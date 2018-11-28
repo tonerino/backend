@@ -521,4 +521,7 @@ function validate(req: Request): void {
 
     colName = '集計開始曜日';
     req.checkBody('summaryStartDay', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+
+    colName = '上映形態';
+    req.checkBody('videoFormatType', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
 }
