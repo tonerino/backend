@@ -45,20 +45,7 @@ export async function add(req: Request, res: Response): Promise<void> {
         errors = req.validationErrors(true);
         if (validatorResult.isEmpty()) {
             try {
-                const ticketTypeGroup = {
-                    id: req.body.id,
-                    name: req.body.name,
-                    description: req.body.description,
-                    alternateName: req.body.alternateName,
-                    ticketTypes: req.body.ticketTypes,
-                    itemOffered: {
-                        serviceType: {
-                            typeOf: <'ServiceType'>'ServiceType',
-                            id: req.body.serviceType,
-                            name: ''
-                        }
-                    }
-                };
+                const ticketTypeGroup = createFromBody(req.body);
                 await ticketTypeService.createTicketTypeGroup(ticketTypeGroup);
                 req.flash('message', '登録しました');
                 res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
@@ -121,14 +108,6 @@ export async function update(req: Request, res: Response): Promise<void> {
     const boxOfficeTypeList = await boxOfficeTypeService.getBoxOfficeTypeList();
     let message = '';
     let errors: any = {};
-    let ticketTypeIds: string[] = [];
-    if (!_.isEmpty(req.body.ticketTypes)) {
-        if (_.isString(req.body.ticketTypes)) {
-            ticketTypeIds = [req.body.ticketTypes];
-        } else {
-            ticketTypeIds = req.body.ticketTypes;
-        }
-    }
     if (req.method === 'POST') {
         // バリデーション
         validate(req);
@@ -138,20 +117,8 @@ export async function update(req: Request, res: Response): Promise<void> {
             // 券種グループDB登録
             try {
                 // 券種グループDB登録
-                const ticketTypeGroup: chevre.factory.ticketType.ITicketTypeGroup = {
-                    id: req.params.id,
-                    name: req.body.name,
-                    description: req.body.description,
-                    alternateName: req.body.alternateName,
-                    ticketTypes: ticketTypeIds,
-                    itemOffered: {
-                        serviceType: {
-                            typeOf: 'ServiceType',
-                            id: req.body.serviceType,
-                            name: ''
-                        }
-                    }
-                };
+                req.body.id = req.params.id;
+                const ticketTypeGroup = createFromBody(req.body);
                 await ticketTypeService.updateTicketTypeGroup(ticketTypeGroup);
                 req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
@@ -168,7 +135,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         ...ticketGroup,
         serviceType: ticketGroup.itemOffered.serviceType.id,
         ...req.body,
-        ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : ticketTypeIds
+        ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : []
     };
 
     // 券種マスタから取得
@@ -202,6 +169,26 @@ export async function update(req: Request, res: Response): Promise<void> {
         boxOfficeTypeList: boxOfficeTypeList
     });
 }
+
+function createFromBody(body: any): chevre.factory.ticketType.ITicketTypeGroup {
+    const ticketTypes = (Array.isArray(body.ticketTypes)) ? <string[]>body.ticketTypes : [<string>body.ticketTypes];
+
+    return {
+        id: body.id,
+        name: body.name,
+        description: body.description,
+        alternateName: body.alternateName,
+        ticketTypes: [...new Set(ticketTypes)], // 念のため券種IDをユニークに
+        itemOffered: {
+            serviceType: {
+                typeOf: 'ServiceType',
+                id: body.serviceType,
+                name: ''
+            }
+        }
+    };
+}
+
 /**
  * 一覧データ取得API
  */

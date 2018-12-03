@@ -55,20 +55,7 @@ function add(req, res) {
             errors = req.validationErrors(true);
             if (validatorResult.isEmpty()) {
                 try {
-                    const ticketTypeGroup = {
-                        id: req.body.id,
-                        name: req.body.name,
-                        description: req.body.description,
-                        alternateName: req.body.alternateName,
-                        ticketTypes: req.body.ticketTypes,
-                        itemOffered: {
-                            serviceType: {
-                                typeOf: 'ServiceType',
-                                id: req.body.serviceType,
-                                name: ''
-                            }
-                        }
-                    };
+                    const ticketTypeGroup = createFromBody(req.body);
                     yield ticketTypeService.createTicketTypeGroup(ticketTypeGroup);
                     req.flash('message', '登録しました');
                     res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
@@ -133,15 +120,6 @@ function update(req, res) {
         const boxOfficeTypeList = yield boxOfficeTypeService.getBoxOfficeTypeList();
         let message = '';
         let errors = {};
-        let ticketTypeIds = [];
-        if (!_.isEmpty(req.body.ticketTypes)) {
-            if (_.isString(req.body.ticketTypes)) {
-                ticketTypeIds = [req.body.ticketTypes];
-            }
-            else {
-                ticketTypeIds = req.body.ticketTypes;
-            }
-        }
         if (req.method === 'POST') {
             // バリデーション
             validate(req);
@@ -151,20 +129,8 @@ function update(req, res) {
                 // 券種グループDB登録
                 try {
                     // 券種グループDB登録
-                    const ticketTypeGroup = {
-                        id: req.params.id,
-                        name: req.body.name,
-                        description: req.body.description,
-                        alternateName: req.body.alternateName,
-                        ticketTypes: ticketTypeIds,
-                        itemOffered: {
-                            serviceType: {
-                                typeOf: 'ServiceType',
-                                id: req.body.serviceType,
-                                name: ''
-                            }
-                        }
-                    };
+                    req.body.id = req.params.id;
+                    const ticketTypeGroup = createFromBody(req.body);
                     yield ticketTypeService.updateTicketTypeGroup(ticketTypeGroup);
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
@@ -177,7 +143,7 @@ function update(req, res) {
         }
         // 券種グループ取得
         const ticketGroup = yield ticketTypeService.findTicketTypeGroupById({ id: req.params.id });
-        const forms = Object.assign({}, ticketGroup, { serviceType: ticketGroup.itemOffered.serviceType.id }, req.body, { ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : ticketTypeIds });
+        const forms = Object.assign({}, ticketGroup, { serviceType: ticketGroup.itemOffered.serviceType.id }, req.body, { ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : [] });
         // 券種マスタから取得
         let ticketTypes = [];
         if (forms.ticketTypes.length > 0) {
@@ -208,6 +174,23 @@ function update(req, res) {
     });
 }
 exports.update = update;
+function createFromBody(body) {
+    const ticketTypes = (Array.isArray(body.ticketTypes)) ? body.ticketTypes : [body.ticketTypes];
+    return {
+        id: body.id,
+        name: body.name,
+        description: body.description,
+        alternateName: body.alternateName,
+        ticketTypes: [...new Set(ticketTypes)],
+        itemOffered: {
+            serviceType: {
+                typeOf: 'ServiceType',
+                id: body.serviceType,
+                name: ''
+            }
+        }
+    };
+}
 /**
  * 一覧データ取得API
  */

@@ -69,17 +69,22 @@ $(function () {
     $('.btn-ok').on('click', function () {
         // 券種リストに含まれるムビチケ券種区分リスト
         var appliesToMovieTicketTypes = [];
-
         // 対象券種名の処理
+        var ticketTypeIds = [];
+
         $('#sortable2 > li').each(function () {
             var uid = $(this).attr('uid');
+            ticketTypeIds.push(uid);
             var appliesToMovieTicketType = $(this).attr('appliesToMovieTicketType');
             if (appliesToMovieTicketType !== '') {
                 appliesToMovieTicketTypes.push(appliesToMovieTicketType);
             }
+        });
+
+        ticketTypeIds.forEach(function (ticketTypeId) {
             $('<input />').attr('type', 'hidden')
                 .attr('name', 'ticketTypes')
-                .attr('value', uid)
+                .attr('value', ticketTypeId)
                 .appendTo('#ticketTypeGroupsForm');
         });
 
