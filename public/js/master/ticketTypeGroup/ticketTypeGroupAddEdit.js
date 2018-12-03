@@ -31,8 +31,14 @@ $(function () {
                     return ticketTypeArray.indexOf(t.id) < 0;
                 });
                 for (i in ticketType) {
+                    var appliesToMovieTicketType = '';
+                    if (ticketType[i].priceSpecification.appliesToMovieTicketType !== undefined) {
+                        appliesToMovieTicketType = ticketType[i].priceSpecification.appliesToMovieTicketType;
+                    }
                     $('#sortable1').append(
-                        '<li class="ui-state-default" uid=' + ticketType[i].id + '>'
+                        '<li class="ui-state-default" uid=' + ticketType[i].id
+                        + ' appliesToMovieTicketType="' + appliesToMovieTicketType + '"'
+                        + '>'
                         + ticketType[i].alternateName.ja
                         + '(' + Math.floor(ticketType[i].priceSpecification.price / ticketType[i].priceSpecification.referenceQuantity.value) + ')'
                         + '</li>'
