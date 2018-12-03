@@ -42,6 +42,9 @@ function add(req, res) {
             auth: req.user.authClient
         });
         const searchMoviesResult = yield creativeWorkService.searchMovies({
+            sort: {
+                datePublished: chevre.factory.sortType.Descending
+            },
             offers: {
                 availableFrom: new Date()
             }
@@ -109,6 +112,9 @@ function update(req, res) {
             auth: req.user.authClient
         });
         const searchMoviesResult = yield creativeWorkService.searchMovies({
+            sort: {
+                datePublished: chevre.factory.sortType.Descending
+            },
             offers: {
                 availableFrom: new Date()
             }

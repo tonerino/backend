@@ -36,6 +36,9 @@ export async function add(req: Request, res: Response): Promise<void> {
         auth: req.user.authClient
     });
     const searchMoviesResult = await creativeWorkService.searchMovies({
+        sort: {
+            datePublished: chevre.factory.sortType.Descending
+        },
         offers: {
             availableFrom: new Date()
         }
@@ -106,6 +109,9 @@ export async function update(req: Request, res: Response): Promise<void> {
         auth: req.user.authClient
     });
     const searchMoviesResult = await creativeWorkService.searchMovies({
+        sort: {
+            datePublished: chevre.factory.sortType.Descending
+        },
         offers: {
             availableFrom: new Date()
         }
