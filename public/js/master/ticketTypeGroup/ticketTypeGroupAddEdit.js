@@ -32,8 +32,10 @@ $(function () {
                 });
                 for (i in ticketType) {
                     $('#sortable1').append(
-                        '<li class="ui-state-default" uid=' + ticketType[i].id + '>' +
-                        ticketType[i].alternateName.ja + '(' + ticketType[i].priceSpecification.price + ')' + '</li>'
+                        '<li class="ui-state-default" uid=' + ticketType[i].id + '>'
+                        + ticketType[i].alternateName.ja
+                        + '(' + Math.floor(ticketType[i].priceSpecification.price / ticketType[i].priceSpecification.referenceQuantity.value) + ')'
+                        + '</li>'
                     );
                 }
                 $('#sortable1').show();

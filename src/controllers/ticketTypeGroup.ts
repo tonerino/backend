@@ -175,13 +175,24 @@ export async function update(req: Request, res: Response): Promise<void> {
     let ticketTypes: chevre.factory.ticketType.ITicketType[] = [];
     if (forms.ticketTypes.length > 0) {
         const searchTicketTypesResult = await ticketTypeService.searchTicketTypes({
-            sort: {
-                'priceSpecification.price': chevre.factory.sortType.Descending
-            },
+            limit: 100,
+            // sort: {
+            //     'priceSpecification.price': chevre.factory.sortType.Descending
+            // },
             ids: forms.ticketTypes
         });
         ticketTypes = searchTicketTypesResult.data;
     }
+
+    // 券種を発生金額(単価)でソート
+    ticketTypes = ticketTypes.sort((a, b) => {
+        const aUnitPrice = Math.floor(a.priceSpecification.price
+            / ((a.priceSpecification.referenceQuantity.value !== undefined) ? a.priceSpecification.referenceQuantity.value : 1));
+        const bUnitPrice = Math.floor(b.priceSpecification.price
+            / ((b.priceSpecification.referenceQuantity.value !== undefined) ? b.priceSpecification.referenceQuantity.value : 1));
+
+        return bUnitPrice - aUnitPrice;
+    });
 
     res.render('ticketTypeGroup/update', {
         message: message,
@@ -267,8 +278,11 @@ export async function getTicketTypePriceList(req: Request, res: Response): Promi
                 'priceSpecification.price': chevre.factory.sortType.Descending
             },
             priceSpecification: {
-                minPrice: Number(req.query.price),
-                maxPrice: Number(req.query.price)
+                // 売上金額で検索
+                accounting: {
+                    minAccountsReceivable: Number(req.query.price),
+                    maxAccountsReceivable: Number(req.query.price)
+                }
             }
         });
         res.json({

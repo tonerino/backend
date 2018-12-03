@@ -182,6 +182,11 @@ function createFromBody(body: any): chevre.factory.ticketType.ITicketType {
         unitCode: chevre.factory.unitCode.C62
     };
 
+    const appliesToMovieTicketType =
+        (typeof body.appliesToMovieTicketType === 'string' && (<string>body.appliesToMovieTicketType).length > 0)
+            ? <string>body.appliesToMovieTicketType
+            : undefined;
+
     return {
         typeOf: <chevre.factory.offerType>'Offer',
         priceCurrency: chevre.factory.priceCurrency.JPY,
@@ -196,7 +201,7 @@ function createFromBody(body: any): chevre.factory.ticketType.ITicketType {
             priceCurrency: chevre.factory.priceCurrency.JPY,
             valueAddedTaxIncluded: true,
             referenceQuantity: referenceQuantity,
-            appliesToMovieTicketType: body.appliesToMovieTicketType,
+            appliesToMovieTicketType: appliesToMovieTicketType,
             accounting: {
                 typeOf: 'Accounting',
                 operatingRevenue: {
