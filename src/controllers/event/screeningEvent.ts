@@ -11,7 +11,7 @@ import User from '../../user';
 
 const debug = createDebug('chevre-backend:controllers');
 
-const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -30;
+const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
 
 export async function index(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -290,9 +290,18 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
     }
     const serviceType = searchBoxOfficeTypeResult.data[0];
 
-    const offersValidAfterStart = (body.endSaleTimeAfterScreening !== undefined && body.endSaleTimeAfterScreening !== '')
-        ? Number(body.endSaleTimeAfterScreening)
-        : DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES;
+    let offersValidAfterStart: number;
+    if (body.endSaleTimeAfterScreening !== undefined && body.endSaleTimeAfterScreening !== '') {
+        offersValidAfterStart = Number(body.endSaleTimeAfterScreening);
+    } else if (movieTheater.offers !== undefined
+        && movieTheater.offers.availabilityEndsGraceTime !== undefined
+        && movieTheater.offers.availabilityEndsGraceTime.value !== undefined) {
+        // tslint:disable-next-line:no-magic-numbers
+        offersValidAfterStart = Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60);
+    } else {
+        offersValidAfterStart = DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES;
+    }
+
     const startDate = moment(`${body.day}T${body.startTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate();
     const salesStartDate = moment(`${body.saleStartDate}T${body.saleStartTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate();
     const salesEndDate = moment(startDate).add(offersValidAfterStart, 'minutes').toDate();
