@@ -23,6 +23,14 @@ movieTheaterRouter.get('/search', async (req, res) => {
         });
 
         const results = data.map((movieTheater) => {
+            const availabilityEndsGraceTimeInMinutes =
+                (movieTheater.offers !== undefined
+                    && movieTheater.offers.availabilityEndsGraceTime !== undefined
+                    && movieTheater.offers.availabilityEndsGraceTime.value !== undefined)
+                    // tslint:disable-next-line:no-magic-numbers
+                    ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
+                    : undefined;
+
             return {
                 ...movieTheater,
                 availabilityStartsGraceTimeInDays:
@@ -33,11 +41,10 @@ movieTheaterRouter.get('/search', async (req, res) => {
                         ? -movieTheater.offers.availabilityStartsGraceTime.value
                         : undefined,
                 availabilityEndsGraceTimeInMinutes:
-                    (movieTheater.offers !== undefined
-                        && movieTheater.offers.availabilityEndsGraceTime !== undefined
-                        && movieTheater.offers.availabilityEndsGraceTime.value !== undefined)
-                        // tslint:disable-next-line:no-magic-numbers
-                        ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
+                    (availabilityEndsGraceTimeInMinutes !== undefined)
+                        ? (availabilityEndsGraceTimeInMinutes >= 0)
+                            ? `${availabilityEndsGraceTimeInMinutes}分後`
+                            : `${-availabilityEndsGraceTimeInMinutes}分前`
                         : undefined
             };
         });

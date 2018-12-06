@@ -31,16 +31,21 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, 
             name: req.query.name
         });
         const results = data.map((movieTheater) => {
+            const availabilityEndsGraceTimeInMinutes = (movieTheater.offers !== undefined
+                && movieTheater.offers.availabilityEndsGraceTime !== undefined
+                && movieTheater.offers.availabilityEndsGraceTime.value !== undefined)
+                // tslint:disable-next-line:no-magic-numbers
+                ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
+                : undefined;
             return Object.assign({}, movieTheater, { availabilityStartsGraceTimeInDays: (movieTheater.offers !== undefined
                     && movieTheater.offers.availabilityStartsGraceTime !== undefined
                     && movieTheater.offers.availabilityStartsGraceTime.value !== undefined)
                     // tslint:disable-next-line:no-magic-numbers
                     ? -movieTheater.offers.availabilityStartsGraceTime.value
-                    : undefined, availabilityEndsGraceTimeInMinutes: (movieTheater.offers !== undefined
-                    && movieTheater.offers.availabilityEndsGraceTime !== undefined
-                    && movieTheater.offers.availabilityEndsGraceTime.value !== undefined)
-                    // tslint:disable-next-line:no-magic-numbers
-                    ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
+                    : undefined, availabilityEndsGraceTimeInMinutes: (availabilityEndsGraceTimeInMinutes !== undefined)
+                    ? (availabilityEndsGraceTimeInMinutes >= 0)
+                        ? `${availabilityEndsGraceTimeInMinutes}分後`
+                        : `${-availabilityEndsGraceTimeInMinutes}分前`
                     : undefined });
         });
         res.json({
