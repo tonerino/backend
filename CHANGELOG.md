@@ -16,4 +16,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+- 注文検索条件の上映作品名が表示されないバグ修正
+
 ### Security

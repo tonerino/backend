@@ -180,7 +180,7 @@ $(function () {
         var screeningEventSeriesDom = $('[name=screeningEventSeriesId]');
         screeningEventSeriesDom.html('<option value="" selected="">---</option>');
         for (var x in datas) {
-            screeningEventSeriesDom.append('<option value="' + datas[x].id + '" filmNameEn="' + datas[x].filmNameEn + '">' + datas[x].filmNameJa + '</option>');
+            screeningEventSeriesDom.append('<option value="' + datas[x].id + '">' + datas[x].name.ja + '</option>');
         }
     }
 });

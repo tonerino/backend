@@ -69,7 +69,6 @@
     "jsdoc": "^3.5.5",
     "mocha": "^5.2.0",
     "node-sass": "^4.10.0",
-    "nsp": "^3.2.1",
     "nyc": "^12.0.2",
     "rimraf": "^2.6.1",
     "sinon": "^6.3.5",
@@ -92,7 +91,7 @@
   "repository": {},
   "scripts": {
     "build": "tsc",
-    "check": "npm run tslint && nsp check",
+    "check": "npm run tslint",
     "clean": "rimraf ./dst ./docs ./coverage \"npm-debug.log*\" ./.nyc_output",
     "doc": "jsdoc -c jsdoc.json",
     "mocha": "mocha",
