@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 時間メータルーター
  */
-const chevre = require("@toei-jp/chevre-api-nodejs-client");
+const chevre = require("@chevre/api-nodejs-client");
 const express_1 = require("express");
 const moment = require("moment");
 const timeMeterRouter = express_1.Router();

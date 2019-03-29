@@ -1,7 +1,7 @@
 /**
  * 上映イベントシリーズコントローラー
  */
-import * as chevre from '@toei-jp/chevre-api-nodejs-client';
+import * as chevre from '@chevre/api-nodejs-client';
 import * as createDebug from 'debug';
 import { Request, Response } from 'express';
 import { INTERNAL_SERVER_ERROR } from 'http-status';
@@ -60,9 +60,9 @@ export async function add(req: Request, res: Response): Promise<void> {
                 req.body.contentRating = movie.contentRating;
                 const attributes = createEventFromBody(req.body, movie, movieTheater);
                 debug('saving an event...', attributes);
-                const event = await eventService.createScreeningEventSeries(attributes);
+                const events = await eventService.create<chevre.factory.eventType.ScreeningEventSeries>(attributes);
                 req.flash('message', '登録しました');
-                res.redirect(`/events/screeningEventSeries/${event.id}/update`);
+                res.redirect(`/events/screeningEventSeries/${events[0].id}/update`);
 
                 return;
             } catch (error) {
@@ -120,7 +120,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     let message = '';
     let errors: any = {};
     const eventId = req.params.eventId;
-    const event = await eventService.findScreeningEventSeriesById({
+    const event = await eventService.findById<chevre.factory.eventType.ScreeningEventSeries>({
         id: eventId
     });
 
@@ -137,7 +137,7 @@ export async function update(req: Request, res: Response): Promise<void> {
                 req.body.contentRating = movie.contentRating;
                 const attributes = createEventFromBody(req.body, movie, movieTheater);
                 debug('saving an event...', attributes);
-                await eventService.updateScreeningEventSeries({
+                await eventService.update({
                     id: eventId,
                     attributes: attributes
                 });
@@ -354,7 +354,8 @@ export async function search(req: Request, res: Response): Promise<void> {
             throw new Error();
         }
         // 上映終了して「いない」劇場上映作品を検索
-        const { totalCount, data } = await eventService.searchScreeningEventSeries({
+        const { totalCount, data } = await eventService.search({
+            typeOf: chevre.factory.eventType.ScreeningEventSeries,
             inSessionFrom: (fromDate !== undefined) ? moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : new Date(),
             inSessionThrough: (toDate !== undefined) ? moment(`${toDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : undefined,
             location: {
@@ -421,8 +422,9 @@ export async function searchScreeningEvents(req: Request, res: Response) {
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const searchScreeningEventsResult = await eventService.searchScreeningEvents({
+        const searchScreeningEventsResult = await eventService.search({
             ...req.query,
+            typeOf: chevre.factory.eventType.ScreeningEvent,
             superEvent: { ids: [req.params.eventId] }
         });
         res.json(searchScreeningEventsResult);
@@ -439,9 +441,10 @@ export async function getList(req: Request, res: Response): Promise<void> {
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const { totalCount, data } = await eventService.searchScreeningEventSeries({
+        const { totalCount, data } = await eventService.search({
             limit: req.query.limit,
             page: req.query.page,
+            typeOf: chevre.factory.eventType.ScreeningEventSeries,
             name: req.query.name,
             endFrom: (req.query.containsEnded === '1') ? undefined : new Date(),
             location: {

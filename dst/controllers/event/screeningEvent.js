@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 上映イベントコントローラー
  */
-const chevre = require("@toei-jp/chevre-api-nodejs-client");
+const chevre = require("@chevre/api-nodejs-client");
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
 const moment = require("moment");
@@ -64,7 +64,8 @@ function search(req, res) {
             const days = req.query.days;
             const screen = req.query.screen;
             const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: req.query.theater });
-            const searchResult = yield eventService.searchScreeningEvents({
+            const searchResult = yield eventService.search({
+                typeOf: chevre.factory.eventType.ScreeningEvent,
                 eventStatuses: [chevre.factory.eventStatusType.EventScheduled],
                 inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
                 inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').add(days, 'day').toDate(),
@@ -78,7 +79,8 @@ function search(req, res) {
                 data = searchResult.data.filter((event) => event.location.branchCode === screen);
                 if (searchResult.data.length < searchResult.totalCount) {
                     let dataPage2;
-                    const searchResultPage2 = yield eventService.searchScreeningEvents({
+                    const searchResultPage2 = yield eventService.search({
+                        typeOf: chevre.factory.eventType.ScreeningEvent,
                         eventStatuses: [chevre.factory.eventStatusType.EventScheduled],
                         inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
                         inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').add(days, 'day').toDate(),
@@ -127,7 +129,8 @@ function searchScreeningEventSeries(req, res) {
             auth: req.user.authClient
         });
         try {
-            const searchResult = yield eventService.searchScreeningEventSeries({
+            const searchResult = yield eventService.search({
+                typeOf: chevre.factory.eventType.ScreeningEventSeries,
                 location: {
                     branchCodes: [req.query.movieTheaterBranchCode]
                 },
@@ -217,7 +220,7 @@ function update(req, res) {
             }
             debug('saving screening event...', req.body);
             const attributes = yield createEventFromBody(req.body, req.user);
-            yield eventService.updateScreeningEvent({
+            yield eventService.update({
                 id: req.params.eventId,
                 attributes: attributes
             });
@@ -246,10 +249,10 @@ function cancelPerformance(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const event = yield eventService.findScreeningEventById({ id: req.params.eventId });
+            const event = yield eventService.findById({ id: req.params.eventId });
             if (moment(event.startDate).tz('Asia/Tokyo').isSameOrAfter(moment().tz('Asia/Tokyo'), 'day')) {
                 event.eventStatus = chevre.factory.eventStatusType.EventCancelled;
-                yield eventService.updateScreeningEvent({ id: event.id, attributes: event });
+                yield eventService.update({ id: event.id, attributes: event });
                 res.json({
                     validation: null,
                     error: null
@@ -294,7 +297,7 @@ function createEventFromBody(body, user) {
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
-        const screeningEventSeries = yield eventService.findScreeningEventSeriesById({
+        const screeningEventSeries = yield eventService.findById({
             id: body.screeningEventId
         });
         const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: body.theater });
@@ -409,7 +412,7 @@ function createMultipleEventFromBody(body, user) {
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
-        const screeningEventSeries = yield eventService.findScreeningEventSeriesById({
+        const screeningEventSeries = yield eventService.findById({
             id: body.screeningEventId
         });
         const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: body.theater });

@@ -1,7 +1,7 @@
 /**
  * 劇場ルーター
  */
-import * as chevre from '@toei-jp/chevre-api-nodejs-client';
+import * as chevre from '@chevre/api-nodejs-client';
 import { Router } from 'express';
 
 const movieTheaterRouter = Router();

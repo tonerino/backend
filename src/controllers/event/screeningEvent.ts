@@ -1,7 +1,7 @@
 /**
  * 上映イベントコントローラー
  */
-import * as chevre from '@toei-jp/chevre-api-nodejs-client';
+import * as chevre from '@chevre/api-nodejs-client';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 import { BAD_REQUEST, NO_CONTENT } from 'http-status';
@@ -55,7 +55,8 @@ export async function search(req: Request, res: Response): Promise<void> {
         const days = req.query.days;
         const screen = req.query.screen;
         const movieTheater = await placeService.findMovieTheaterByBranchCode({ branchCode: req.query.theater });
-        const searchResult = await eventService.searchScreeningEvents({
+        const searchResult = await eventService.search({
+            typeOf: chevre.factory.eventType.ScreeningEvent,
             eventStatuses: [chevre.factory.eventStatusType.EventScheduled],
             inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
             inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').add(days, 'day').toDate(),
@@ -69,7 +70,8 @@ export async function search(req: Request, res: Response): Promise<void> {
             data = searchResult.data.filter((event) => event.location.branchCode === screen);
             if (searchResult.data.length < searchResult.totalCount) {
                 let dataPage2: typeof searchResult.data;
-                const searchResultPage2 = await eventService.searchScreeningEvents({
+                const searchResultPage2 = await eventService.search({
+                    typeOf: chevre.factory.eventType.ScreeningEvent,
                     eventStatuses: [chevre.factory.eventStatusType.EventScheduled],
                     inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate(),
                     inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').add(days, 'day').toDate(),
@@ -116,7 +118,8 @@ export async function searchScreeningEventSeries(req: Request, res: Response): P
         auth: req.user.authClient
     });
     try {
-        const searchResult = await eventService.searchScreeningEventSeries({
+        const searchResult = await eventService.search({
+            typeOf: chevre.factory.eventType.ScreeningEventSeries,
             location: {
                 branchCodes: [req.query.movieTheaterBranchCode]
             },
@@ -200,7 +203,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         }
         debug('saving screening event...', req.body);
         const attributes = await createEventFromBody(req.body, req.user);
-        await eventService.updateScreeningEvent({
+        await eventService.update({
             id: req.params.eventId,
             attributes: attributes
         });
@@ -226,10 +229,10 @@ export async function cancelPerformance(req: Request, res: Response): Promise<vo
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const event = await eventService.findScreeningEventById({ id: req.params.eventId });
+        const event = await eventService.findById({ id: req.params.eventId });
         if (moment(event.startDate).tz('Asia/Tokyo').isSameOrAfter(moment().tz('Asia/Tokyo'), 'day')) {
             event.eventStatus = chevre.factory.eventStatusType.EventCancelled;
-            await eventService.updateScreeningEvent({ id: event.id, attributes: event });
+            await eventService.update({ id: event.id, attributes: event });
 
             res.json({
                 validation: null,
@@ -271,7 +274,7 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
-    const screeningEventSeries = await eventService.findScreeningEventSeriesById({
+    const screeningEventSeries = await eventService.findById<chevre.factory.eventType.ScreeningEventSeries>({
         id: body.screeningEventId
     });
     const movieTheater = await placeService.findMovieTheaterByBranchCode({ branchCode: body.theater });
@@ -388,7 +391,7 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
         auth: user.authClient
     });
 
-    const screeningEventSeries = await eventService.findScreeningEventSeriesById({
+    const screeningEventSeries = await eventService.findById<chevre.factory.eventType.ScreeningEventSeries>({
         id: body.screeningEventId
     });
     const movieTheater = await placeService.findMovieTheaterByBranchCode({ branchCode: body.theater });

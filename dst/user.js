@@ -8,8 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const chevreapi = require("@chevre/api-nodejs-client");
 const cinerinoapi = require("@cinerino/api-nodejs-client");
-const chevreapi = require("@toei-jp/chevre-api-nodejs-client");
 const createDebug = require("debug");
 const debug = createDebug('chevre-backend:user');
 /**

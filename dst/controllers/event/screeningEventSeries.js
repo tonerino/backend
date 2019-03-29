@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 上映イベントシリーズコントローラー
  */
-const chevre = require("@toei-jp/chevre-api-nodejs-client");
+const chevre = require("@chevre/api-nodejs-client");
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
@@ -66,9 +66,9 @@ function add(req, res) {
                     req.body.contentRating = movie.contentRating;
                     const attributes = createEventFromBody(req.body, movie, movieTheater);
                     debug('saving an event...', attributes);
-                    const event = yield eventService.createScreeningEventSeries(attributes);
+                    const events = yield eventService.create(attributes);
                     req.flash('message', '登録しました');
-                    res.redirect(`/events/screeningEventSeries/${event.id}/update`);
+                    res.redirect(`/events/screeningEventSeries/${events[0].id}/update`);
                     return;
                 }
                 catch (error) {
@@ -123,7 +123,7 @@ function update(req, res) {
         let message = '';
         let errors = {};
         const eventId = req.params.eventId;
-        const event = yield eventService.findScreeningEventSeriesById({
+        const event = yield eventService.findById({
             id: eventId
         });
         if (req.method === 'POST') {
@@ -139,7 +139,7 @@ function update(req, res) {
                     req.body.contentRating = movie.contentRating;
                     const attributes = createEventFromBody(req.body, movie, movieTheater);
                     debug('saving an event...', attributes);
-                    yield eventService.updateScreeningEventSeries({
+                    yield eventService.update({
                         id: eventId,
                         attributes: attributes
                     });
@@ -331,7 +331,8 @@ function search(req, res) {
                 throw new Error();
             }
             // 上映終了して「いない」劇場上映作品を検索
-            const { totalCount, data } = yield eventService.searchScreeningEventSeries({
+            const { totalCount, data } = yield eventService.search({
+                typeOf: chevre.factory.eventType.ScreeningEventSeries,
                 inSessionFrom: (fromDate !== undefined) ? moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : new Date(),
                 inSessionThrough: (toDate !== undefined) ? moment(`${toDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : undefined,
                 location: {
@@ -388,7 +389,7 @@ function searchScreeningEvents(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const searchScreeningEventsResult = yield eventService.searchScreeningEvents(Object.assign({}, req.query, { superEvent: { ids: [req.params.eventId] } }));
+            const searchScreeningEventsResult = yield eventService.search(Object.assign({}, req.query, { typeOf: chevre.factory.eventType.ScreeningEvent, superEvent: { ids: [req.params.eventId] } }));
             res.json(searchScreeningEventsResult);
         }
         catch (error) {
@@ -407,9 +408,10 @@ function getList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const { totalCount, data } = yield eventService.searchScreeningEventSeries({
+            const { totalCount, data } = yield eventService.search({
                 limit: req.query.limit,
                 page: req.query.page,
+                typeOf: chevre.factory.eventType.ScreeningEventSeries,
                 name: req.query.name,
                 endFrom: (req.query.containsEnded === '1') ? undefined : new Date(),
                 location: {

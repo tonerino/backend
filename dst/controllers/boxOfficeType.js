@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 興行区分マスタコントローラー
  */
-const chevre = require("@toei-jp/chevre-api-nodejs-client");
+const chevre = require("@chevre/api-nodejs-client");
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
 const _ = require("underscore");

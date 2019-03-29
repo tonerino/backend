@@ -1,7 +1,7 @@
 /**
  * 券種グループマスタコントローラー
  */
-import * as chevre from '@toei-jp/chevre-api-nodejs-client';
+import * as chevre from '@chevre/api-nodejs-client';
 import { Request, Response } from 'express';
 import { BAD_REQUEST, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
@@ -153,6 +153,13 @@ export async function update(req: Request, res: Response): Promise<void> {
 
     // 券種を発生金額(単価)でソート
     ticketTypes = ticketTypes.sort((a, b) => {
+        if (a.priceSpecification === undefined) {
+            throw new Error(`Price Specification undefined. Ticket Type:${a.id}`);
+        }
+        if (b.priceSpecification === undefined) {
+            throw new Error(`Price Specification undefined. Ticket Type:${b.id}`);
+        }
+
         const aUnitPrice = Math.floor(a.priceSpecification.price
             / ((a.priceSpecification.referenceQuantity.value !== undefined) ? a.priceSpecification.referenceQuantity.value : 1));
         const bUnitPrice = Math.floor(b.priceSpecification.price
@@ -301,8 +308,9 @@ export async function deleteById(req: Request, res: Response): Promise<void> {
         const ticketTypeGroupId: string = req.params.id;
 
         // 削除して問題ない券種グループかどうか検証
-        const searchEventsResult = await eventService.searchScreeningEvents({
+        const searchEventsResult = await eventService.search({
             limit: 1,
+            typeOf: chevre.factory.eventType.ScreeningEvent,
             offers: {
                 ids: [ticketTypeGroupId]
             },

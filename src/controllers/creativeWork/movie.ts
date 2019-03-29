@@ -1,7 +1,7 @@
 /**
  * 映画作品コントローラー
  */
-import * as chevre from '@toei-jp/chevre-api-nodejs-client';
+import * as chevre from '@chevre/api-nodejs-client';
 import * as createDebug from 'debug';
 import { Request, Response } from 'express';
 import * as moment from 'moment-timezone';

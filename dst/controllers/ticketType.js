@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 券種マスタコントローラー
  */
-const chevre = require("@toei-jp/chevre-api-nodejs-client");
+const chevre = require("@chevre/api-nodejs-client");
 const _ = require("underscore");
 const Message = require("../common/Const/Message");
 // 券種コード 半角64
@@ -108,6 +108,9 @@ function update(req, res) {
                     message = error.message;
                 }
             }
+        }
+        if (ticketType.priceSpecification === undefined) {
+            throw new Error('ticketType.priceSpecification undefined');
         }
         let isBoxTicket = false;
         let isOnlineTicket = false;

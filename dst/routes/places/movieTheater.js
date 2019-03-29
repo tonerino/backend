@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 劇場ルーター
  */
-const chevre = require("@toei-jp/chevre-api-nodejs-client");
+const chevre = require("@chevre/api-nodejs-client");
 const express_1 = require("express");
 const movieTheaterRouter = express_1.Router();
 movieTheaterRouter.get('', (_, res) => {

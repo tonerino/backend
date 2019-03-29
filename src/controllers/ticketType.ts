@@ -1,7 +1,7 @@
 /**
  * 券種マスタコントローラー
  */
-import * as chevre from '@toei-jp/chevre-api-nodejs-client';
+import * as chevre from '@chevre/api-nodejs-client';
 import { Request, Response } from 'express';
 import * as _ from 'underscore';
 import * as Message from '../common/Const/Message';
@@ -109,6 +109,10 @@ export async function update(req: Request, res: Response): Promise<void> {
         }
     }
 
+    if (ticketType.priceSpecification === undefined) {
+        throw new Error('ticketType.priceSpecification undefined');
+    }
+
     let isBoxTicket = false;
     let isOnlineTicket = false;
     switch (ticketType.availability) {
@@ -149,12 +153,12 @@ export async function update(req: Request, res: Response): Promise<void> {
         seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit,
         subject: (_.isEmpty(req.body.subject))
             ? (ticketType.priceSpecification.accounting !== undefined)
-                ? ticketType.priceSpecification.accounting.operatingRevenue.identifier : undefined
+                ? (<any>ticketType.priceSpecification.accounting.operatingRevenue).identifier : undefined
             : req.body.subject,
         nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject))
             ? (ticketType.priceSpecification.accounting !== undefined
                 && ticketType.priceSpecification.accounting.nonOperatingRevenue !== undefined)
-                ? ticketType.priceSpecification.accounting.nonOperatingRevenue.identifier : undefined
+                ? (<any>ticketType.priceSpecification.accounting.nonOperatingRevenue).identifier : undefined
             : req.body.nonBoxOfficeSubject
     };
     res.render('ticketType/update', {
@@ -204,12 +208,12 @@ function createFromBody(body: any): chevre.factory.ticketType.ITicketType {
             appliesToMovieTicketType: appliesToMovieTicketType,
             accounting: {
                 typeOf: 'Accounting',
-                operatingRevenue: {
+                operatingRevenue: <any>{
                     typeOf: 'AccountTitle',
                     identifier: body.subject,
                     name: ''
                 },
-                nonOperatingRevenue: {
+                nonOperatingRevenue: <any>{
                     typeOf: 'AccountTitle',
                     identifier: body.nonBoxOfficeSubject,
                     name: ''
