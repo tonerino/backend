@@ -16,7 +16,7 @@ const chevre = require("@toei-jp/chevre-api-nodejs-client");
 const createDebug = require("debug");
 const express_1 = require("express");
 const moment = require("moment");
-const util = require("util");
+const util_1 = require("util");
 const base_controller_1 = require("../controllers/base/base.controller");
 const user_1 = require("../user");
 const ordersRouter = express_1.Router();
@@ -137,12 +137,17 @@ ordersRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, functi
             count: searchResult.totalCount,
             results: searchResult.data.map((o) => {
                 return Object.assign({}, o, { paymentMethodId: o.paymentMethods.map((p) => p.paymentMethodId).join(','), ticketInfo: o.acceptedOffers.map((offer) => {
-                        // tslint:disable-next-line:max-line-length
-                        const priceComponent = offer.itemOffered.price.priceComponent.find((component) => component.typeOf === chevre.factory.priceSpecificationType.UnitPriceSpecification);
-                        const price = (priceComponent !== undefined)
-                            ? `${priceComponent.price}(${priceComponent.referenceQuantity.value}枚)円`
-                            : '';
-                        return util.format('%s / %s / %s', offer.itemOffered.reservedTicket.ticketedSeat.seatNumber, offer.itemOffered.additionalTicketText, price);
+                        let priceStr = String(offer.price);
+                        if (offer.priceSpecification !== undefined) {
+                            const priceSpecification = offer.priceSpecification;
+                            // tslint:disable-next-line:max-line-length
+                            const priceComponent = priceSpecification.priceComponent.find((c) => c.typeOf === chevre.factory.priceSpecificationType.UnitPriceSpecification);
+                            if (priceComponent !== undefined) {
+                                // 単価仕様をテキスト表現
+                                priceStr = util_1.format(`%s(%s枚)円`, priceComponent.price, priceComponent.referenceQuantity.value);
+                            }
+                        }
+                        return util_1.format('%s / %s / %s', offer.itemOffered.reservedTicket.ticketedSeat.seatNumber, offer.itemOffered.additionalTicketText, priceStr);
                     }).join('<br>') });
             }),
             orderCancellings: orderCancellings

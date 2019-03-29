@@ -6,7 +6,7 @@ import * as chevre from '@toei-jp/chevre-api-nodejs-client';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 import * as moment from 'moment';
-import * as util from 'util';
+import { format } from 'util';
 
 import { getOptions } from '../controllers/base/base.controller';
 import { ApiEndpoint } from '../user';
@@ -141,20 +141,31 @@ ordersRouter.get('/search', async (req, res) => {
                     ...o,
                     paymentMethodId: o.paymentMethods.map((p) => p.paymentMethodId).join(','),
                     ticketInfo: o.acceptedOffers.map((offer) => {
-                        // tslint:disable-next-line:max-line-length
-                        const priceComponent = <chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.UnitPriceSpecification> | undefined>
-                            offer.itemOffered.price.priceComponent.find(
-                                (component) => component.typeOf === chevre.factory.priceSpecificationType.UnitPriceSpecification
-                            );
-                        const price = (priceComponent !== undefined)
-                            ? `${priceComponent.price}(${priceComponent.referenceQuantity.value}枚)円`
-                            : '';
+                        let priceStr: string = String(offer.price);
 
-                        return util.format(
+                        if (offer.priceSpecification !== undefined) {
+                            const priceSpecification = <cinerino.factory.chevre.compoundPriceSpecification.IPriceSpecification<any>>
+                                offer.priceSpecification;
+                            // tslint:disable-next-line:max-line-length
+                            const priceComponent = <chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.UnitPriceSpecification> | undefined>
+                                priceSpecification.priceComponent.find(
+                                    (c) => c.typeOf === chevre.factory.priceSpecificationType.UnitPriceSpecification
+                                );
+                            if (priceComponent !== undefined) {
+                                // 単価仕様をテキスト表現
+                                priceStr = format(
+                                    `%s(%s枚)円`,
+                                    priceComponent.price,
+                                    priceComponent.referenceQuantity.value
+                                );
+                            }
+                        }
+
+                        return format(
                             '%s / %s / %s',
                             offer.itemOffered.reservedTicket.ticketedSeat.seatNumber,
                             offer.itemOffered.additionalTicketText,
-                            price
+                            priceStr
                         );
                     }).join('<br>')
                 };
