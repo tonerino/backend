@@ -147,7 +147,12 @@ ordersRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, functi
                                 priceStr = util_1.format(`%s(%s枚)円`, priceComponent.price, priceComponent.referenceQuantity.value);
                             }
                         }
-                        return util_1.format('%s / %s / %s', offer.itemOffered.reservedTicket.ticketedSeat.seatNumber, offer.itemOffered.additionalTicketText, priceStr);
+                        return util_1.format('%s / %s / %s', (offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation
+                            && offer.itemOffered.reservedTicket.ticketedSeat !== undefined)
+                            ? offer.itemOffered.reservedTicket.ticketedSeat.seatNumber
+                            : '座席指定なし', (offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
+                            ? offer.itemOffered.additionalTicketText
+                            : '', priceStr);
                     }).join('<br>') });
             }),
             orderCancellings: orderCancellings

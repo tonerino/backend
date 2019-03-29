@@ -163,8 +163,13 @@ ordersRouter.get('/search', async (req, res) => {
 
                         return format(
                             '%s / %s / %s',
-                            offer.itemOffered.reservedTicket.ticketedSeat.seatNumber,
-                            offer.itemOffered.additionalTicketText,
+                            (offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation
+                                && offer.itemOffered.reservedTicket.ticketedSeat !== undefined)
+                                ? offer.itemOffered.reservedTicket.ticketedSeat.seatNumber
+                                : '座席指定なし',
+                            (offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
+                                ? offer.itemOffered.additionalTicketText
+                                : '',
                             priceStr
                         );
                     }).join('<br>')
