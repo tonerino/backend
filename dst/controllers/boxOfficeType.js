@@ -78,10 +78,9 @@ function getList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const result = yield boxOfficeTypeService.searchBoxOfficeType({
-                id: req.query.id,
-                name: req.query.name
-            });
+            const result = yield boxOfficeTypeService.searchBoxOfficeType(Object.assign({ id: req.query.id, name: req.query.name }, {
+                sort: { _id: chevre.factory.sortType.Ascending }
+            }));
             res.json({
                 success: true,
                 count: result.totalCount,

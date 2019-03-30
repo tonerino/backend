@@ -72,7 +72,10 @@ export async function getList(req: Request, res: Response): Promise<void> {
 
         const result = await boxOfficeTypeService.searchBoxOfficeType({
             id: req.query.id,
-            name: req.query.name
+            name: req.query.name,
+            ...{ // 型が未対応なので
+                sort: { _id: chevre.factory.sortType.Ascending }
+            }
         });
         res.json({
             success: true,
