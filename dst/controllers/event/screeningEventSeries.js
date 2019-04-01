@@ -335,7 +335,7 @@ function search(req, res) {
                 inSessionFrom: (fromDate !== undefined) ? moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : new Date(),
                 inSessionThrough: (toDate !== undefined) ? moment(`${toDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : undefined,
                 location: {
-                    branchCodes: branchCode
+                    branchCodes: [branchCode]
                 }
             });
             const results = data.map((event) => {
