@@ -347,9 +347,9 @@ export async function search(req: Request, res: Response): Promise<void> {
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const branchCode = req.query.branchCode;
-        const fromDate = req.query.fromDate;
-        const toDate = req.query.toDate;
+        const branchCode = <string | undefined>req.query.branchCode;
+        const fromDate = <string | undefined>req.query.fromDate;
+        const toDate = <string | undefined>req.query.toDate;
         if (branchCode === undefined) {
             throw new Error();
         }
@@ -359,7 +359,7 @@ export async function search(req: Request, res: Response): Promise<void> {
             inSessionFrom: (fromDate !== undefined) ? moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : new Date(),
             inSessionThrough: (toDate !== undefined) ? moment(`${toDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : undefined,
             location: {
-                branchCodes: branchCode
+                branchCodes: [branchCode]
             }
         });
         const results = data.map((event) => {
