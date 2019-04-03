@@ -270,7 +270,7 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
-    const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+    const serviceTypeService = new chevre.service.ServiceType({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
@@ -287,7 +287,7 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
     }
 
     const ticketTypeGroup = await ticketTypeService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
-    const searchBoxOfficeTypeResult = await boxOfficeTypeService.searchBoxOfficeType({ ids: [ticketTypeGroup.itemOffered.serviceType.id] });
+    const searchBoxOfficeTypeResult = await serviceTypeService.search({ ids: [ticketTypeGroup.itemOffered.serviceType.id] });
     if (searchBoxOfficeTypeResult.totalCount === 0) {
         throw new Error('興行区分が見つかりません');
     }
@@ -386,7 +386,7 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
-    const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+    const serviceTypeService = new chevre.service.ServiceType({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
@@ -413,7 +413,7 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
     const searchTicketTypeGroupsResult = await ticketTypeService.searchTicketTypeGroups({ limit: 100 });
     const ticketTypeGroups = searchTicketTypeGroupsResult.data;
 
-    const searchBoxOfficeTypeGroupsResult = await boxOfficeTypeService.searchBoxOfficeType({ limit: 100 });
+    const searchBoxOfficeTypeGroupsResult = await serviceTypeService.search({ limit: 100 });
     const boxOfficeTypes = searchBoxOfficeTypeGroupsResult.data;
 
     const attributes: chevre.factory.event.screeningEvent.IAttributes[] = [];

@@ -293,7 +293,7 @@ function createEventFromBody(body, user) {
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
-        const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+        const serviceTypeService = new chevre.service.ServiceType({
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
@@ -309,7 +309,7 @@ function createEventFromBody(body, user) {
             throw new Error('上映スクリーン名が見つかりません');
         }
         const ticketTypeGroup = yield ticketTypeService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
-        const searchBoxOfficeTypeResult = yield boxOfficeTypeService.searchBoxOfficeType({ ids: [ticketTypeGroup.itemOffered.serviceType.id] });
+        const searchBoxOfficeTypeResult = yield serviceTypeService.search({ ids: [ticketTypeGroup.itemOffered.serviceType.id] });
         if (searchBoxOfficeTypeResult.totalCount === 0) {
             throw new Error('興行区分が見つかりません');
         }
@@ -408,7 +408,7 @@ function createMultipleEventFromBody(body, user) {
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
-        const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+        const serviceTypeService = new chevre.service.ServiceType({
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
@@ -431,7 +431,7 @@ function createMultipleEventFromBody(body, user) {
         const timeData = body.timeData;
         const searchTicketTypeGroupsResult = yield ticketTypeService.searchTicketTypeGroups({ limit: 100 });
         const ticketTypeGroups = searchTicketTypeGroupsResult.data;
-        const searchBoxOfficeTypeGroupsResult = yield boxOfficeTypeService.searchBoxOfficeType({ limit: 100 });
+        const searchBoxOfficeTypeGroupsResult = yield serviceTypeService.search({ limit: 100 });
         const boxOfficeTypes = searchBoxOfficeTypeGroupsResult.data;
         const attributes = [];
         for (let date = startDate; date <= toDate; date = date.add(1, 'day')) {

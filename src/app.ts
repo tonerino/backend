@@ -40,6 +40,15 @@ app.use(expressLayouts);
 // tslint:disable-next-line:no-backbone-get-set-outside-model
 app.set('layout', 'layouts/layout');
 
+// api version
+// tslint:disable-next-line:no-require-imports no-var-requires
+const packageInfo = require('../package.json');
+app.use((__, res, next) => {
+    // res.setHeader('X-API-Version', <string>packageInfo.version);
+    res.locals.version = <string>packageInfo.version;
+    next();
+});
+
 // uncomment after placing your favicon in /public
 app.use(favicon(`${__dirname}/../public/favicon.ico`));
 app.use(bodyParser.json({ limit: '1mb' }));

@@ -42,7 +42,7 @@ function add(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+        const serviceTypeService = new chevre.service.ServiceType({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
@@ -66,7 +66,7 @@ function add(req, res) {
                 }
             }
         }
-        const boxOfficeTypeList = yield boxOfficeTypeService.getBoxOfficeTypeList();
+        const boxOfficeTypeList = yield serviceTypeService.search({ limit: 100 });
         let ticketTypeIds = [];
         if (!_.isEmpty(req.body.ticketTypes)) {
             if (_.isString(req.body.ticketTypes)) {
@@ -113,11 +113,11 @@ function update(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+        const serviceTypeService = new chevre.service.ServiceType({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const boxOfficeTypeList = yield boxOfficeTypeService.getBoxOfficeTypeList();
+        const boxOfficeTypeList = yield serviceTypeService.search({ limit: 100 });
         let message = '';
         let errors = {};
         if (req.method === 'POST') {

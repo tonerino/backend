@@ -16,7 +16,7 @@ const MAX_LENGTH = 64;
  * 新規登録
  */
 export async function add(req: Request, res: Response): Promise<void> {
-    const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+    const serviceTypeService = new chevre.service.ServiceType({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
@@ -31,16 +31,13 @@ export async function add(req: Request, res: Response): Promise<void> {
         if (validatorResult.isEmpty()) {
             // 興行区分DB登録プロセス
             try {
-                const boxOfficeType = {
-                    id: req.body.id,
-                    name: req.body.name
-                };
-                const { totalCount } = await boxOfficeTypeService.searchBoxOfficeType({ ids: [boxOfficeType.id] });
+                const serviceType = createFromBody(req.body);
+                const { totalCount } = await serviceTypeService.search({ ids: [serviceType.id] });
                 if (totalCount > 0) {
                     throw new Error('既に存在する興行区分コードです');
                 }
 
-                await boxOfficeTypeService.createBoxOfficeType(boxOfficeType);
+                await serviceTypeService.create(serviceType);
                 req.flash('message', '作成しました');
                 res.redirect('/boxOfficeTypes');
 
@@ -65,12 +62,12 @@ export async function add(req: Request, res: Response): Promise<void> {
  */
 export async function getList(req: Request, res: Response): Promise<void> {
     try {
-        const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+        const serviceTypeService = new chevre.service.ServiceType({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
 
-        const result = await boxOfficeTypeService.searchBoxOfficeType({
+        const result = await serviceTypeService.search({
             ids: [req.query.id],
             name: req.query.name,
             ...{ // 型が未対応なので
@@ -109,7 +106,7 @@ export async function index(__: Request, res: Response): Promise<void> {
  * 編集
  */
 export async function update(req: Request, res: Response): Promise<void> {
-    const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+    const serviceTypeService = new chevre.service.ServiceType({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
@@ -125,13 +122,10 @@ export async function update(req: Request, res: Response): Promise<void> {
 
         return;
     }
-    // 興行区分DB更新プロセス
+
     try {
-        const boxOfficeType = {
-            id: req.params.id,
-            name: req.body.name
-        };
-        await boxOfficeTypeService.updateBoxOfficeType(boxOfficeType);
+        const serviceType = createFromBody({ ...req.body, id: req.params.id });
+        await serviceTypeService.update(serviceType);
         res.status(NO_CONTENT).end();
     } catch (err) {
         debug('update error', err);
@@ -140,6 +134,14 @@ export async function update(req: Request, res: Response): Promise<void> {
             error: err.message
         });
     }
+}
+
+function createFromBody(body: any): chevre.factory.serviceType.IServiceType {
+    return {
+        typeOf: <'ServiceType'>'ServiceType',
+        id: <string>body.id,
+        name: <string>body.name
+    };
 }
 
 /**

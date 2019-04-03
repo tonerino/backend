@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 "use strict";
+/**
+ * Module dependencies.
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
 const http = require("http");

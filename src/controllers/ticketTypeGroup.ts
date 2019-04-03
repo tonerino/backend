@@ -32,7 +32,7 @@ export async function add(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+    const serviceTypeService = new chevre.service.ServiceType({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
@@ -56,7 +56,7 @@ export async function add(req: Request, res: Response): Promise<void> {
             }
         }
     }
-    const boxOfficeTypeList = await boxOfficeTypeService.getBoxOfficeTypeList();
+    const boxOfficeTypeList = await serviceTypeService.search({ limit: 100 });
     let ticketTypeIds: string[] = [];
     if (!_.isEmpty(req.body.ticketTypes)) {
         if (_.isString(req.body.ticketTypes)) {
@@ -93,6 +93,7 @@ export async function add(req: Request, res: Response): Promise<void> {
         boxOfficeTypeList: boxOfficeTypeList
     });
 }
+
 /**
  * 編集
  */
@@ -101,11 +102,11 @@ export async function update(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+    const serviceTypeService = new chevre.service.ServiceType({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const boxOfficeTypeList = await boxOfficeTypeService.getBoxOfficeTypeList();
+    const boxOfficeTypeList = await serviceTypeService.search({ limit: 100 });
     let message = '';
     let errors: any = {};
     if (req.method === 'POST') {

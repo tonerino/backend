@@ -23,7 +23,7 @@ const MAX_LENGTH = 64;
  */
 function add(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+        const serviceTypeService = new chevre.service.ServiceType({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
@@ -38,15 +38,12 @@ function add(req, res) {
             if (validatorResult.isEmpty()) {
                 // 興行区分DB登録プロセス
                 try {
-                    const boxOfficeType = {
-                        id: req.body.id,
-                        name: req.body.name
-                    };
-                    const { totalCount } = yield boxOfficeTypeService.searchBoxOfficeType({ ids: [boxOfficeType.id] });
+                    const serviceType = createFromBody(req.body);
+                    const { totalCount } = yield serviceTypeService.search({ ids: [serviceType.id] });
                     if (totalCount > 0) {
                         throw new Error('既に存在する興行区分コードです');
                     }
-                    yield boxOfficeTypeService.createBoxOfficeType(boxOfficeType);
+                    yield serviceTypeService.create(serviceType);
                     req.flash('message', '作成しました');
                     res.redirect('/boxOfficeTypes');
                     return;
@@ -74,11 +71,11 @@ exports.add = add;
 function getList(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+            const serviceTypeService = new chevre.service.ServiceType({
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const result = yield boxOfficeTypeService.searchBoxOfficeType(Object.assign({ ids: [req.query.id], name: req.query.name }, {
+            const result = yield serviceTypeService.search(Object.assign({ ids: [req.query.id], name: req.query.name }, {
                 sort: { _id: chevre.factory.sortType.Ascending }
             }));
             res.json({
@@ -119,7 +116,7 @@ exports.index = index;
  */
 function update(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const boxOfficeTypeService = new chevre.service.BoxOfficeType({
+        const serviceTypeService = new chevre.service.ServiceType({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
@@ -134,13 +131,9 @@ function update(req, res) {
             });
             return;
         }
-        // 興行区分DB更新プロセス
         try {
-            const boxOfficeType = {
-                id: req.params.id,
-                name: req.body.name
-            };
-            yield boxOfficeTypeService.updateBoxOfficeType(boxOfficeType);
+            const serviceType = createFromBody(Object.assign({}, req.body, { id: req.params.id }));
+            yield serviceTypeService.update(serviceType);
             res.status(http_status_1.NO_CONTENT).end();
         }
         catch (err) {
@@ -153,6 +146,13 @@ function update(req, res) {
     });
 }
 exports.update = update;
+function createFromBody(body) {
+    return {
+        typeOf: 'ServiceType',
+        id: body.id,
+        name: body.name
+    };
+}
 /**
  * 興行区分マスタ新規登録画面検証
  */
