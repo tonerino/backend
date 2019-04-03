@@ -42,7 +42,7 @@ function add(req, res) {
                         id: req.body.id,
                         name: req.body.name
                     };
-                    const { totalCount } = yield boxOfficeTypeService.searchBoxOfficeType({ id: boxOfficeType.id });
+                    const { totalCount } = yield boxOfficeTypeService.searchBoxOfficeType({ ids: [boxOfficeType.id] });
                     if (totalCount > 0) {
                         throw new Error('既に存在する興行区分コードです');
                     }
@@ -78,7 +78,7 @@ function getList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const result = yield boxOfficeTypeService.searchBoxOfficeType(Object.assign({ id: req.query.id, name: req.query.name }, {
+            const result = yield boxOfficeTypeService.searchBoxOfficeType(Object.assign({ ids: [req.query.id], name: req.query.name }, {
                 sort: { _id: chevre.factory.sortType.Ascending }
             }));
             res.json({

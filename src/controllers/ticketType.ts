@@ -228,7 +228,7 @@ function createFromBody(body: any): chevre.factory.ticketType.ITicketType {
             }
         ],
         category: {
-            id: <string>body.category
+            id: <chevre.factory.ticketTypeCategory>body.category
         },
         color: <string>body.indicatorColor
     };

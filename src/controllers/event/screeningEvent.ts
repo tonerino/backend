@@ -287,7 +287,7 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
     }
 
     const ticketTypeGroup = await ticketTypeService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
-    const searchBoxOfficeTypeResult = await boxOfficeTypeService.searchBoxOfficeType({ id: ticketTypeGroup.itemOffered.serviceType.id });
+    const searchBoxOfficeTypeResult = await boxOfficeTypeService.searchBoxOfficeType({ ids: [ticketTypeGroup.itemOffered.serviceType.id] });
     if (searchBoxOfficeTypeResult.totalCount === 0) {
         throw new Error('興行区分が見つかりません');
     }

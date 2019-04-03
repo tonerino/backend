@@ -19,6 +19,7 @@ reservationsRouter.get('/search', async (req, res) => {
             auth: req.user.authClient
         });
         const { totalCount, data } = await reservationService.searchScreeningEventReservations({
+            typeOf: chevre.factory.reservationType.EventReservation,
             limit: req.query.limit,
             page: req.query.page,
             modifiedFrom: (req.query.modifiedFrom !== '')

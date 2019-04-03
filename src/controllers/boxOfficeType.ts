@@ -35,7 +35,7 @@ export async function add(req: Request, res: Response): Promise<void> {
                     id: req.body.id,
                     name: req.body.name
                 };
-                const { totalCount } = await boxOfficeTypeService.searchBoxOfficeType({ id: boxOfficeType.id });
+                const { totalCount } = await boxOfficeTypeService.searchBoxOfficeType({ ids: [boxOfficeType.id] });
                 if (totalCount > 0) {
                     throw new Error('既に存在する興行区分コードです');
                 }
@@ -71,7 +71,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
         });
 
         const result = await boxOfficeTypeService.searchBoxOfficeType({
-            id: req.query.id,
+            ids: [req.query.id],
             name: req.query.name,
             ...{ // 型が未対応なので
                 sort: { _id: chevre.factory.sortType.Ascending }
