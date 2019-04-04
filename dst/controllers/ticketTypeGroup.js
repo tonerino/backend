@@ -66,7 +66,6 @@ function add(req, res) {
                 }
             }
         }
-        const boxOfficeTypeList = yield serviceTypeService.search({ limit: 100 });
         let ticketTypeIds = [];
         if (!_.isEmpty(req.body.ticketTypes)) {
             if (_.isString(req.body.ticketTypes)) {
@@ -94,12 +93,13 @@ function add(req, res) {
             });
             ticketTypes = searchTicketTypesResult.data;
         }
+        const searchServiceTypesResult = yield serviceTypeService.search({ limit: 100 });
         res.render('ticketTypeGroup/add', {
             message: message,
             errors: errors,
             ticketTypes: ticketTypes,
             forms: forms,
-            boxOfficeTypeList: boxOfficeTypeList
+            boxOfficeTypeList: searchServiceTypesResult.data
         });
     });
 }
@@ -117,7 +117,7 @@ function update(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const boxOfficeTypeList = yield serviceTypeService.search({ limit: 100 });
+        const searchServiceTypesResult = yield serviceTypeService.search({ limit: 100 });
         let message = '';
         let errors = {};
         if (req.method === 'POST') {
@@ -175,7 +175,7 @@ function update(req, res) {
             errors: errors,
             ticketTypes: ticketTypes,
             forms: forms,
-            boxOfficeTypeList: boxOfficeTypeList
+            boxOfficeTypeList: searchServiceTypesResult.data
         });
     });
 }
