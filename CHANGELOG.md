@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
-- 注文検索条件の上映作品名が表示されないバグ修正
-
 ### Security
+
+## v1.0.0 - 2019-04-05
+
+### Added
+
+- @chevre/api-nodejs-client@1.0.0-alpha.60 @cinerino/api-nodejs-client@2.0.0-alpha.2 で構築
