@@ -1,6 +1,6 @@
-# Chevre Backend Application
+# TOEI Backend Application
 
-[![CircleCI](https://circleci.com/gh/toei-jp/chevre-backend.svg?style=svg)](https://circleci.com/gh/toei-jp/chevre-backend)
+[![CircleCI](https://circleci.com/gh/toei-jp/backend.svg?style=svg)](https://circleci.com/gh/toei-jp/backend)
 
 ## Table of contents
 
