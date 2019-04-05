@@ -79,62 +79,68 @@ exports.add = add;
 /**
  * 編集
  */
-function update(req, res) {
+function update(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
-        const creativeWorkService = new chevre.service.CreativeWork({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient
-        });
-        let message = '';
-        let errors = {};
-        let movie = yield creativeWorkService.findMovieByIdentifier({
-            identifier: req.params.identifier
-        });
-        if (req.method === 'POST') {
-            // バリデーション
-            validate(req, 'update');
-            const validatorResult = yield req.getValidationResult();
-            errors = req.validationErrors(true);
-            if (validatorResult.isEmpty()) {
-                // 作品DB登録
-                try {
-                    movie = createMovieFromBody(req.body);
-                    debug('saving an movie...', movie);
-                    yield creativeWorkService.updateMovie(movie);
-                    req.flash('message', '更新しました');
-                    res.redirect(req.originalUrl);
-                    return;
-                }
-                catch (error) {
-                    message = error.message;
+        try {
+            const creativeWorkService = new chevre.service.CreativeWork({
+                endpoint: process.env.API_ENDPOINT,
+                auth: req.user.authClient
+            });
+            let message = '';
+            let errors = {};
+            let movie = yield creativeWorkService.findMovieByIdentifier({
+                // 現時点で半角バリデーションをかけていないので、念のため
+                identifier: encodeURIComponent(req.params.identifier)
+            });
+            if (req.method === 'POST') {
+                // バリデーション
+                validate(req, 'update');
+                const validatorResult = yield req.getValidationResult();
+                errors = req.validationErrors(true);
+                if (validatorResult.isEmpty()) {
+                    // 作品DB登録
+                    try {
+                        movie = createMovieFromBody(req.body);
+                        debug('saving an movie...', movie);
+                        yield creativeWorkService.updateMovie(movie);
+                        req.flash('message', '更新しました');
+                        res.redirect(req.originalUrl);
+                        return;
+                    }
+                    catch (error) {
+                        message = error.message;
+                    }
                 }
             }
+            // 配給
+            const distributionsService = new chevre.service.Distributions({
+                endpoint: process.env.API_ENDPOINT,
+                auth: req.user.authClient
+            });
+            const distributions = yield distributionsService.getDistributionsList();
+            const forms = Object.assign({}, movie, { distribution: (movie.distributor !== undefined) ? movie.distributor.id : '' }, req.body, { duration: (_.isEmpty(req.body.duration))
+                    ? (typeof movie.duration === 'string') ? moment.duration(movie.duration).asMinutes() : ''
+                    : req.body.duration, datePublished: (_.isEmpty(req.body.datePublished)) ?
+                    (movie.datePublished !== undefined) ? moment(movie.datePublished).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
+                    req.body.datePublished, offers: (_.isEmpty(req.body.offers)) ?
+                    (movie.offers !== undefined && movie.offers.availabilityEnds !== undefined)
+                        ? {
+                            availabilityEnds: moment(movie.offers.availabilityEnds).add(-1, 'day').tz('Asia/Tokyo').format('YYYY/MM/DD')
+                        }
+                        : undefined
+                    : req.body.offers });
+            // 作品マスタ画面遷移
+            debug('errors:', errors);
+            res.render('creativeWorks/movie/edit', {
+                message: message,
+                errors: errors,
+                forms: forms,
+                distributions: distributions
+            });
         }
-        // 配給
-        const distributionsService = new chevre.service.Distributions({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient
-        });
-        const distributions = yield distributionsService.getDistributionsList();
-        const forms = Object.assign({}, movie, { distribution: (movie.distributor !== undefined) ? movie.distributor.id : '' }, req.body, { duration: (_.isEmpty(req.body.duration))
-                ? (typeof movie.duration === 'string') ? moment.duration(movie.duration).asMinutes() : ''
-                : req.body.duration, datePublished: (_.isEmpty(req.body.datePublished)) ?
-                (movie.datePublished !== undefined) ? moment(movie.datePublished).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
-                req.body.datePublished, offers: (_.isEmpty(req.body.offers)) ?
-                (movie.offers !== undefined && movie.offers.availabilityEnds !== undefined)
-                    ? {
-                        availabilityEnds: moment(movie.offers.availabilityEnds).add(-1, 'day').tz('Asia/Tokyo').format('YYYY/MM/DD')
-                    }
-                    : undefined
-                : req.body.offers });
-        // 作品マスタ画面遷移
-        debug('errors:', errors);
-        res.render('creativeWorks/movie/edit', {
-            message: message,
-            errors: errors,
-            forms: forms,
-            distributions: distributions
-        });
+        catch (error) {
+            next(error);
+        }
     });
 }
 exports.update = update;
