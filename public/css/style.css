@@ -1,0 +1,129 @@
+.mb-x-small {
+  margin-bottom: 5px; }
+
+.mb-small {
+  margin-bottom: 10px; }
+
+.mb-middle {
+  margin-bottom: 20px; }
+
+.mb-large {
+  margin-bottom: 40px; }
+
+.mb-x-large {
+  margin-bottom: 60px; }
+
+.side-navi .active a {
+  pointer-events: none; }
+
+header .logo {
+  padding: 10px;
+  width: 60px; }
+
+header .title {
+  font-size: 30px;
+  margin: 0;
+  display: inline-block;
+  vertical-align: middle; }
+
+.table thead tr th {
+  vertical-align: middle; }
+
+.table tbody tr td {
+  vertical-align: middle; }
+
+.login .container {
+  padding: 20px; }
+
+.login .center-block {
+  max-width: 400px; }
+
+* {
+  box-sizing: border-box; }
+
+.scheduler {
+  margin: 0 auto;
+  overflow: auto;
+  width: 100%;
+  overflow-x: auto;
+  border: 2px solid #ccc; }
+  .scheduler .scrollable-body {
+    height: 480px;
+    overflow: auto;
+    width: max-content;
+    min-width: 100%; 
+  }
+  .scheduler table {
+    min-width: 100%;
+    border-collapse: collapse; }
+  .scheduler td {
+    border-right: 1px solid #ccc;
+    border-left: 1px solid #ccc; }
+    .scheduler td:first-child {
+      border-left: 0px; }
+    .scheduler td:last-child {
+      border-right: 0px; }
+  .scheduler .header {
+    text-align: center;
+    font-size: 12px;
+    border-bottom: 1px solid #ccc; }
+  .scheduler .times {
+    width: auto; }
+    .scheduler .times .time {
+      font-size: 12px;
+      padding: 0 10px; }
+  .scheduler .screen {
+    position: relative; }
+  .scheduler .performance {
+    position: absolute;
+    padding: 0px 2px; }
+    .scheduler .performance .inner {
+      cursor: pointer;
+      border-radius: 3px;
+      padding: 5px;
+      border: 1px solid #a7dbff;
+      background-color: #d5eeff;
+      height: 100%;
+      word-wrap: break-word;
+      font-size: 11px;
+      overflow: hidden; }
+      .scheduler .performance .inner:hover {
+        transition: all 0.2s;
+        background-color: #a7dbff; }
+    .scheduler .performance.overlap .inner {
+      border: 1px solid #ffa7a7;
+      background-color: #ffd5d5; }
+      .scheduler .performance.overlap .inner:hover {
+        transition: all 0.2s;
+        background-color: #ffa7a7; }
+
+.performance-edit-modal td {
+  padding: 10px; }
+
+.performance-edit-modal .screening-time {
+  margin-bottom: 0; }
+  .performance-edit-modal .screening-time select {
+    display: inline-block;
+    width: auto; }
+
+.search .form-group {
+  margin-right: 20px; }
+  
+.btn-disabled {
+  cursor: default;
+  pointer-events: none;
+  color: #b6b6b6!important;
+  border: 1px solid;
+  border-color: #b6b6b6!important;
+  background-color: #eee!important;
+  box-shadow: none;
+}
+
+.btn-disabled, .btn-cancel {
+  width: 100px;
+}
+
+#startDateTime select {
+  width: 50px;
+  display: inline-block;
+}

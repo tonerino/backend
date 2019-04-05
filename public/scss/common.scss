@@ -1,0 +1,57 @@
+.mb-x-small {
+    margin-bottom: 5px;
+}
+
+.mb-small {
+    margin-bottom: 10px;
+}
+
+.mb-middle {
+    margin-bottom: 20px;
+}
+
+.mb-large {
+    margin-bottom: 40px;
+}
+
+.mb-x-large {
+    margin-bottom: 60px;
+}
+
+.side-navi {
+    .active {
+        a {
+            pointer-events: none;
+        }
+    }
+}
+
+header {
+    .logo {
+        padding: 10px;
+        width: 60px;
+    }
+    .title {
+        font-size: 30px;
+        margin: 0;
+        display: inline-block;
+        vertical-align: middle;
+    }
+}
+
+.table {
+    thead {
+        tr {
+            th {
+                vertical-align: middle;
+            }
+        }
+    }
+    tbody {
+        tr {
+            td {
+                vertical-align: middle;
+            }
+        }
+    }
+}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<%- include('./head') %>
+
+<body>
+    <!--Header-->
+    <%- include('./header') %>
+
+    <div class="container">
+        <!-- content -->
+        <div class="row">
+            <!-- left -->
+            <div class="col-md-3">
+                <%- include('./side') %>
+            </div>
+
+            <div class="col-md-9">
+                <%- body %>
+            </div>
+        </div>
+    </div>
+
+    <%- include('./footer') %>
+
+    <script>
+        $(function () {
+            var disp_id = "#<%= displayId %>";
+            $(disp_id).html($(disp_id).text());
+        });
+    </script>
+</body>
+
+</html>

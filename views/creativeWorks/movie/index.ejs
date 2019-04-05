@@ -1,0 +1,93 @@
+<%- contentFor('title') %>
+映画作品マスタ一覧
+<%- contentFor('displayId') %>
+Aa-10
+<%- contentFor('styles') %>
+<link href="/css/simplePagination.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="/js/jquery.simplePagination.js"></script>
+<script src="/js/master/commonMaster.js"></script>
+<script src="/js/master/commonMasterList.js"></script>
+<script src="/js/master/creativeWorks/movieList.js"></script>
+<%- contentFor('body') %>
+<div class="col-sm-12 form-container search">
+    <form method="post" class="form-horizontal">
+        <%- include('../../common/master/_hidden') %>
+        <div class="menu-group">
+        </div>
+        <div class="form-group ">
+            <label for="identifier" class="col-sm-3 control-label label-title">
+                作品コード
+            </label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="identifier" id="identifier" placeholder="" maxlength=64
+                    value="">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="name" class="col-sm-3 control-label label-title">
+                作品名
+            </label>
+            <div class="col-sm-9">
+                <input class="form-control" name="name" id="name" placeholder="" maxlength=64 value="">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="datePublishedThrough" class="col-sm-3 control-label label-title">
+                公開日（From - To）
+            </label>
+            <div class="col-sm-9">
+                <input class="form-control datepicker" style="width:30%;display:inline-block;" placeholder="" maxlength=10
+                    name="datePublishedFrom" id="datePublishedFrom" value="" />
+                ～
+                <input class="form-control datepicker" style="width:30%;display:inline-block;" placeholder="" maxlength=10
+                    name="datePublishedThrough" id="datePublishedThrough" value="" />
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="panel-body">
+                <a class="btn btn-ok search btn-primary"><span>検索する</span></a>
+                <a class="reset-condition btn btn-danger"><span>検索内容リセット</span></a>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="col-sm-12 form-container search">
+    <div>
+        <p id="searchedCount" style="display:none;">
+            検索結果 $searched_count$件
+        </p>
+    </div>
+    <div id="list" class="table-responsive" style="display:none;">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>作品コード</th>
+                    <th class="text-left">作品名<br>サブタイトル</th>
+                    <th>上映時間(分)</th>
+                    <th>レイティング</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="templateRow" identifier="$identifier$">
+                    <td name="identifier">$identifier$</td>
+                    <td name="name__headline">
+                        $name$<br>$headline$
+                    </td>
+                    <td name="duration" class="text-right">$duration$</td>
+                    <td name="contentRating" class="text-left">$contentRating$</td>
+                    <td name="edit" class="center">
+                        <div class="btn-area">
+                            <a class="btn btn-list edit" data-toggle="modal" data-target="#myModal">
+                                <span>編集</span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="pager" class="div_pager_parent"></div>
+</div>
+<%- include('../../common/master/_loading') %>

@@ -1,0 +1,15 @@
+<header>
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <img class="img-circle logo" src="/images/ProjectIcon.png" alt="">
+                <h1 class="title">Chevre</h1>
+            </div>
+            <div class="navbar-text navbar-right">
+                <span><%= user.profile.family_name %></span>&nbsp;
+                <span><%= user.profile.given_name %></span>&nbsp;
+                <a class="btn btn-logout btn-default" href="<%= user.generateLogoutUrl() %>"><span>ログアウト</span></a>
+            </div>
+        </div>
+    </nav>
+</header>

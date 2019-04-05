@@ -1,0 +1,70 @@
+<%- contentFor('title') %>
+配給登録
+<%- contentFor('displayId') %>
+Aa-14
+<%- contentFor('styles') %>
+
+<%- contentFor('scripts') %>
+
+
+
+<%- contentFor('body') %>
+<div class="col-sm-12 form-container">
+    <% /* フォーム */ %>
+    <form method="post" class="form-horizontal">
+        <div class="menu-group">
+            <%- include('../common/errorMessage') %>
+            <%- include('../common/successMessage') %>
+        </div>
+        <% /* 配給コード */ %>
+        <div class="form-group ">
+            <label for="identifier" class="col-sm-3 control-label label-title">
+                配給コード<font color="red">＊</font>
+            </label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="id" id="id" placeholder="" maxlength=64 value="<%= forms.id %>">
+                <p class="message">
+                    <% /*半角64文字以内でご入力ください。*/ %>
+                    半角64文字以内でご入力ください。
+                </p>
+                <p class="error message text-danger">
+                    <% if (errors && errors.id) { %>
+                    <%- errors.id.msg %>
+                    <% } %>
+                </p>
+            </div>
+        </div>
+        <% /* 配給名 */ %>
+        <div class="form-group ">
+            <label for="name" class="col-sm-3 control-label label-title">
+                名称<font color="red">＊</font>
+            </label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="name" id="name" placeholder="" maxlength=64 value="<%= forms.name %>">
+                <p class="message">
+                    <% /64文字以内でご入力ください。*/ %>
+                    64文字以内でご入力ください。
+                </p>
+                <p class="error message text-danger">
+                    <% if (errors && errors.name) { %>
+                    <%- errors.name.msg %>
+                    <% } %>
+                </p>
+            </div>
+        </div>
+
+        <% /* 登録ボタン */ %>
+        <div class="form-group">
+            <div class="btn-area panel-body">
+                <a class="btn btn-ok btn-primary">登録する</a>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    $(function () {
+        $('.btn-ok').on('click', function () {
+            $('form').submit();
+        });
+    });
+</script>

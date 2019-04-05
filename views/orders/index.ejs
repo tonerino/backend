@@ -1,0 +1,182 @@
+<%- contentFor('title') %>
+注文検索
+<%- contentFor('displayId') %>
+Aa-20
+<%- contentFor('styles') %>
+<link href="/css/simplePagination.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="/js/jquery.simplePagination.js"></script>
+<script src="/js/master/commonMaster.js"></script>
+<script src="/js/master/commonMasterList.js"></script>
+<script src="/js/master/orderList.js"></script>
+<%- contentFor('body') %>
+<div class="col-sm-12 form-container search">
+    <form method="post" class="form-horizontal">
+        <%- include('../common/master/_hidden') %>
+        <div class="menu-group">
+            <% if (message !== '') { %>
+            <p class="error message text-danger panel-body bg-danger">
+                <%= message %>
+            </p>
+            <% } %>
+        </div>
+        <div class="form-group">
+            <label for="locationBranchCode" class="col-sm-3 control-label label-title">
+                劇場
+                <font color="red">＊</font>
+            </label>
+            <div class="col-sm-9">
+                <select class="form-control" name="locationBranchCode">
+                    <option value="">選択してください</option>
+                    <% for (const movieTheater of movieTheaters) { %>
+                    <option value="<%= movieTheater.branchCode %>">
+                        <%= movieTheater.name.ja %>
+                    </option>
+                    <% } %>
+                </select>
+                <p class="error message text-danger"></p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="startDate" class="col-sm-3 control-label label-title">
+                上映日
+                <font color="red">＊</font>
+            </label>
+            <div class="col-sm-3">
+                <input autocomplete="off" class="form-control datepicker" name="startDate" placeholder="YYYY/MM/DD"
+                    maxlength=10>
+                <p class="error message text-danger"></p>
+            </div>
+            <div class="col-sm-6" id="startDateTime">
+                <%- include('../common/part/_timeSelector', {
+                    hourName: 'startDateHourFrom',
+                    minuteName: 'startDateMinuteFrom'
+                }) %>
+                〜
+                <%- include('../common/part/_timeSelector', {
+                    hourName: 'startDateHourThrough',
+                    minuteName: 'startDateMinuteThrough'
+                }) %>
+            </div>
+        </div>
+        <div class="form-group form-inline">
+            <label for="dateIssued" class="col-sm-3 control-label label-title">
+                購入日時
+            </label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control datepicker" name="orderDateFrom" id="orderDateFrom" /> ～
+                <input type="text" class="form-control datepicker" name="orderDateThrough" id="orderDateThrough" />
+            </div>
+        </div>
+        <!-- <div class="form-group form-inline">
+            <label for="modifiedFrom1" class="col-sm-3 control-label label-title">
+                上映時刻
+            </label>
+            <div class="col-sm-9">
+                <%- include('../common/part/_timeSelector', {
+                    hourName: 'startDateHourFrom',
+                    minuteName: 'startDateMinuteFrom'
+                }) %> 〜
+                <%- include('../common/part/_timeSelector', {
+                    hourName: 'startDateHourThrough',
+                    minuteName: 'startDateMinuteThrough'
+                }) %>
+            </div>
+        </div> -->
+        <div class="form-group">
+            <label for="name" class="col-sm-3 control-label label-title">
+                上映作品
+            </label>
+            <div class="col-sm-9">
+                <select class="form-control" name="screeningEventSeriesId">
+                    <option value="" selected="">---</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="confirmationNumber" class="col-sm-3 control-label label-title">
+                購入番号
+            </label>
+            <div class="col-sm-9">
+                <input class="form-control" name="confirmationNumber" id="confirmationNumber" placeholder="" maxlength=64>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="telephone" class="col-sm-3 control-label label-title">
+                電話番号
+            </label>
+            <div class="col-sm-9">
+                <input class="form-control" name="telephone" id="telephone" placeholder="下4桁" autocomplete="off"
+                    maxlength="4" pattern="\d*">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="placeTicket" class="col-sm-3 control-label label-title">
+                購入場所
+            </label>
+            <div class="col-sm-9">
+                <select class="form-control" name="placeTicket">
+                    <option value="">---</option>
+                    <option value="POS">POS</option>
+                    <option value="WEB">WEB</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="panel-body">
+                <a class="btn btn-ok search btn-primary"><span>検索する</span></a>
+                <a class="reset-condition btn btn-danger"><span>検索内容リセット</span></a>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="col-sm-12 form-container search">
+    <div>
+        <p id="searchedCount" style="display:none;">
+            検索結果$searched_count$件
+        </p>
+    </div>
+    <div id="list" class="table-responsive" style="display:none;">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>購入日時<br>上映日時</th>
+                    <th>購入者名<br>購入者電話番号<br>購入者メアド<br>購入番号<br>決済ID</th>
+                    <th>座席/券種/金額</th>
+                    <th>上映作品名<br>劇場<br></th>
+                    <th style="width: 120px">キャンセル処理<br>キャンセル</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="templateRow" _id="$id$">
+                    <td name="orderDate|parseDateTime__acceptedOffers.0.itemOffered.reservationFor.startDate|parseDateTime__orderNumber">
+                        $orderDate$<br>
+                        $acceptedOffers.0.itemOffered.reservationFor.startDate$
+                        <input type="hidden" name="orderNumber" value="$orderNumber$">
+                    </td>
+                    <td name="customer.name__customer.telephone__customer.email__confirmationNumber__paymentMethodId">
+                        $customer.name$<br>
+                        $customer.telephone$<br>
+                        $customer.email$<br>
+                        $confirmationNumber$<br>
+                        $paymentMethodId$
+                    </td>
+                    <td name="ticketInfo">
+                        $ticketInfo$
+                    </td>
+                    <td name="acceptedOffers.0.itemOffered.reservationFor.superEvent.name.ja__acceptedOffers.0.itemOffered.reservationFor.superEvent.location.name.ja">
+                        $acceptedOffers.0.itemOffered.reservationFor.superEvent.name.ja$<br>
+                        $acceptedOffers.0.itemOffered.reservationFor.superEvent.location.name.ja$
+                    </td>
+                    <td name="dateReturned|parseDateTime" class="cancelButton">
+                        $dateReturned$
+                        <a class="btn btn-danger btn-cancel" style="display: none"><span>キャンセル</span></a>
+                        <p class="btn btn-disabled" style="display: none"><span>処理中</span></p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="pager" class="div_pager_parent"></div>
+</div>
+<%- include('../common/master/_loading') %>

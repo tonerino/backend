@@ -1,0 +1,29 @@
+<%- contentFor('title') %>
+券種マスタ更新
+<%- contentFor('displayId') %>
+Aa-5
+<%- contentFor('styles') %>
+<link href="/css/bootstrap.colorpickersliders.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="/js/tinycolor-min.js"></script>
+<script src="/js/bootstrap.colorpickersliders.js"></script>
+<script src="/js/master/ticketTypeAdd.js"></script>
+<%- contentFor('body') %>
+<div class="col-sm-12 form-container">
+  <form method="post" class="form-horizontal">
+    <div class="menu-group">
+      <%- include('../common/errorMessage') %>
+      <%- include('../common/successMessage') %>
+    </div>
+
+    <input type="hidden" name="id" value="<%= forms.id %>">
+
+    <%- include('form', {forms: forms}) %>
+
+    <div class="form-group">
+      <div class="btn-area panel-body">
+        <a class="btn btn-ok btn-primary">更新する</a>
+      </div>
+    </div>
+  </form>
+</div>

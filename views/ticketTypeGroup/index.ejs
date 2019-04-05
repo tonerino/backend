@@ -1,0 +1,98 @@
+<%- contentFor('title') %>
+券種グループマスタ一覧
+<%- contentFor('displayId') %>
+Aa-8
+<%- contentFor('styles') %>
+<link href="/css/simplePagination.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="/js/jquery.simplePagination.js"></script>
+<script src="/js/master/commonMaster.js"></script>
+<script src="/js/master/commonMasterList.js"></script>
+<script src="/js/master/ticketTypeGroupsList.js"></script>
+<%- contentFor('body') %>
+<% /* フォーム */ %>
+<div class="col-sm-12 form-container search">
+    <form method="post" class="form-horizontal">
+        <% /* 共通Hiddenコントロール */ %>
+        <%- include('../common/master/_hidden') %>
+        <div class="menu-group">
+            <% /* メッセージ */ %>
+            <% if (message !== '') { %>
+            <p class="error message text-danger panel-body bg-danger">
+                <%= message %>
+            </p>
+            <% } %>
+        </div>
+        <% /* 券種グループコード */ %>
+        <div class="form-group ">
+            <label for="id" class="col-sm-3 control-label label-title">
+                券種グループコード
+            </label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="id" id="id" placeholder="" maxlength=64>
+            </div>
+        </div>
+        <% /* 券種グループ名 */ %>
+        <div class="form-group ">
+            <label for="name" class="col-sm-3 control-label label-title">
+                券種グループ名
+            </label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="name" id="name" placeholder="" maxlength=64>
+            </div>
+        </div>
+        <% /* 検索ボタン */ %>
+        <div class="form-group">
+            <div class="panel-body">
+                <a class="btn btn-ok search btn-primary"><span>検索する</span></a>
+                <a class="reset-condition btn btn-danger"><span>検索内容リセット</span></a>
+            </div>
+        </div>
+    </form>
+</div>
+<% /* 一覧 */ %>
+<div class="col-sm-12 form-container search">
+    <div>
+        <p id="searchedCount" style="display:none;">
+            検索結果$searched_count$件
+        </p>
+    </div>
+    <div id="list" class="table-responsive" style="display:none;">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>券種グループコード</th>
+                    <th>券種グループ名</th>
+                    <th>興行区分コード</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="templateRow" _id="$_id$">
+                    <td name="ticketGroupCode">$ticketGroupCode$</td>
+                    <td name="name.ja">$name.ja$</td>
+                    <td name="itemOffered.serviceType.id">$itemOffered.serviceType.id$</td>
+                    <td name="edit" class="center">
+                        <div class="btn-area">
+                            <a class="btn btn-list edit" href="/ticketTypeGroups/$id$/update">
+                                <span>編集</span>
+                            </a>
+                        </div>
+                    </td>
+                    <td name="popup" class="center popupListTicketType">
+                        <div class="btn-area">
+                            <a href="/ticketTypeGroups/ticketTypeList?id=$id$" class="btn btn-list edit">
+                                <span>関連券種</span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="pager" class="div_pager_parent"></div>
+</div>
+<%- include('_listTicketTypes') %>
+<% /* 共通Loading */ %>
+<%- include('../common/master/_loading') %>

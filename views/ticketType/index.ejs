@@ -1,0 +1,118 @@
+<%- contentFor('title') %>
+券種マスタ一覧
+<%- contentFor('displayId') %>
+Aa-6
+<%- contentFor('styles') %>
+<link href="/css/simplePagination.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="/js/jquery.simplePagination.js"></script>
+<script src="/js/master/commonMaster.js"></script>
+<script src="/js/master/commonMasterList.js"></script>
+<script src="/js/master/ticketTypeList.js"></script>
+<%- contentFor('body') %>
+<% /* フォーム */ %>
+<div class="col-sm-12 form-container search">
+    <form method="post" class="form-horizontal">
+        <% /* 共通Hiddenコントロール */ %>
+        <%- include('../common/master/_hidden') %>
+        <div class="menu-group">
+            <% /* メッセージ */ %>
+            <% if (message !== '') { %>
+            <p class="error message text-danger panel-body bg-danger">
+                <%= message %>
+            </p>
+            <% } %>
+        </div>
+        <% /* 券種コード */ %>
+        <div class="form-group ">
+            <label for="id" class="col-sm-3 control-label label-title">
+                券種コード
+            </label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="id" id="id" placeholder="" maxlength=64>
+            </div>
+        </div>
+        <% /* 管理用券種名 */ %>
+        <div class="form-group ">
+            <label for="name" class="col-sm-3 control-label label-title">
+                管理用券種名
+            </label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="name" id="name" placeholder="" maxlength=64>
+            </div>
+        </div>
+        <div class="form-group ">
+            <label for="ticketTypeGroups" class="col-sm-3 control-label label-title">
+                券種グループ
+            </label>
+            <div class="col-sm-9">
+                <select name="ticketTypeGroups" id="ticketTypeGroups" class="form-control">
+                    <option value="">---</option>
+                    <% for (let ticketTypeGroupList of ticketTypeGroupsList) { %>
+                    <option value="<%- ticketTypeGroupList.id %>">
+                        <%- ticketTypeGroupList.name.ja %>
+                    </option>
+                    <% } %>
+                </select>
+            </div>
+        </div>
+        <% /* 検索ボタン */ %>
+        <div class="form-group">
+            <div class="panel-body">
+                <a class="btn btn-ok search btn-primary"><span>検索する</span></a>
+                <a class="reset-condition btn btn-danger"><span>検索内容リセット</span></a>
+            </div>
+        </div>
+    </form>
+</div>
+<% /* 一覧 */ %>
+<div class="col-sm-12 form-container search">
+    <div>
+        <p id="searchedCount" style="display:none;">
+            検索結果$searched_count$件
+        </p>
+    </div>
+    <div id="list" class="table-responsive" style="display:none;">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>券種コード</th>
+                    <th>サイト表示用券種名<br>管理用券種名</th>
+                    <th>発生金額(円)<br>売上金額(円)</th>
+                    <th>購入席単位</th>
+                    <th>対応ムビチケ券種区分</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="templateRow" _id="$id$">
+                    <td name="ticketCode">$ticketCode$</td>
+                    <td name="name.ja__alternateName.ja">$name.ja$<br>$alternateName.ja$</td>
+                    <td name="priceSpecification.price__priceSpecification.accounting.accountsReceivable" style="text-align:right;">$priceSpecification.price$<br>$priceSpecification.accounting.accountsReceivable$</td>
+                    <td name="priceSpecification.referenceQuantity.value">$priceSpecification.referenceQuantity.value$</td>
+                    <td name="priceSpecification.appliesToMovieTicketType">$priceSpecification.appliesToMovieTicketType$</td>
+                    <td name="edit" class="center">
+                        <div class="btn-area">
+                            <a class="btn btn-list edit" href="/ticketTypes/$id$/update">
+                                <span>編集</span>
+                            </a>
+                        </div>
+                    </td>
+                    <td name="popup" class="center popupListTicketTypeGroup">
+                        <div class="btn-area">
+                            <a href="/ticketTypes/getTicketTypeGroupList/$id$" class="btn btn-list edit">
+                                <span>関連券種グループ</span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="pager" class="div_pager_parent"></div>
+</div>
+<% /* 共通Loading */ %>
+<%- include('../common/master/_loading') %>
+<%# popup %>
+<%- include('./_listTicketTypeGroup') %>

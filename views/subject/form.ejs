@@ -1,0 +1,85 @@
+<% /* 科目分類コード */ %>
+<div class="form-group">
+    <label for="subjectClassificationCd" class="col-sm-3 control-label label-title">
+        科目分類コード<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <input class="form-control" name="subjectClassificationCd" id="subjectClassificationCd" placeholder="" maxlength=64 value="<%= forms.subjectClassificationCd %>">
+        <p class="message">半角64文字以内でご入力ください。</p>
+        <p class="error message text-danger">
+        <% if (errors && errors.subjectClassificationCd) { %>
+        <%- errors.subjectClassificationCd.msg %>
+        <% } %>
+        </p>
+    </div>
+</div>
+<div class="form-group">
+    <label for="subjectClassificationName" class="col-sm-3 control-label label-title">
+        科目分類名称<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <input class="form-control" name="subjectClassificationName" id="subjectClassificationName" placeholder="" maxlength=64 value="<%= forms.subjectClassificationName %>">
+        <p class="message">64文字以内でご入力ください。</p>
+        <p class="error message text-danger">
+        <% if (errors && errors.subjectClassificationName) { %>
+        <%- errors.subjectClassificationName.msg %>
+        <% } %>
+        </p>
+    </div>
+</div>
+<div class="form-group">
+    <label for="subjectCd" class="col-sm-3 control-label label-title">
+        科目コード<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <input class="form-control" name="subjectCd" id="subjectCd" placeholder="" maxlength=64 value="<%= forms.subjectCd %>">
+        <p class="message">半角64文字以内でご入力ください。</p>
+        <p class="error message text-danger">
+        <% if (errors && errors.subjectCd) { %>
+        <%- errors.subjectCd.msg %>
+        <% } %>
+        </p>
+    </div>
+</div>
+<div class="form-group">
+    <label for="subjectName" class="col-sm-3 control-label label-title">
+        科目名称<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <input class="form-control" name="subjectName" id="subjectName" placeholder="" maxlength=64 value="<%= forms.subjectName %>">
+        <p class="message">64文字以内でご入力ください。</p>
+        <p class="error message text-danger">
+        <% if (errors && errors.subjectName) { %>
+        <%- errors.subjectName.msg %>
+        <% } %>
+        </p>
+    </div>
+</div>
+<div class="form-group">
+    <label for="detailCd" class="col-sm-3 control-label label-title">
+        細目コード<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <input class="form-control" name="detailCd" id="detailCd" placeholder="" maxlength=64 value="<%= forms.detailCd %>">
+        <p class="message">半角64文字以内でご入力ください。</p>
+        <p class="error message text-danger">
+        <% if (errors && errors.detailCd) { %>
+        <%- errors.detailCd.msg %>
+        <% } %>
+        </p>
+    </div>
+</div>
+<div class="form-group">
+    <label for="detailName" class="col-sm-3 control-label label-title">
+        細目名称<font color="red">＊</font>
+    </label>
+    <div class="col-sm-9">
+        <input class="form-control" name="detailName" id="detailName" placeholder="" maxlength=64 value="<%= forms.detailName %>">
+        <p class="message">64文字以内でご入力ください。</p>
+        <p class="error message text-danger">
+        <% if (errors && errors.detailName) { %>
+        <%- errors.detailName.msg %>
+        <% } %>
+        </p>
+    </div>
+</div>

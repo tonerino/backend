@@ -1,0 +1,32 @@
+<%- contentFor('title') %>
+券種グループマスタ更新
+<%- contentFor('displayId') %>
+Aa-7
+<%- contentFor('styles') %>
+<link rel="stylesheet" href="/css/ticketTypeGroupAddEdit.css">
+<%- contentFor('scripts') %>
+<script src="/js/jquery-ui.js"></script>
+<script src="/js/master/ticketTypeGroup/ticketTypeGroupAddEdit.js"></script>
+
+<%- contentFor('body') %>
+<div class="col-sm-12 form-container">
+    <form method="post" class="form-horizontal" id="ticketTypeGroupsForm">
+        <div class="menu-group">
+            <%- include('../common/errorMessage') %>
+            <%- include('../common/successMessage') %>
+        </div>
+
+        <input type="hidden" name="id" value="<%= forms.id %>">
+
+        <%- include('form', { forms: forms }) %>
+
+        <div class="form-group">
+            <div class="btn-area panel-body pull-left">
+                <a class="btn btn-ok btn-primary">更新する</a>
+            </div>
+            <div class="btn-area panel-body pull-right">
+                <a class="btn btn-delete btn-danger">削除する</a>
+            </div>
+        </div>
+    </form>
+</div>
