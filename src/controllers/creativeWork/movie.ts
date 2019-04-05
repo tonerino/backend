@@ -83,8 +83,7 @@ export async function update(req: Request, res: Response, next: NextFunction): P
         let errors: any = {};
 
         let movie = await creativeWorkService.findMovieByIdentifier({
-            // 現時点で半角バリデーションをかけていないので、念のため
-            identifier: encodeURIComponent(req.params.identifier)
+            identifier: req.params.identifier
         });
 
         if (req.method === 'POST') {

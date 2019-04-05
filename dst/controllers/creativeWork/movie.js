@@ -89,8 +89,7 @@ function update(req, res, next) {
             let message = '';
             let errors = {};
             let movie = yield creativeWorkService.findMovieByIdentifier({
-                // 現時点で半角バリデーションをかけていないので、念のため
-                identifier: encodeURIComponent(req.params.identifier)
+                identifier: req.params.identifier
             });
             if (req.method === 'POST') {
                 // バリデーション
