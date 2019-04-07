@@ -13,7 +13,7 @@
     }
   ],
   "dependencies": {
-    "@chevre/api-nodejs-client": "1.0.0-alpha.60",
+    "@chevre/api-nodejs-client": "1.0.0-alpha.62",
     "@cinerino/api-nodejs-client": "2.0.0-alpha.2",
     "body-parser": "^1.17.2",
     "connect-redis": "^3.4.1",
