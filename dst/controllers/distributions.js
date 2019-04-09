@@ -114,11 +114,11 @@ exports.getList = getList;
  */
 function index(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const ticketTypeService = new chevre.service.TicketType({
+        const offerService = new chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const ticketTypeGroupsList = yield ticketTypeService.searchTicketTypeGroups({});
+        const ticketTypeGroupsList = yield offerService.searchTicketTypeGroups({});
         // 配給マスタ画面遷移
         res.render('distributions/index', {
             message: '',

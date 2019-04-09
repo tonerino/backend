@@ -20,7 +20,7 @@ const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
 function index(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const ticketTypeService = new chevre.service.TicketType({
+            const offerService = new chevre.service.Offer({
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
@@ -32,7 +32,7 @@ function index(req, res, next) {
             if (searchMovieTheatersResult.totalCount === 0) {
                 throw new Error('劇場が見つかりません');
             }
-            const searchTicketTypeGroupsResult = yield ticketTypeService.searchTicketTypeGroups({});
+            const searchTicketTypeGroupsResult = yield offerService.searchTicketTypeGroups({});
             res.render('events/screeningEvent/index', {
                 movieTheaters: searchMovieTheatersResult.data,
                 moment: moment,
@@ -47,7 +47,7 @@ function index(req, res, next) {
 exports.index = index;
 function search(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const ticketTypeService = new chevre.service.TicketType({
+        const offerService = new chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
@@ -100,7 +100,7 @@ function search(req, res) {
                 data = searchResult.data;
                 screens = movieTheater.containsPlace;
             }
-            const searchTicketTypeGroupsResult = yield ticketTypeService.searchTicketTypeGroups({});
+            const searchTicketTypeGroupsResult = yield offerService.searchTicketTypeGroups({});
             res.json({
                 validation: null,
                 error: null,
@@ -289,7 +289,7 @@ function createEventFromBody(body, user) {
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
-        const ticketTypeService = new chevre.service.TicketType({
+        const offerService = new chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
@@ -308,7 +308,7 @@ function createEventFromBody(body, user) {
         if (screeningRoom.name === undefined) {
             throw new Error('上映スクリーン名が見つかりません');
         }
-        const ticketTypeGroup = yield ticketTypeService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
+        const ticketTypeGroup = yield offerService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
         const searchBoxOfficeTypeResult = yield serviceTypeService.search({ ids: [ticketTypeGroup.itemOffered.serviceType.id] });
         if (searchBoxOfficeTypeResult.totalCount === 0) {
             throw new Error('興行区分が見つかりません');
@@ -404,7 +404,7 @@ function createMultipleEventFromBody(body, user) {
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
-        const ticketTypeService = new chevre.service.TicketType({
+        const offerService = new chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
@@ -429,7 +429,7 @@ function createMultipleEventFromBody(body, user) {
         const ticketTypeIds = body.ticketData;
         const mvtkExcludeFlgs = body.mvtkExcludeFlgData;
         const timeData = body.timeData;
-        const searchTicketTypeGroupsResult = yield ticketTypeService.searchTicketTypeGroups({ limit: 100 });
+        const searchTicketTypeGroupsResult = yield offerService.searchTicketTypeGroups({ limit: 100 });
         const ticketTypeGroups = searchTicketTypeGroupsResult.data;
         const searchBoxOfficeTypeGroupsResult = yield serviceTypeService.search({ limit: 100 });
         const boxOfficeTypes = searchBoxOfficeTypeGroupsResult.data;
