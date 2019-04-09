@@ -125,5 +125,6 @@ header .title {
 
 #startDateTime select {
   width: 50px;
+  padding: 6px 0;
   display: inline-block;
 }
