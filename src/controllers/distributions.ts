@@ -100,11 +100,11 @@ export async function getList(req: Request, res: Response): Promise<void> {
  * 一覧
  */
 export async function index(req: Request, res: Response): Promise<void> {
-    const ticketTypeService = new chevre.service.TicketType({
+    const offerService = new chevre.service.Offer({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const ticketTypeGroupsList = await ticketTypeService.searchTicketTypeGroups({});
+    const ticketTypeGroupsList = await offerService.searchTicketTypeGroups({});
     // 配給マスタ画面遷移
     res.render('distributions/index', {
         message: '',

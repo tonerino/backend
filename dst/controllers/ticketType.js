@@ -30,7 +30,7 @@ const CHAGE_MAX_LENGTH = 10;
 // tslint:disable-next-line:cyclomatic-complexity
 function add(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const ticketTypeService = new chevre.service.TicketType({
+        const offerService = new chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
@@ -51,7 +51,7 @@ function add(req, res) {
                 // 券種DB登録プロセス
                 try {
                     const ticketType = createFromBody(req.body);
-                    yield ticketTypeService.createTicketType(ticketType);
+                    yield offerService.createTicketType(ticketType);
                     req.flash('message', '登録しました');
                     res.redirect(`/ticketTypes/${ticketType.id}/update`);
                     return;
@@ -77,7 +77,7 @@ exports.add = add;
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function update(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const ticketTypeService = new chevre.service.TicketType({
+        const offerService = new chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
@@ -88,7 +88,7 @@ function update(req, res) {
         const subjectList = yield subjectService.getSubjectList();
         let message = '';
         let errors = {};
-        let ticketType = yield ticketTypeService.findTicketTypeById({ id: req.params.id });
+        let ticketType = yield offerService.findTicketTypeById({ id: req.params.id });
         if (req.method === 'POST') {
             // 検証
             validateFormAdd(req);
@@ -99,7 +99,7 @@ function update(req, res) {
                 // 券種DB更新プロセス
                 try {
                     ticketType = createFromBody(req.body);
-                    yield ticketTypeService.updateTicketType(ticketType);
+                    yield offerService.updateTicketType(ticketType);
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
                     return;
@@ -221,14 +221,14 @@ function createFromBody(body) {
 function getList(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const ticketTypeService = new chevre.service.TicketType({
+            const offerService = new chevre.service.Offer({
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
             // 券種グループ取得
             let ticketTypeIds = [];
             if (req.query.ticketTypeGroups !== undefined && req.query.ticketTypeGroups !== '') {
-                const ticketTypeGroup = yield ticketTypeService.findTicketTypeGroupById({ id: req.query.ticketTypeGroups });
+                const ticketTypeGroup = yield offerService.findTicketTypeGroupById({ id: req.query.ticketTypeGroups });
                 if (ticketTypeGroup.ticketTypes !== null) {
                     ticketTypeIds = ticketTypeGroup.ticketTypes;
                 }
@@ -251,7 +251,7 @@ function getList(req, res) {
                     ticketTypeIds.push(req.query.id);
                 }
             }
-            const result = yield ticketTypeService.searchTicketTypes({
+            const result = yield offerService.searchTicketTypes({
                 limit: req.query.limit,
                 page: req.query.page,
                 ids: ticketTypeIds,
@@ -280,11 +280,11 @@ exports.getList = getList;
  */
 function index(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const ticketTypeService = new chevre.service.TicketType({
+        const offerService = new chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const ticketTypeGroupsList = yield ticketTypeService.searchTicketTypeGroups({});
+        const ticketTypeGroupsList = yield offerService.searchTicketTypeGroups({});
         // 券種マスタ画面遷移
         res.render('ticketType/index', {
             message: '',
@@ -299,11 +299,11 @@ exports.index = index;
 function getTicketTypeGroupList(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const ticketTypeService = new chevre.service.TicketType({
+            const offerService = new chevre.service.Offer({
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const { totalCount, data } = yield ticketTypeService.searchTicketTypeGroups({
+            const { totalCount, data } = yield offerService.searchTicketTypeGroups({
                 limit: 100,
                 ticketTypes: [req.params.ticketTypeId]
             });

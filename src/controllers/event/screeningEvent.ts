@@ -15,7 +15,7 @@ const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
 
 export async function index(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-        const ticketTypeService = new chevre.service.TicketType({
+        const offerService = new chevre.service.Offer({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
@@ -27,7 +27,7 @@ export async function index(req: Request, res: Response, next: NextFunction): Pr
         if (searchMovieTheatersResult.totalCount === 0) {
             throw new Error('劇場が見つかりません');
         }
-        const searchTicketTypeGroupsResult = await ticketTypeService.searchTicketTypeGroups({});
+        const searchTicketTypeGroupsResult = await offerService.searchTicketTypeGroups({});
         res.render('events/screeningEvent/index', {
             movieTheaters: searchMovieTheatersResult.data,
             moment: moment,
@@ -38,7 +38,7 @@ export async function index(req: Request, res: Response, next: NextFunction): Pr
     }
 }
 export async function search(req: Request, res: Response): Promise<void> {
-    const ticketTypeService = new chevre.service.TicketType({
+    const offerService = new chevre.service.Offer({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
@@ -93,7 +93,7 @@ export async function search(req: Request, res: Response): Promise<void> {
             data = searchResult.data;
             screens = movieTheater.containsPlace;
         }
-        const searchTicketTypeGroupsResult = await ticketTypeService.searchTicketTypeGroups({});
+        const searchTicketTypeGroupsResult = await offerService.searchTicketTypeGroups({});
         res.json({
             validation: null,
             error: null,
@@ -266,7 +266,7 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
-    const ticketTypeService = new chevre.service.TicketType({
+    const offerService = new chevre.service.Offer({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
@@ -286,7 +286,7 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         throw new Error('上映スクリーン名が見つかりません');
     }
 
-    const ticketTypeGroup = await ticketTypeService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
+    const ticketTypeGroup = await offerService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
     const searchBoxOfficeTypeResult = await serviceTypeService.search({ ids: [ticketTypeGroup.itemOffered.serviceType.id] });
     if (searchBoxOfficeTypeResult.totalCount === 0) {
         throw new Error('興行区分が見つかりません');
@@ -382,7 +382,7 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
-    const ticketTypeService = new chevre.service.TicketType({
+    const offerService = new chevre.service.Offer({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
@@ -410,7 +410,7 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
     const mvtkExcludeFlgs: string[] = body.mvtkExcludeFlgData;
     const timeData: { doorTime: string; startTime: string; endTime: string }[] = body.timeData;
 
-    const searchTicketTypeGroupsResult = await ticketTypeService.searchTicketTypeGroups({ limit: 100 });
+    const searchTicketTypeGroupsResult = await offerService.searchTicketTypeGroups({ limit: 100 });
     const ticketTypeGroups = searchTicketTypeGroupsResult.data;
 
     const searchBoxOfficeTypeGroupsResult = await serviceTypeService.search({ limit: 100 });
