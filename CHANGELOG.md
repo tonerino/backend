@@ -10,17 +10,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- update @chevre/api-nodejs-client
-
 ### Deprecated
 
 ### Removed
 
-- 使用されていない予約ルーターを削除
-
 ### Fixed
 
 ### Security
+
+## v1.0.1 - 2019-04-10
+
+### Changed
+
+- update @chevre/api-nodejs-client
+
+### Removed
+
+- 使用されていない予約ルーターを削除
 
 ## v1.0.0 - 2019-04-05
 
