@@ -31,17 +31,26 @@ timeMeterRouter.get('/search', async (req, res) => {
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const { totalCount, data } = await eventService.countTicketTypePerEvent({
+        const { totalCount, data } = await eventService.searchWithAggregateReservation({
+            typeOf: chevre.factory.eventType.ScreeningEvent,
             limit: req.query.limit,
             page: req.query.page,
             startFrom: (req.query.startFrom !== '')
-                ? moment(`${req.query.startFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate()
+                ? moment(`${String(req.query.startFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate()
                 : undefined,
             startThrough: (req.query.startThrough !== '')
-                ? moment(`${req.query.startThrough}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day').toDate()
+                ? moment(`${String(req.query.startThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day').toDate()
                 : undefined,
-            id: req.query.screeningEventSeries === '' ? undefined : req.query.screeningEventSeries
+            superEvent: {
+                ids: (req.query.screeningEventSeries !== undefined && req.query.screeningEventSeries !== '')
+                    ? [String(req.query.screeningEventSeries)]
+                    : undefined,
+                locationBranchCodes: (req.query.theater !== undefined && req.query.theater !== '')
+                    ? [String(req.query.theater)]
+                    : undefined
+            }
         });
+
         res.json({
             success: true,
             count: totalCount,
