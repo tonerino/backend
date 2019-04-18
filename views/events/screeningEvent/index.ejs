@@ -15,8 +15,14 @@ Aa-4
                 <label>劇場</label>
                 <select class="form-control" name="theater">
                     <option value="">選択してください</option>
-                    <% for (const movieTheater of movieTheaters) { %>
-                    <option value="<%= movieTheater.branchCode %>"><%= movieTheater.name.ja %></option>
+                    <% if (user.cognitoGroups.movieTheaters === undefined || user.cognitoGroups.movieTheaters.length === 0) { %>
+                        <% for (const movieTheater of movieTheaters) { %>
+                            <option value="<%= movieTheater.branchCode %>"><%= movieTheater.name.ja %></option>
+                        <% } %>              
+                    <% } else { %>
+                        <% for (const movieTheater of user.cognitoGroups.movieTheaters) { %>
+                            <option value="<%= movieTheater.branchCode %>"><%= movieTheater.name.ja %></option>
+                        <% } %>                                   
                     <% } %>
                 </select>
             </div>

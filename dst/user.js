@@ -86,6 +86,22 @@ class User {
             if (payload !== undefined) {
                 this.profile = payload;
             }
+            if (this.cognitoGroups === undefined) {
+                this.cognitoGroups = {};
+            }
+            if (this.profile['cognito:groups'] !== undefined
+                && this.profile['cognito:groups'].length > 0
+                && this.cognitoGroups.movieTheaters === undefined) {
+                const cognitoGroups = this.profile['cognito:groups'];
+                const placeService = new chevreapi.service.Place({
+                    endpoint: process.env.API_ENDPOINT,
+                    auth: this.authClient
+                });
+                const { data } = yield placeService.searchMovieTheaters({});
+                this.cognitoGroups.movieTheaters = data.filter((d) => cognitoGroups.find((c) => d.id === c) !== undefined);
+            }
+            // debug('profile', this.profile);
+            // debug('cognitoGroups', this.cognitoGroups);
             return this;
         });
     }

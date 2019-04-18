@@ -5,9 +5,11 @@
             <li class="<%= (displayId === 'Aa-12') ? 'active': ''; %>"><a href="/places/movieTheater">
                     <i class="glyphicon glyphicon-list"></i> 劇場検索</a>
             </li>
+            <% if (user.cognitoGroups.movieTheaters === undefined || user.cognitoGroups.movieTheaters.length === 0) { %>
             <li class="<%= (displayId === 'Aa-9') ? 'active': ''; %>"><a href="/creativeWorks/movie/add">
                     <i class="glyphicon glyphicon-plus"></i> 作品登録</a>
             </li>
+            <% } %>
             <li class="<%= (displayId === 'Aa-10') ? 'active': ''; %>"><a href="/creativeWorks/movie">
                     <i class="glyphicon glyphicon-list"></i> 映画作品検索</a>
             </li>
@@ -37,15 +39,19 @@
             </li>
             <li class="<%= (displayId === 'Aa-17') ? 'active': ''; %>"><a href="/subjects">
                     <i class="glyphicon glyphicon-list"></i> 科目検索</a>
+            <% if (user.cognitoGroups.movieTheaters === undefined || user.cognitoGroups.movieTheaters.length === 0) { %>
             <li class="<%= (displayId === 'Aa-14') ? 'active': ''; %>"><a href="/distributions/add">
                     <i class="glyphicon glyphicon-plus"></i> 配給登録</a>
             </li>
+            <% } %>
             <li class="<%= (displayId === 'Aa-15') ? 'active': ''; %>"><a href="/distributions">
                     <i class="glyphicon glyphicon-list"></i> 配給検索</a>
             </li>
+            <% if (user.cognitoGroups.movieTheaters === undefined || user.cognitoGroups.movieTheaters.length === 0) { %>
             <li class="<%= (displayId === 'Aa-18') ? 'active': ''; %>"><a href="/boxOfficeTypes/add">
                     <i class="glyphicon glyphicon-plus"></i> 興行区分登録</a>
             </li>
+            <% } %>
             <li class="<%= (displayId === 'Aa-19') ? 'active': ''; %>"><a href="/boxOfficeTypes">
                     <i class="glyphicon glyphicon-list"></i> 興行区分検索</a>
             </li>
