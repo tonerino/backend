@@ -42,8 +42,9 @@ export async function add(req: Request, res: Response): Promise<void> {
         if (validatorResult.isEmpty()) {
             // 券種DB登録プロセス
             try {
-                const ticketType = createFromBody(req.body);
-                await offerService.createTicketType(ticketType);
+                req.body.id = '';
+                let ticketType = createFromBody(req.body);
+                ticketType = await offerService.createTicketType(ticketType);
                 req.flash('message', '登録しました');
                 res.redirect(`/ticketTypes/${ticketType.id}/update`);
 
@@ -97,6 +98,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         if (validatorResult.isEmpty()) {
             // 券種DB更新プロセス
             try {
+                req.body.id = req.params.id;
                 ticketType = createFromBody(req.body);
                 await offerService.updateTicketType(ticketType);
                 req.flash('message', '更新しました');
@@ -195,6 +197,7 @@ function createFromBody(body: any): chevre.factory.ticketType.ITicketType {
         typeOf: <chevre.factory.offerType>'Offer',
         priceCurrency: chevre.factory.priceCurrency.JPY,
         id: body.id,
+        identifier: body.identifier,
         name: body.name,
         description: body.description,
         alternateName: { ja: <string>body.alternateName.ja, en: '' },
@@ -257,21 +260,13 @@ export async function getList(req: Request, res: Response): Promise<void> {
                     results: []
                 });
             }
-            if (req.query.id !== '' && req.query.id !== undefined) {
-                if (ticketTypeIds.indexOf(req.query.id) >= 0) {
-                    ticketTypeIds.push(req.query.id);
-                }
-            }
-        } else {
-            if (req.query.id !== '' && req.query.id !== undefined) {
-                ticketTypeIds.push(req.query.id);
-            }
         }
 
         const result = await offerService.searchTicketTypes({
             limit: req.query.limit,
             page: req.query.page,
-            ids: ticketTypeIds,
+            ids: (ticketTypeIds.length > 0) ? ticketTypeIds : undefined,
+            identifier: req.query.identifier,
             name: req.query.name
         });
         res.json({
@@ -280,7 +275,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
             results: result.data.map((t) => {
                 return {
                     ...t,
-                    ticketCode: t.id
+                    ticketCode: t.identifier
                 };
             })
         });
@@ -339,8 +334,8 @@ export async function getTicketTypeGroupList(req: Request, res: Response): Promi
 function validateFormAdd(req: Request): void {
     // 券種コード
     let colName: string = '券種コード';
-    req.checkBody('id', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('id', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_CODE))
+    req.checkBody('identifier', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('identifier', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_CODE))
         .isAlphanumeric().len({ max: NAME_MAX_LENGTH_CODE });
     // サイト表示用券種名
     colName = 'サイト表示用券種名';

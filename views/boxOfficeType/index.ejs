@@ -46,22 +46,22 @@ Aa-19
                     <th>興行区分コード</th>
                     <th style="text-align:left;">名称</th>
                     <% if (user.cognitoGroups.movieTheaters === undefined || user.cognitoGroups.movieTheaters.length === 0) { %>
-                        <th></th>                           
+                    <th></th>
                     <% } %>
                 </tr>
             </thead>
             <tbody>
                 <tr id="templateRow" identifier="$id$">
-                    <td name="id">$id$</td>
+                    <td name="identifier">$identifier$</td>
                     <td name="name">$name$</td>
-                    <% if (user.cognitoGroups.movieTheaters === undefined || user.cognitoGroups.movieTheaters.length === 0) { %>            
-                        <td name="edit" class="center">
-                            <div class="btn-area">
-                                <a class="btn btn-list edit" data-toggle="modal" data-target="#myModal">
-                                    <span>編集</span>
-                                </a>
-                            </div>
-                        </td>                                 
+                    <% if (user.cognitoGroups.movieTheaters === undefined || user.cognitoGroups.movieTheaters.length === 0) { %>
+                    <td name="edit__id" class="center">
+                        <div class="btn-area">
+                            <a class="btn btn-list edit" data-toggle="modal" data-target="#myModal" data-id="$id$">
+                                <span>編集</span>
+                            </a>
+                        </div>
+                    </td>
                     <% } %>
                 </tr>
             </tbody>

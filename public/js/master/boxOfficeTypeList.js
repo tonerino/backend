@@ -76,10 +76,12 @@ $(function () {
     }
 
     function edit(target) {
-        var id = $('td[name="id"]', $(target).closest('tr')).html();
+        var id = $(target).attr('data-id');
+        var identifier = $('td[name="identifier"]', $(target).closest('tr')).html();
         var name = $('td[name="name"]', $(target).closest('tr')).html();
         var modal = $('#editModal');
         modal.find('input[name=id]').val(id);
+        modal.find('input[name=identifier]').val(identifier);
         modal.find('input[name=name]').val(name);
         modal.modal();
     }
@@ -87,8 +89,9 @@ $(function () {
     function update() {
         var modal = $('#editModal');
         var id = modal.find('input[name=id]').val();
+        var identifier = modal.find('input[name=identifier]').val();
         var name = modal.find('input[name=name]').val();
-        if (id.length === 0 || name.length === 0) {
+        if (identifier.length === 0 || name.length === 0) {
             alert('名称を入力してください！');
             return;
         }
@@ -98,6 +101,7 @@ $(function () {
             url: '/boxOfficeTypes/' + id + '/update',
             type: 'POST',
             data: {
+                identifier: identifier,
                 name: name
             }
         }).done(function (data, textStatus) {

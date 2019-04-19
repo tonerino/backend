@@ -25,11 +25,11 @@ Aa-6
         </div>
         <% /* 券種コード */ %>
         <div class="form-group ">
-            <label for="id" class="col-sm-3 control-label label-title">
+            <label for="identifier" class="col-sm-3 control-label label-title">
                 券種コード
             </label>
             <div class="col-sm-9">
-                <input type="text" class="form-control" name="id" id="id" placeholder="" maxlength=64>
+                <input type="text" class="form-control" name="identifier" id="identifier" placeholder="" maxlength=64>
             </div>
         </div>
         <% /* 管理用券種名 */ %>
@@ -89,9 +89,13 @@ Aa-6
                 <tr id="templateRow" _id="$id$">
                     <td name="ticketCode">$ticketCode$</td>
                     <td name="name.ja__alternateName.ja">$name.ja$<br>$alternateName.ja$</td>
-                    <td name="priceSpecification.price__priceSpecification.accounting.accountsReceivable" style="text-align:right;">$priceSpecification.price$<br>$priceSpecification.accounting.accountsReceivable$</td>
-                    <td name="priceSpecification.referenceQuantity.value">$priceSpecification.referenceQuantity.value$</td>
-                    <td name="priceSpecification.appliesToMovieTicketType">$priceSpecification.appliesToMovieTicketType$</td>
+                    <td name="priceSpecification.price__priceSpecification.accounting.accountsReceivable"
+                        style="text-align:right;">
+                        $priceSpecification.price$<br>$priceSpecification.accounting.accountsReceivable$</td>
+                    <td name="priceSpecification.referenceQuantity.value">$priceSpecification.referenceQuantity.value$
+                    </td>
+                    <td name="priceSpecification.appliesToMovieTicketType">$priceSpecification.appliesToMovieTicketType$
+                    </td>
                     <td name="edit" class="center">
                         <div class="btn-area">
                             <a class="btn btn-list edit" href="/ticketTypes/$id$/update">

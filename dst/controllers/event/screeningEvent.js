@@ -176,7 +176,7 @@ function regist(req, res) {
             }
             debug('saving screening event...', req.body);
             const attributes = yield createMultipleEventFromBody(req.body, req.user);
-            yield eventService.createMultipleScreeningEvent(attributes);
+            yield eventService.create(attributes);
             res.json({
                 validation: null,
                 error: null
@@ -361,6 +361,7 @@ function createEventFromBody(body, user) {
                 serviceType: {
                     typeOf: 'ServiceType',
                     id: serviceType.id,
+                    identifier: serviceType.identifier,
                     name: serviceType.name
                 }
             },
@@ -432,7 +433,7 @@ function createMultipleEventFromBody(body, user) {
         const searchTicketTypeGroupsResult = yield offerService.searchTicketTypeGroups({ limit: 100 });
         const ticketTypeGroups = searchTicketTypeGroupsResult.data;
         const searchBoxOfficeTypeGroupsResult = yield serviceTypeService.search({ limit: 100 });
-        const boxOfficeTypes = searchBoxOfficeTypeGroupsResult.data;
+        const serviceTypes = searchBoxOfficeTypeGroupsResult.data;
         const attributes = [];
         for (let date = startDate; date <= toDate; date = date.add(1, 'day')) {
             const formattedDate = date.format('YYYY/MM/DD');
@@ -464,9 +465,9 @@ function createMultipleEventFromBody(body, user) {
                     if (ticketTypeGroup === undefined) {
                         throw new Error('Ticket Type Group');
                     }
-                    const boxOfficeType = boxOfficeTypes.find((t) => t.id === ticketTypeGroup.itemOffered.serviceType.id);
-                    if (boxOfficeType === undefined) {
-                        throw new Error('Box Office Type');
+                    const serviceType = serviceTypes.find((t) => t.id === ticketTypeGroup.itemOffered.serviceType.id);
+                    if (serviceType === undefined) {
+                        throw new Error('Service Type Not Found');
                     }
                     const offers = {
                         id: ticketTypeGroup.id,
@@ -482,11 +483,7 @@ function createMultipleEventFromBody(body, user) {
                             value: 1
                         },
                         itemOffered: {
-                            serviceType: {
-                                typeOf: 'ServiceType',
-                                id: boxOfficeType.id,
-                                name: boxOfficeType.name
-                            }
+                            serviceType: serviceType
                         },
                         validFrom: salesStartDate,
                         validThrough: salesEndDate,

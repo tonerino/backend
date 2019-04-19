@@ -25,11 +25,11 @@ Aa-8
         </div>
         <% /* 券種グループコード */ %>
         <div class="form-group ">
-            <label for="id" class="col-sm-3 control-label label-title">
+            <label for="identifier" class="col-sm-3 control-label label-title">
                 券種グループコード
             </label>
             <div class="col-sm-9">
-                <input type="text" class="form-control" name="id" id="id" placeholder="" maxlength=64>
+                <input type="text" class="form-control" name="identifier" id="identifier" placeholder="" maxlength=64>
             </div>
         </div>
         <% /* 券種グループ名 */ %>
@@ -70,7 +70,7 @@ Aa-8
             </thead>
             <tbody>
                 <tr id="templateRow" _id="$_id$">
-                    <td name="ticketGroupCode">$ticketGroupCode$</td>
+                    <td name="identifier">$identifier$</td>
                     <td name="name.ja">$name.ja$</td>
                     <td name="itemOffered.serviceType.id">$itemOffered.serviceType.id$</td>
                     <td name="edit" class="center">

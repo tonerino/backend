@@ -50,8 +50,9 @@ function add(req, res) {
             if (validatorResult.isEmpty()) {
                 // 券種DB登録プロセス
                 try {
-                    const ticketType = createFromBody(req.body);
-                    yield offerService.createTicketType(ticketType);
+                    req.body.id = '';
+                    let ticketType = createFromBody(req.body);
+                    ticketType = yield offerService.createTicketType(ticketType);
                     req.flash('message', '登録しました');
                     res.redirect(`/ticketTypes/${ticketType.id}/update`);
                     return;
@@ -98,6 +99,7 @@ function update(req, res) {
             if (validatorResult.isEmpty()) {
                 // 券種DB更新プロセス
                 try {
+                    req.body.id = req.params.id;
                     ticketType = createFromBody(req.body);
                     yield offerService.updateTicketType(ticketType);
                     req.flash('message', '更新しました');
@@ -177,6 +179,7 @@ function createFromBody(body) {
         typeOf: 'Offer',
         priceCurrency: chevre.factory.priceCurrency.JPY,
         id: body.id,
+        identifier: body.identifier,
         name: body.name,
         description: body.description,
         alternateName: { ja: body.alternateName.ja, en: '' },
@@ -240,28 +243,19 @@ function getList(req, res) {
                         results: []
                     });
                 }
-                if (req.query.id !== '' && req.query.id !== undefined) {
-                    if (ticketTypeIds.indexOf(req.query.id) >= 0) {
-                        ticketTypeIds.push(req.query.id);
-                    }
-                }
-            }
-            else {
-                if (req.query.id !== '' && req.query.id !== undefined) {
-                    ticketTypeIds.push(req.query.id);
-                }
             }
             const result = yield offerService.searchTicketTypes({
                 limit: req.query.limit,
                 page: req.query.page,
-                ids: ticketTypeIds,
+                ids: (ticketTypeIds.length > 0) ? ticketTypeIds : undefined,
+                identifier: req.query.identifier,
                 name: req.query.name
             });
             res.json({
                 success: true,
                 count: result.totalCount,
                 results: result.data.map((t) => {
-                    return Object.assign({}, t, { ticketCode: t.id });
+                    return Object.assign({}, t, { ticketCode: t.identifier });
                 })
             });
         }
@@ -329,8 +323,8 @@ exports.getTicketTypeGroupList = getTicketTypeGroupList;
 function validateFormAdd(req) {
     // 券種コード
     let colName = '券種コード';
-    req.checkBody('id', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('id', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_CODE))
+    req.checkBody('identifier', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('identifier', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_CODE))
         .isAlphanumeric().len({ max: NAME_MAX_LENGTH_CODE });
     // サイト表示用券種名
     colName = 'サイト表示用券種名';

@@ -14,7 +14,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chevre = require("@chevre/api-nodejs-client");
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
-const _ = require("underscore");
 const Message = require("../common/Const/Message");
 const debug = createDebug('chevre-backend:controllers');
 const MAX_LENGTH = 64;
@@ -38,12 +37,12 @@ function add(req, res) {
             if (validatorResult.isEmpty()) {
                 // 興行区分DB登録プロセス
                 try {
-                    const serviceType = createFromBody(req.body);
-                    const { totalCount } = yield serviceTypeService.search({ ids: [serviceType.id] });
+                    let serviceType = createFromBody(Object.assign({}, req.body, { id: '' }));
+                    const { totalCount } = yield serviceTypeService.search({ identifiers: [serviceType.identifier] });
                     if (totalCount > 0) {
                         throw new Error('既に存在する興行区分コードです');
                     }
-                    yield serviceTypeService.create(serviceType);
+                    serviceType = yield serviceTypeService.create(serviceType);
                     req.flash('message', '作成しました');
                     res.redirect('/boxOfficeTypes');
                     return;
@@ -53,10 +52,7 @@ function add(req, res) {
                 }
             }
         }
-        const forms = {
-            id: (_.isEmpty(req.body.id)) ? '' : req.body.id,
-            name: (_.isEmpty(req.body.name)) ? '' : req.body.name
-        };
+        const forms = Object.assign({}, req.body);
         res.render('boxOfficeType/add', {
             message: message,
             errors: errors,
@@ -75,18 +71,15 @@ function getList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const result = yield serviceTypeService.search(Object.assign({ ids: [req.query.id], name: req.query.name }, {
+            const result = yield serviceTypeService.search({
+                ids: [req.query.id],
+                name: req.query.name,
                 sort: { _id: chevre.factory.sortType.Ascending }
-            }));
+            });
             res.json({
                 success: true,
                 count: result.totalCount,
-                results: result.data.map((t) => {
-                    return {
-                        id: t.id,
-                        name: t.name
-                    };
-                })
+                results: result.data
             });
         }
         catch (err) {
@@ -150,6 +143,7 @@ function createFromBody(body) {
     return {
         typeOf: 'ServiceType',
         id: body.id,
+        identifier: body.identifier,
         name: body.name
     };
 }
@@ -160,8 +154,8 @@ function validateForm(req, idAdd = true) {
     let colName = '';
     if (idAdd) {
         colName = '興行区分コード';
-        req.checkBody('id', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-        req.checkBody('id', Message.Common.getMaxLengthHalfByte(colName, MAX_LENGTH))
+        req.checkBody('identifier', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+        req.checkBody('identifier', Message.Common.getMaxLengthHalfByte(colName, MAX_LENGTH))
             .isAlphanumeric().len({ max: MAX_LENGTH });
     }
     colName = '名称';

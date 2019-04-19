@@ -163,7 +163,7 @@ export async function regist(req: Request, res: Response): Promise<void> {
 
         debug('saving screening event...', req.body);
         const attributes = await createMultipleEventFromBody(req.body, req.user);
-        await eventService.createMultipleScreeningEvent(attributes);
+        await eventService.create(attributes);
         res.json({
             validation: null,
             error: null
@@ -340,6 +340,7 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
             serviceType: {
                 typeOf: 'ServiceType',
                 id: serviceType.id,
+                identifier: serviceType.identifier,
                 name: serviceType.name
             }
         },
@@ -414,7 +415,7 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
     const ticketTypeGroups = searchTicketTypeGroupsResult.data;
 
     const searchBoxOfficeTypeGroupsResult = await serviceTypeService.search({ limit: 100 });
-    const boxOfficeTypes = searchBoxOfficeTypeGroupsResult.data;
+    const serviceTypes = searchBoxOfficeTypeGroupsResult.data;
 
     const attributes: chevre.factory.event.screeningEvent.IAttributes[] = [];
     for (let date = startDate; date <= toDate; date = date.add(1, 'day')) {
@@ -448,9 +449,9 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                 if (ticketTypeGroup === undefined) {
                     throw new Error('Ticket Type Group');
                 }
-                const boxOfficeType = boxOfficeTypes.find((t) => t.id === ticketTypeGroup.itemOffered.serviceType.id);
-                if (boxOfficeType === undefined) {
-                    throw new Error('Box Office Type');
+                const serviceType = serviceTypes.find((t) => t.id === ticketTypeGroup.itemOffered.serviceType.id);
+                if (serviceType === undefined) {
+                    throw new Error('Service Type Not Found');
                 }
 
                 const offers: chevre.factory.event.screeningEvent.IOffer = {
@@ -467,11 +468,7 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                         value: 1
                     },
                     itemOffered: {
-                        serviceType: {
-                            typeOf: 'ServiceType',
-                            id: boxOfficeType.id,
-                            name: boxOfficeType.name
-                        }
+                        serviceType: serviceType
                     },
                     validFrom: salesStartDate,
                     validThrough: salesEndDate,
