@@ -33,7 +33,7 @@ export async function add(req: Request, res: Response): Promise<void> {
         errors = req.validationErrors(true);
         if (validatorResult.isEmpty()) {
             try {
-                const movie = createMovieFromBody(req.body);
+                const movie = createMovieFromBody(req);
                 const creativeWorkService = new chevre.service.CreativeWork({
                     endpoint: <string>process.env.API_ENDPOINT,
                     auth: req.user.authClient
@@ -94,7 +94,7 @@ export async function update(req: Request, res: Response, next: NextFunction): P
             if (validatorResult.isEmpty()) {
                 // 作品DB登録
                 try {
-                    movie = createMovieFromBody(req.body);
+                    movie = createMovieFromBody(req);
                     debug('saving an movie...', movie);
                     await creativeWorkService.updateMovie(movie);
                     req.flash('message', '更新しました');
@@ -142,8 +142,11 @@ export async function update(req: Request, res: Response, next: NextFunction): P
         next(error);
     }
 }
-function createMovieFromBody(body: any): chevre.factory.creativeWork.movie.ICreativeWork {
+function createMovieFromBody(req: Request): chevre.factory.creativeWork.movie.ICreativeWork {
+    const body = req.body;
+
     const movie: chevre.factory.creativeWork.movie.ICreativeWork = {
+        project: req.project,
         typeOf: chevre.factory.creativeWorkType.Movie,
         identifier: body.identifier,
         name: body.name,

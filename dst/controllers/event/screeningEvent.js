@@ -175,7 +175,7 @@ function regist(req, res) {
                 return;
             }
             debug('saving screening event...', req.body);
-            const attributes = yield createMultipleEventFromBody(req.body, req.user);
+            const attributes = yield createMultipleEventFromBody(req, req.user);
             yield eventService.create(attributes);
             res.json({
                 validation: null,
@@ -219,7 +219,7 @@ function update(req, res) {
                 return;
             }
             debug('saving screening event...', req.body);
-            const attributes = yield createEventFromBody(req.body, req.user);
+            const attributes = yield createEventFromBody(req);
             yield eventService.update({
                 id: req.params.eventId,
                 attributes: attributes
@@ -279,8 +279,10 @@ exports.cancelPerformance = cancelPerformance;
  * リクエストボディからイベントオブジェクトを作成する
  */
 // tslint:disable-next-line:max-func-body-length
-function createEventFromBody(body, user) {
+function createEventFromBody(req) {
     return __awaiter(this, void 0, void 0, function* () {
+        const body = req.body;
+        const user = req.user;
         const eventService = new chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
@@ -359,6 +361,7 @@ function createEventFromBody(body, user) {
             },
             itemOffered: {
                 serviceType: {
+                    project: req.project,
                     typeOf: 'ServiceType',
                     id: serviceType.id,
                     identifier: serviceType.identifier,
@@ -370,12 +373,14 @@ function createEventFromBody(body, user) {
             acceptedPaymentMethod: acceptedPaymentMethod
         };
         return {
+            project: req.project,
             typeOf: chevre.factory.eventType.ScreeningEvent,
             doorTime: moment(`${body.day}T${body.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
             startDate: startDate,
             endDate: moment(`${body.day}T${body.endTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
             workPerformed: screeningEventSeries.workPerformed,
             location: {
+                project: req.project,
                 typeOf: screeningRoom.typeOf,
                 branchCode: screeningRoom.branchCode,
                 name: screeningRoom.name,
@@ -395,8 +400,9 @@ function createEventFromBody(body, user) {
  * リクエストボディからイベントオブジェクトを作成する
  */
 // tslint:disable-next-line:max-func-body-length
-function createMultipleEventFromBody(body, user) {
+function createMultipleEventFromBody(req, user) {
     return __awaiter(this, void 0, void 0, function* () {
+        const body = req.body;
         const eventService = new chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
@@ -490,12 +496,14 @@ function createMultipleEventFromBody(body, user) {
                         acceptedPaymentMethod: acceptedPaymentMethod
                     };
                     attributes.push({
+                        project: req.project,
                         typeOf: chevre.factory.eventType.ScreeningEvent,
                         doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
                         startDate: eventStartDate,
                         endDate: moment(`${formattedDate}T${data.endTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
                         workPerformed: screeningEventSeries.workPerformed,
                         location: {
+                            project: req.project,
                             typeOf: screeningRoom.typeOf,
                             branchCode: screeningRoom.branchCode,
                             name: screeningRoom.name === undefined ? { en: '', ja: '', kr: '' } : screeningRoom.name,

@@ -37,7 +37,8 @@ function add(req, res) {
             if (validatorResult.isEmpty()) {
                 // 興行区分DB登録プロセス
                 try {
-                    let serviceType = createFromBody(Object.assign({}, req.body, { id: '' }));
+                    req.body.id = '';
+                    let serviceType = createFromBody(req);
                     const { totalCount } = yield serviceTypeService.search({ identifiers: [serviceType.identifier] });
                     if (totalCount > 0) {
                         throw new Error('既に存在する興行区分コードです');
@@ -125,7 +126,8 @@ function update(req, res) {
             return;
         }
         try {
-            const serviceType = createFromBody(Object.assign({}, req.body, { id: req.params.id }));
+            req.body.id = req.params.id;
+            const serviceType = createFromBody(req);
             yield serviceTypeService.update(serviceType);
             res.status(http_status_1.NO_CONTENT).end();
         }
@@ -139,8 +141,10 @@ function update(req, res) {
     });
 }
 exports.update = update;
-function createFromBody(body) {
+function createFromBody(req) {
+    const body = req.body;
     return {
+        project: req.project,
         typeOf: 'ServiceType',
         id: body.id,
         identifier: body.identifier,

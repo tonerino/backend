@@ -192,6 +192,7 @@ async function createFromBody(req: Request): Promise<chevre.factory.ticketType.I
     const serviceType = await serviceTypeService.findById({ id: req.body.serviceType });
 
     return {
+        project: req.project,
         id: req.body.id,
         identifier: req.body.identifier,
         name: req.body.name,

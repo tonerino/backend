@@ -43,7 +43,7 @@ export async function add(req: Request, res: Response): Promise<void> {
             // 券種DB登録プロセス
             try {
                 req.body.id = '';
-                let ticketType = createFromBody(req.body);
+                let ticketType = createFromBody(req);
                 ticketType = await offerService.createTicketType(ticketType);
                 req.flash('message', '登録しました');
                 res.redirect(`/ticketTypes/${ticketType.id}/update`);
@@ -99,7 +99,7 @@ export async function update(req: Request, res: Response): Promise<void> {
             // 券種DB更新プロセス
             try {
                 req.body.id = req.params.id;
-                ticketType = createFromBody(req.body);
+                ticketType = createFromBody(req);
                 await offerService.updateTicketType(ticketType);
                 req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
@@ -171,40 +171,42 @@ export async function update(req: Request, res: Response): Promise<void> {
     });
 }
 
-function createFromBody(body: any): chevre.factory.ticketType.ITicketType {
+function createFromBody(req: Request): chevre.factory.ticketType.ITicketType {
     // availabilityをフォーム値によって作成
     let availability: chevre.factory.itemAvailability = chevre.factory.itemAvailability.OutOfStock;
-    if (body.isBoxTicket === '1' && body.isOnlineTicket === '1') {
+    if (req.body.isBoxTicket === '1' && req.body.isOnlineTicket === '1') {
         availability = chevre.factory.itemAvailability.InStock;
-    } else if (body.isBoxTicket === '1') {
+    } else if (req.body.isBoxTicket === '1') {
         availability = chevre.factory.itemAvailability.InStoreOnly;
-    } else if (body.isOnlineTicket === '1') {
+    } else if (req.body.isOnlineTicket === '1') {
         availability = chevre.factory.itemAvailability.OnlineOnly;
     }
 
     const referenceQuantity = {
         typeOf: <'QuantitativeValue'>'QuantitativeValue',
-        value: Number(body.seatReservationUnit),
+        value: Number(req.body.seatReservationUnit),
         unitCode: chevre.factory.unitCode.C62
     };
 
     const appliesToMovieTicketType =
-        (typeof body.appliesToMovieTicketType === 'string' && (<string>body.appliesToMovieTicketType).length > 0)
-            ? <string>body.appliesToMovieTicketType
+        (typeof req.body.appliesToMovieTicketType === 'string' && (<string>req.body.appliesToMovieTicketType).length > 0)
+            ? <string>req.body.appliesToMovieTicketType
             : undefined;
 
     return {
+        project: req.project,
         typeOf: <chevre.factory.offerType>'Offer',
         priceCurrency: chevre.factory.priceCurrency.JPY,
-        id: body.id,
-        identifier: body.identifier,
-        name: body.name,
-        description: body.description,
-        alternateName: { ja: <string>body.alternateName.ja, en: '' },
+        id: req.body.id,
+        identifier: req.body.identifier,
+        name: req.body.name,
+        description: req.body.description,
+        alternateName: { ja: <string>req.body.alternateName.ja, en: '' },
         availability: availability,
         priceSpecification: {
+            project: req.project,
             typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
-            price: Number(body.price) * referenceQuantity.value,
+            price: Number(req.body.price) * referenceQuantity.value,
             priceCurrency: chevre.factory.priceCurrency.JPY,
             valueAddedTaxIncluded: true,
             referenceQuantity: referenceQuantity,
@@ -213,27 +215,27 @@ function createFromBody(body: any): chevre.factory.ticketType.ITicketType {
                 typeOf: 'Accounting',
                 operatingRevenue: <any>{
                     typeOf: 'AccountTitle',
-                    identifier: body.subject,
+                    identifier: req.body.subject,
                     name: ''
                 },
                 nonOperatingRevenue: <any>{
                     typeOf: 'AccountTitle',
-                    identifier: body.nonBoxOfficeSubject,
+                    identifier: req.body.nonBoxOfficeSubject,
                     name: ''
                 },
-                accountsReceivable: Number(body.accountsReceivable) * referenceQuantity.value
+                accountsReceivable: Number(req.body.accountsReceivable) * referenceQuantity.value
             }
         },
         additionalProperty: [
             {
                 name: 'nameForPrinting',
-                value: <string>body.nameForPrinting
+                value: <string>req.body.nameForPrinting
             }
         ],
         category: {
-            id: <chevre.factory.ticketTypeCategory>body.category
+            id: <chevre.factory.ticketTypeCategory>req.body.category
         },
-        color: <string>body.indicatorColor
+        color: <string>req.body.indicatorColor
     };
 }
 

@@ -31,7 +31,8 @@ export async function add(req: Request, res: Response): Promise<void> {
         if (validatorResult.isEmpty()) {
             // 興行区分DB登録プロセス
             try {
-                let serviceType = createFromBody({ ...req.body, id: '' });
+                req.body.id = '';
+                let serviceType = createFromBody(req);
                 const { totalCount } = await serviceTypeService.search({ identifiers: [serviceType.identifier] });
                 if (totalCount > 0) {
                     throw new Error('既に存在する興行区分コードです');
@@ -117,7 +118,8 @@ export async function update(req: Request, res: Response): Promise<void> {
     }
 
     try {
-        const serviceType = createFromBody({ ...req.body, id: req.params.id });
+        req.body.id = req.params.id;
+        const serviceType = createFromBody(req);
         await serviceTypeService.update(serviceType);
         res.status(NO_CONTENT).end();
     } catch (err) {
@@ -129,8 +131,11 @@ export async function update(req: Request, res: Response): Promise<void> {
     }
 }
 
-function createFromBody(body: any): chevre.factory.serviceType.IServiceType {
+function createFromBody(req: Request): chevre.factory.serviceType.IServiceType {
+    const body = req.body;
+
     return {
+        project: req.project,
         typeOf: <'ServiceType'>'ServiceType',
         id: <string>body.id,
         identifier: <string>body.identifier,
