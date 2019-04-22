@@ -31,13 +31,14 @@ export async function add(req: Request, res: Response): Promise<void> {
         if (validatorResult.isEmpty()) {
             // 興行区分DB登録プロセス
             try {
-                const serviceType = createFromBody(req.body);
-                const { totalCount } = await serviceTypeService.search({ ids: [serviceType.id] });
+                req.body.id = '';
+                let serviceType = createFromBody(req);
+                const { totalCount } = await serviceTypeService.search({ identifiers: [serviceType.identifier] });
                 if (totalCount > 0) {
                     throw new Error('既に存在する興行区分コードです');
                 }
 
-                await serviceTypeService.create(serviceType);
+                serviceType = await serviceTypeService.create(serviceType);
                 req.flash('message', '作成しました');
                 res.redirect('/boxOfficeTypes');
 
@@ -48,8 +49,7 @@ export async function add(req: Request, res: Response): Promise<void> {
         }
     }
     const forms = {
-        id: (_.isEmpty(req.body.id)) ? '' : req.body.id,
-        name: (_.isEmpty(req.body.name)) ? '' : req.body.name
+        ...req.body
     };
     res.render('boxOfficeType/add', {
         message: message,
@@ -70,19 +70,13 @@ export async function getList(req: Request, res: Response): Promise<void> {
         const result = await serviceTypeService.search({
             ids: [req.query.id],
             name: req.query.name,
-            ...{ // 型が未対応なので
-                sort: { _id: chevre.factory.sortType.Ascending }
-            }
+            sort: { _id: chevre.factory.sortType.Ascending }
         });
+
         res.json({
             success: true,
             count: result.totalCount,
-            results: result.data.map((t) => {
-                return {
-                    id: t.id,
-                    name: t.name
-                };
-            })
+            results: result.data
         });
     } catch (err) {
         res.json({
@@ -124,7 +118,8 @@ export async function update(req: Request, res: Response): Promise<void> {
     }
 
     try {
-        const serviceType = createFromBody({ ...req.body, id: req.params.id });
+        req.body.id = req.params.id;
+        const serviceType = createFromBody(req);
         await serviceTypeService.update(serviceType);
         res.status(NO_CONTENT).end();
     } catch (err) {
@@ -136,10 +131,14 @@ export async function update(req: Request, res: Response): Promise<void> {
     }
 }
 
-function createFromBody(body: any): chevre.factory.serviceType.IServiceType {
+function createFromBody(req: Request): chevre.factory.serviceType.IServiceType {
+    const body = req.body;
+
     return {
+        project: req.project,
         typeOf: <'ServiceType'>'ServiceType',
         id: <string>body.id,
+        identifier: <string>body.identifier,
         name: <string>body.name
     };
 }
@@ -151,8 +150,8 @@ function validateForm(req: Request, idAdd: boolean = true): void {
     let colName: string = '';
     if (idAdd) {
         colName = '興行区分コード';
-        req.checkBody('id', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-        req.checkBody('id', Message.Common.getMaxLengthHalfByte(colName, MAX_LENGTH))
+        req.checkBody('identifier', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+        req.checkBody('identifier', Message.Common.getMaxLengthHalfByte(colName, MAX_LENGTH))
             .isAlphanumeric().len({ max: MAX_LENGTH });
     }
     colName = '名称';

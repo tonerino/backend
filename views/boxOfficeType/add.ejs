@@ -17,15 +17,16 @@ Aa-18
         </div>
         <% /* 興行区分コード */ %>
         <div class="form-group ">
-            <label for="id" class="col-sm-3 control-label label-title">
+            <label for="identifier" class="col-sm-3 control-label label-title">
                 興行区分コード<font color="red">＊</font>
             </label>
             <div class="col-sm-9">
-                <input type="text" class="form-control" name="id" id="id" placeholder="" maxlength=64 value="<%= forms.id %>">
+                <input type="text" class="form-control" name="identifier" id="identifier" placeholder="" maxlength=64
+                    value="<%= forms.identifier %>">
                 <p class="message">半角64文字以内でご入力ください。</p>
                 <p class="error message text-danger">
-                    <% if (errors && errors.id) { %>
-                    <%- errors.id.msg %>
+                    <% if (errors && errors.identifier) { %>
+                    <%- errors.identifier.msg %>
                     <% } %>
                 </p>
             </div>
@@ -36,7 +37,8 @@ Aa-18
                 名称<font color="red">＊</font>
             </label>
             <div class="col-sm-9">
-                <input type="text" class="form-control" name="name" id="name" placeholder="" maxlength=64 value="<%= forms.name %>">
+                <input type="text" class="form-control" name="name" id="name" placeholder="" maxlength=64
+                    value="<%= forms.name %>">
                 <p class="message">64文字以内でご入力ください。</p>
                 <p class="error message text-danger">
                     <% if (errors && errors.name) { %>

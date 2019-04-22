@@ -42,8 +42,9 @@ export async function add(req: Request, res: Response): Promise<void> {
         if (validatorResult.isEmpty()) {
             // 券種DB登録プロセス
             try {
-                const ticketType = createFromBody(req.body);
-                await offerService.createTicketType(ticketType);
+                req.body.id = '';
+                let ticketType = createFromBody(req);
+                ticketType = await offerService.createTicketType(ticketType);
                 req.flash('message', '登録しました');
                 res.redirect(`/ticketTypes/${ticketType.id}/update`);
 
@@ -97,7 +98,8 @@ export async function update(req: Request, res: Response): Promise<void> {
         if (validatorResult.isEmpty()) {
             // 券種DB更新プロセス
             try {
-                ticketType = createFromBody(req.body);
+                req.body.id = req.params.id;
+                ticketType = createFromBody(req);
                 await offerService.updateTicketType(ticketType);
                 req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
@@ -169,39 +171,42 @@ export async function update(req: Request, res: Response): Promise<void> {
     });
 }
 
-function createFromBody(body: any): chevre.factory.ticketType.ITicketType {
+function createFromBody(req: Request): chevre.factory.ticketType.ITicketType {
     // availabilityをフォーム値によって作成
     let availability: chevre.factory.itemAvailability = chevre.factory.itemAvailability.OutOfStock;
-    if (body.isBoxTicket === '1' && body.isOnlineTicket === '1') {
+    if (req.body.isBoxTicket === '1' && req.body.isOnlineTicket === '1') {
         availability = chevre.factory.itemAvailability.InStock;
-    } else if (body.isBoxTicket === '1') {
+    } else if (req.body.isBoxTicket === '1') {
         availability = chevre.factory.itemAvailability.InStoreOnly;
-    } else if (body.isOnlineTicket === '1') {
+    } else if (req.body.isOnlineTicket === '1') {
         availability = chevre.factory.itemAvailability.OnlineOnly;
     }
 
     const referenceQuantity = {
         typeOf: <'QuantitativeValue'>'QuantitativeValue',
-        value: Number(body.seatReservationUnit),
+        value: Number(req.body.seatReservationUnit),
         unitCode: chevre.factory.unitCode.C62
     };
 
     const appliesToMovieTicketType =
-        (typeof body.appliesToMovieTicketType === 'string' && (<string>body.appliesToMovieTicketType).length > 0)
-            ? <string>body.appliesToMovieTicketType
+        (typeof req.body.appliesToMovieTicketType === 'string' && (<string>req.body.appliesToMovieTicketType).length > 0)
+            ? <string>req.body.appliesToMovieTicketType
             : undefined;
 
     return {
+        project: req.project,
         typeOf: <chevre.factory.offerType>'Offer',
         priceCurrency: chevre.factory.priceCurrency.JPY,
-        id: body.id,
-        name: body.name,
-        description: body.description,
-        alternateName: { ja: <string>body.alternateName.ja, en: '' },
+        id: req.body.id,
+        identifier: req.body.identifier,
+        name: req.body.name,
+        description: req.body.description,
+        alternateName: { ja: <string>req.body.alternateName.ja, en: '' },
         availability: availability,
         priceSpecification: {
+            project: req.project,
             typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
-            price: Number(body.price) * referenceQuantity.value,
+            price: Number(req.body.price) * referenceQuantity.value,
             priceCurrency: chevre.factory.priceCurrency.JPY,
             valueAddedTaxIncluded: true,
             referenceQuantity: referenceQuantity,
@@ -210,27 +215,27 @@ function createFromBody(body: any): chevre.factory.ticketType.ITicketType {
                 typeOf: 'Accounting',
                 operatingRevenue: <any>{
                     typeOf: 'AccountTitle',
-                    identifier: body.subject,
+                    identifier: req.body.subject,
                     name: ''
                 },
                 nonOperatingRevenue: <any>{
                     typeOf: 'AccountTitle',
-                    identifier: body.nonBoxOfficeSubject,
+                    identifier: req.body.nonBoxOfficeSubject,
                     name: ''
                 },
-                accountsReceivable: Number(body.accountsReceivable) * referenceQuantity.value
+                accountsReceivable: Number(req.body.accountsReceivable) * referenceQuantity.value
             }
         },
         additionalProperty: [
             {
                 name: 'nameForPrinting',
-                value: <string>body.nameForPrinting
+                value: <string>req.body.nameForPrinting
             }
         ],
         category: {
-            id: <chevre.factory.ticketTypeCategory>body.category
+            id: <chevre.factory.ticketTypeCategory>req.body.category
         },
-        color: <string>body.indicatorColor
+        color: <string>req.body.indicatorColor
     };
 }
 
@@ -257,21 +262,13 @@ export async function getList(req: Request, res: Response): Promise<void> {
                     results: []
                 });
             }
-            if (req.query.id !== '' && req.query.id !== undefined) {
-                if (ticketTypeIds.indexOf(req.query.id) >= 0) {
-                    ticketTypeIds.push(req.query.id);
-                }
-            }
-        } else {
-            if (req.query.id !== '' && req.query.id !== undefined) {
-                ticketTypeIds.push(req.query.id);
-            }
         }
 
         const result = await offerService.searchTicketTypes({
             limit: req.query.limit,
             page: req.query.page,
-            ids: ticketTypeIds,
+            ids: (ticketTypeIds.length > 0) ? ticketTypeIds : undefined,
+            identifier: req.query.identifier,
             name: req.query.name
         });
         res.json({
@@ -280,7 +277,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
             results: result.data.map((t) => {
                 return {
                     ...t,
-                    ticketCode: t.id
+                    ticketCode: t.identifier
                 };
             })
         });
@@ -339,8 +336,8 @@ export async function getTicketTypeGroupList(req: Request, res: Response): Promi
 function validateFormAdd(req: Request): void {
     // 券種コード
     let colName: string = '券種コード';
-    req.checkBody('id', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('id', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_CODE))
+    req.checkBody('identifier', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('identifier', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_CODE))
         .isAlphanumeric().len({ max: NAME_MAX_LENGTH_CODE });
     // サイト表示用券種名
     colName = 'サイト表示用券種名';

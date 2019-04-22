@@ -43,10 +43,12 @@ export async function add(req: Request, res: Response): Promise<void> {
         validate(req);
         const validatorResult = await req.getValidationResult();
         errors = req.validationErrors(true);
+        console.error(errors);
         if (validatorResult.isEmpty()) {
             try {
-                const ticketTypeGroup = createFromBody(req.body);
-                await offerService.createTicketTypeGroup(ticketTypeGroup);
+                req.body.id = '';
+                let ticketTypeGroup = await createFromBody(req);
+                ticketTypeGroup = await offerService.createTicketTypeGroup(ticketTypeGroup);
                 req.flash('message', '登録しました');
                 res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
 
@@ -66,7 +68,7 @@ export async function add(req: Request, res: Response): Promise<void> {
         }
     }
     const forms = {
-        id: (_.isEmpty(req.body.id)) ? '' : req.body.id,
+        ...req.body,
         name: (_.isEmpty(req.body.name)) ? {} : req.body.name,
         ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? [] : ticketTypeIds,
         description: (_.isEmpty(req.body.description)) ? {} : req.body.description,
@@ -121,7 +123,7 @@ export async function update(req: Request, res: Response): Promise<void> {
             try {
                 // 券種グループDB登録
                 req.body.id = req.params.id;
-                const ticketTypeGroup = createFromBody(req.body);
+                const ticketTypeGroup = await createFromBody(req);
                 await offerService.updateTicketTypeGroup(ticketTypeGroup);
                 req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
@@ -180,21 +182,25 @@ export async function update(req: Request, res: Response): Promise<void> {
     });
 }
 
-function createFromBody(body: any): chevre.factory.ticketType.ITicketTypeGroup {
-    const ticketTypes = (Array.isArray(body.ticketTypes)) ? <string[]>body.ticketTypes : [<string>body.ticketTypes];
+async function createFromBody(req: Request): Promise<chevre.factory.ticketType.ITicketTypeGroup> {
+    const ticketTypes = (Array.isArray(req.body.ticketTypes)) ? <string[]>req.body.ticketTypes : [<string>req.body.ticketTypes];
+
+    const serviceTypeService = new chevre.service.ServiceType({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient
+    });
+    const serviceType = await serviceTypeService.findById({ id: req.body.serviceType });
 
     return {
-        id: body.id,
-        name: body.name,
-        description: body.description,
-        alternateName: body.alternateName,
+        project: req.project,
+        id: req.body.id,
+        identifier: req.body.identifier,
+        name: req.body.name,
+        description: req.body.description,
+        alternateName: req.body.alternateName,
         ticketTypes: [...new Set(ticketTypes)], // 念のため券種IDをユニークに
         itemOffered: {
-            serviceType: {
-                typeOf: 'ServiceType',
-                id: body.serviceType,
-                name: ''
-            }
+            serviceType: serviceType
         }
     };
 }
@@ -211,7 +217,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
         const { totalCount, data } = await offerService.searchTicketTypeGroups({
             limit: req.query.limit,
             page: req.query.page,
-            id: req.query.id,
+            identifier: req.query.identifier,
             name: req.query.name
         });
         res.json({
@@ -220,7 +226,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
             results: data.map((g) => {
                 return {
                     ...g,
-                    ticketGroupCode: g.id
+                    ticketGroupCode: g.identifier
                 };
             })
         });
@@ -337,8 +343,8 @@ export async function deleteById(req: Request, res: Response): Promise<void> {
 function validate(req: Request): void {
     // 券種グループコード
     let colName: string = '券種グループコード';
-    req.checkBody('id', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('id', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_CODE });
+    req.checkBody('identifier', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('identifier', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_CODE)).len({ max: NAME_MAX_LENGTH_CODE });
     colName = 'サイト表示用券種グループ名';
     req.checkBody('name.ja', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
     req.checkBody('name.ja', Message.Common.getMaxLength(colName, NAME_MAX_LENGTH_NAME_JA)).len({ max: NAME_MAX_LENGTH_NAME_JA });

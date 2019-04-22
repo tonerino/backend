@@ -55,10 +55,18 @@ export async function add(req: Request, res: Response): Promise<void> {
         if (validatorResult.isEmpty()) {
             // 作品DB登録
             try {
-                const movie = await creativeWorkService.findMovieByIdentifier({ identifier: req.body.workPerformed.identifier });
+                const searchResult = await creativeWorkService.searchMovies({
+                    // project: { ids: [req.project.id] },
+                    identifier: req.body.workPerformed.identifier
+                });
+                const movie = searchResult.data.shift();
+                if (movie === undefined) {
+                    throw new Error(`Movie ${req.query.identifier} Not Found`);
+                }
+
                 const movieTheater = await placeService.findMovieTheaterByBranchCode({ branchCode: req.body.locationBranchCode });
                 req.body.contentRating = movie.contentRating;
-                const attributes = createEventFromBody(req.body, movie, movieTheater);
+                const attributes = createEventFromBody(req, movie, movieTheater);
                 debug('saving an event...', attributes);
                 const events = await eventService.create<chevre.factory.eventType.ScreeningEventSeries>(attributes);
                 req.flash('message', '登録しました');
@@ -132,10 +140,18 @@ export async function update(req: Request, res: Response): Promise<void> {
         if (validatorResult.isEmpty()) {
             // 作品DB登録
             try {
-                const movie = await creativeWorkService.findMovieByIdentifier({ identifier: req.body.workPerformed.identifier });
+                const searchResult = await creativeWorkService.searchMovies({
+                    // project: { ids: [req.project.id] },
+                    identifier: req.body.workPerformed.identifier
+                });
+                const movie = searchResult.data.shift();
+                if (movie === undefined) {
+                    throw new Error(`Movie ${req.query.identifier} Not Found`);
+                }
+
                 const movieTheater = await placeService.findMovieTheaterByBranchCode({ branchCode: req.body.locationBranchCode });
                 req.body.contentRating = movie.contentRating;
-                const attributes = createEventFromBody(req.body, movie, movieTheater);
+                const attributes = createEventFromBody(req, movie, movieTheater);
                 debug('saving an event...', attributes);
                 await eventService.update({
                     id: eventId,
@@ -214,9 +230,15 @@ export async function getRating(req: Request, res: Response): Promise<void> {
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const movie = await creativeWorkService.findMovieByIdentifier({
+        const searchResult = await creativeWorkService.searchMovies({
+            // project: { ids: [req.project.id] },
             identifier: req.query.identifier
         });
+        const movie = searchResult.data.shift();
+        if (movie === undefined) {
+            throw new Error(`Movie ${req.query.identifier} Not Found`);
+        }
+
         res.json({
             success: true,
             results: movie.contentRating
@@ -235,10 +257,12 @@ export async function getRating(req: Request, res: Response): Promise<void> {
  */
 // tslint:disable-next-line:max-func-body-length
 function createEventFromBody(
-    body: any,
+    req: Request,
     movie: chevre.factory.creativeWork.movie.ICreativeWork,
     movieTheater: chevre.factory.place.movieTheater.IPlace
 ): chevre.factory.event.screeningEventSeries.IAttributes {
+    const body = req.body;
+
     const videoFormat = (Array.isArray(body.videoFormatType)) ? body.videoFormatType.map((f: string) => {
         return { typeOf: f, name: f };
     }) : [];
@@ -282,6 +306,7 @@ function createEventFromBody(
     }
 
     return {
+        project: req.project,
         typeOf: chevre.factory.eventType.ScreeningEventSeries,
         name: {
             ja: body.nameJa,
@@ -290,6 +315,7 @@ function createEventFromBody(
         },
         kanaName: body.kanaName,
         location: {
+            project: req.project,
             id: movieTheater.id,
             typeOf: <chevre.factory.placeType.MovieTheater>movieTheater.typeOf,
             branchCode: movieTheater.branchCode,

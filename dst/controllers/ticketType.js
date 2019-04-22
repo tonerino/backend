@@ -50,8 +50,9 @@ function add(req, res) {
             if (validatorResult.isEmpty()) {
                 // 券種DB登録プロセス
                 try {
-                    const ticketType = createFromBody(req.body);
-                    yield offerService.createTicketType(ticketType);
+                    req.body.id = '';
+                    let ticketType = createFromBody(req);
+                    ticketType = yield offerService.createTicketType(ticketType);
                     req.flash('message', '登録しました');
                     res.redirect(`/ticketTypes/${ticketType.id}/update`);
                     return;
@@ -98,7 +99,8 @@ function update(req, res) {
             if (validatorResult.isEmpty()) {
                 // 券種DB更新プロセス
                 try {
-                    ticketType = createFromBody(req.body);
+                    req.body.id = req.params.id;
+                    ticketType = createFromBody(req);
                     yield offerService.updateTicketType(ticketType);
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
@@ -153,37 +155,40 @@ function update(req, res) {
     });
 }
 exports.update = update;
-function createFromBody(body) {
+function createFromBody(req) {
     // availabilityをフォーム値によって作成
     let availability = chevre.factory.itemAvailability.OutOfStock;
-    if (body.isBoxTicket === '1' && body.isOnlineTicket === '1') {
+    if (req.body.isBoxTicket === '1' && req.body.isOnlineTicket === '1') {
         availability = chevre.factory.itemAvailability.InStock;
     }
-    else if (body.isBoxTicket === '1') {
+    else if (req.body.isBoxTicket === '1') {
         availability = chevre.factory.itemAvailability.InStoreOnly;
     }
-    else if (body.isOnlineTicket === '1') {
+    else if (req.body.isOnlineTicket === '1') {
         availability = chevre.factory.itemAvailability.OnlineOnly;
     }
     const referenceQuantity = {
         typeOf: 'QuantitativeValue',
-        value: Number(body.seatReservationUnit),
+        value: Number(req.body.seatReservationUnit),
         unitCode: chevre.factory.unitCode.C62
     };
-    const appliesToMovieTicketType = (typeof body.appliesToMovieTicketType === 'string' && body.appliesToMovieTicketType.length > 0)
-        ? body.appliesToMovieTicketType
+    const appliesToMovieTicketType = (typeof req.body.appliesToMovieTicketType === 'string' && req.body.appliesToMovieTicketType.length > 0)
+        ? req.body.appliesToMovieTicketType
         : undefined;
     return {
+        project: req.project,
         typeOf: 'Offer',
         priceCurrency: chevre.factory.priceCurrency.JPY,
-        id: body.id,
-        name: body.name,
-        description: body.description,
-        alternateName: { ja: body.alternateName.ja, en: '' },
+        id: req.body.id,
+        identifier: req.body.identifier,
+        name: req.body.name,
+        description: req.body.description,
+        alternateName: { ja: req.body.alternateName.ja, en: '' },
         availability: availability,
         priceSpecification: {
+            project: req.project,
             typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
-            price: Number(body.price) * referenceQuantity.value,
+            price: Number(req.body.price) * referenceQuantity.value,
             priceCurrency: chevre.factory.priceCurrency.JPY,
             valueAddedTaxIncluded: true,
             referenceQuantity: referenceQuantity,
@@ -192,27 +197,27 @@ function createFromBody(body) {
                 typeOf: 'Accounting',
                 operatingRevenue: {
                     typeOf: 'AccountTitle',
-                    identifier: body.subject,
+                    identifier: req.body.subject,
                     name: ''
                 },
                 nonOperatingRevenue: {
                     typeOf: 'AccountTitle',
-                    identifier: body.nonBoxOfficeSubject,
+                    identifier: req.body.nonBoxOfficeSubject,
                     name: ''
                 },
-                accountsReceivable: Number(body.accountsReceivable) * referenceQuantity.value
+                accountsReceivable: Number(req.body.accountsReceivable) * referenceQuantity.value
             }
         },
         additionalProperty: [
             {
                 name: 'nameForPrinting',
-                value: body.nameForPrinting
+                value: req.body.nameForPrinting
             }
         ],
         category: {
-            id: body.category
+            id: req.body.category
         },
-        color: body.indicatorColor
+        color: req.body.indicatorColor
     };
 }
 /**
@@ -240,28 +245,19 @@ function getList(req, res) {
                         results: []
                     });
                 }
-                if (req.query.id !== '' && req.query.id !== undefined) {
-                    if (ticketTypeIds.indexOf(req.query.id) >= 0) {
-                        ticketTypeIds.push(req.query.id);
-                    }
-                }
-            }
-            else {
-                if (req.query.id !== '' && req.query.id !== undefined) {
-                    ticketTypeIds.push(req.query.id);
-                }
             }
             const result = yield offerService.searchTicketTypes({
                 limit: req.query.limit,
                 page: req.query.page,
-                ids: ticketTypeIds,
+                ids: (ticketTypeIds.length > 0) ? ticketTypeIds : undefined,
+                identifier: req.query.identifier,
                 name: req.query.name
             });
             res.json({
                 success: true,
                 count: result.totalCount,
                 results: result.data.map((t) => {
-                    return Object.assign({}, t, { ticketCode: t.id });
+                    return Object.assign({}, t, { ticketCode: t.identifier });
                 })
             });
         }
@@ -329,8 +325,8 @@ exports.getTicketTypeGroupList = getTicketTypeGroupList;
 function validateFormAdd(req) {
     // 券種コード
     let colName = '券種コード';
-    req.checkBody('id', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('id', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_CODE))
+    req.checkBody('identifier', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('identifier', Message.Common.getMaxLengthHalfByte(colName, NAME_MAX_LENGTH_CODE))
         .isAlphanumeric().len({ max: NAME_MAX_LENGTH_CODE });
     // サイト表示用券種名
     colName = 'サイト表示用券種名';

@@ -17,17 +17,18 @@ Aa-7
         </div>
 
         <div class="form-group ">
-            <label for="id" class="col-sm-3 control-label label-title">
+            <label for="identifier" class="col-sm-3 control-label label-title">
                 券種グループコード<font color="red">＊</font>
             </label>
             <div class="col-sm-9">
-                <input type="text" class="form-control" name="id" id="id" placeholder="" maxlength=64 value="<%= forms.id %>">
+                <input type="text" class="form-control" name="identifier" id="identifier" placeholder="" maxlength=64
+                    value="<%= forms.identifier %>">
                 <p class="message">
                     半角64文字以内でご入力ください。
                 </p>
                 <p class="error message text-danger">
-                    <% if (errors && errors.id) { %>
-                    <%- errors.id.msg %>
+                    <% if (errors && errors.identifier) { %>
+                    <%- errors.identifier.msg %>
                     <% } %>
                 </p>
             </div>

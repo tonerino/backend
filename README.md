@@ -30,6 +30,7 @@
 | `CHEVRE_CLIENT_SECRET`           | true     |                  |                              |
 | `POS_CLIENT_ID`                  | true     |                  | POSアプリクライアントID      |
 | `FRONTEND_CLIENT_ID`             | true     |                  | FrontendアプリクライアントID |
+| `PROJECT_ID`                     | true     |                  | Project ID                   |
 
 ## License
 

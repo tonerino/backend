@@ -162,8 +162,8 @@ export async function regist(req: Request, res: Response): Promise<void> {
         }
 
         debug('saving screening event...', req.body);
-        const attributes = await createMultipleEventFromBody(req.body, req.user);
-        await eventService.createMultipleScreeningEvent(attributes);
+        const attributes = await createMultipleEventFromBody(req, req.user);
+        await eventService.create(attributes);
         res.json({
             validation: null,
             error: null
@@ -202,7 +202,7 @@ export async function update(req: Request, res: Response): Promise<void> {
             return;
         }
         debug('saving screening event...', req.body);
-        const attributes = await createEventFromBody(req.body, req.user);
+        const attributes = await createEventFromBody(req);
         await eventService.update({
             id: req.params.eventId,
             attributes: attributes
@@ -257,7 +257,10 @@ export async function cancelPerformance(req: Request, res: Response): Promise<vo
  * リクエストボディからイベントオブジェクトを作成する
  */
 // tslint:disable-next-line:max-func-body-length
-async function createEventFromBody(body: any, user: User): Promise<chevre.factory.event.screeningEvent.IAttributes> {
+async function createEventFromBody(req: Request): Promise<chevre.factory.event.screeningEvent.IAttributes> {
+    const body = req.body;
+    const user = req.user;
+
     const eventService = new chevre.service.Event({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
@@ -338,8 +341,10 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
         },
         itemOffered: {
             serviceType: {
+                project: req.project,
                 typeOf: 'ServiceType',
                 id: serviceType.id,
+                identifier: serviceType.identifier,
                 name: serviceType.name
             }
         },
@@ -349,12 +354,14 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
     };
 
     return {
+        project: req.project,
         typeOf: chevre.factory.eventType.ScreeningEvent,
         doorTime: moment(`${body.day}T${body.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
         startDate: startDate,
         endDate: moment(`${body.day}T${body.endTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
         workPerformed: screeningEventSeries.workPerformed,
         location: {
+            project: req.project,
             typeOf: <chevre.factory.placeType.ScreeningRoom>screeningRoom.typeOf,
             branchCode: <string>screeningRoom.branchCode,
             name: screeningRoom.name,
@@ -373,7 +380,9 @@ async function createEventFromBody(body: any, user: User): Promise<chevre.factor
  * リクエストボディからイベントオブジェクトを作成する
  */
 // tslint:disable-next-line:max-func-body-length
-async function createMultipleEventFromBody(body: any, user: User): Promise<chevre.factory.event.screeningEvent.IAttributes[]> {
+async function createMultipleEventFromBody(req: Request, user: User): Promise<chevre.factory.event.screeningEvent.IAttributes[]> {
+    const body = req.body;
+
     const eventService = new chevre.service.Event({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
@@ -414,7 +423,7 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
     const ticketTypeGroups = searchTicketTypeGroupsResult.data;
 
     const searchBoxOfficeTypeGroupsResult = await serviceTypeService.search({ limit: 100 });
-    const boxOfficeTypes = searchBoxOfficeTypeGroupsResult.data;
+    const serviceTypes = searchBoxOfficeTypeGroupsResult.data;
 
     const attributes: chevre.factory.event.screeningEvent.IAttributes[] = [];
     for (let date = startDate; date <= toDate; date = date.add(1, 'day')) {
@@ -448,9 +457,9 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                 if (ticketTypeGroup === undefined) {
                     throw new Error('Ticket Type Group');
                 }
-                const boxOfficeType = boxOfficeTypes.find((t) => t.id === ticketTypeGroup.itemOffered.serviceType.id);
-                if (boxOfficeType === undefined) {
-                    throw new Error('Box Office Type');
+                const serviceType = serviceTypes.find((t) => t.id === ticketTypeGroup.itemOffered.serviceType.id);
+                if (serviceType === undefined) {
+                    throw new Error('Service Type Not Found');
                 }
 
                 const offers: chevre.factory.event.screeningEvent.IOffer = {
@@ -467,11 +476,7 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                         value: 1
                     },
                     itemOffered: {
-                        serviceType: {
-                            typeOf: 'ServiceType',
-                            id: boxOfficeType.id,
-                            name: boxOfficeType.name
-                        }
+                        serviceType: serviceType
                     },
                     validFrom: salesStartDate,
                     validThrough: salesEndDate,
@@ -479,12 +484,14 @@ async function createMultipleEventFromBody(body: any, user: User): Promise<chevr
                 };
 
                 attributes.push({
+                    project: req.project,
                     typeOf: chevre.factory.eventType.ScreeningEvent,
                     doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
                     startDate: eventStartDate,
                     endDate: moment(`${formattedDate}T${data.endTime}+09:00`, 'YYYYMMDDTHHmmZ').toDate(),
                     workPerformed: screeningEventSeries.workPerformed,
                     location: {
+                        project: req.project,
                         typeOf: <chevre.factory.placeType.ScreeningRoom>screeningRoom.typeOf,
                         branchCode: <string>screeningRoom.branchCode,
                         name: screeningRoom.name === undefined ? { en: '', ja: '', kr: '' } : screeningRoom.name,

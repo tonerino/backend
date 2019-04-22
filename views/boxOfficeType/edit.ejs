@@ -1,36 +1,39 @@
 <div class="modal fade" id="editModal" tabindex="-1">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal"><span>×</span></button>
-				<h4 class="modal-title">興行区分編集</h4>
-			</div>
-			<div class="modal-body">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span>×</span></button>
+                <h4 class="modal-title">興行区分編集</h4>
+            </div>
+            <div class="modal-body">
                 <div class="panel-body">
                     <form class="form-horizontal">
+                        <input type="hidden" name="id">
                         <div class="form-group ">
-                            <label for="id" class="col-sm-3 control-label label-title">
+                            <label for="identifier" class="col-sm-3 control-label label-title">
                                 興行区分コード
                             </label>
                             <div class="col-sm-9">
-                                <input type="text" class="form-control" name="id" id="id" placeholder="" maxlength=64 readonly>
+                                <input type="text" class="form-control" name="identifier" id="identifier" placeholder=""
+                                    maxlength=64 readonly>
                             </div>
                         </div>
                         <div class="form-group ">
                             <label for="name" class="col-sm-3 control-label label-title">
-                            名称
+                                名称
                             </label>
                             <div class="col-sm-9">
-                                <input type="text" class="form-control" name="name" id="name" placeholder="" maxlength=64>
+                                <input type="text" class="form-control" name="name" id="name" placeholder=""
+                                    maxlength=64>
                             </div>
                         </div>
                     </form>
                 </div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
                 <button type="button" class="btn btn-primary update-button">興行区分を更新</button>
-			</div>
-		</div>
-	</div>
+            </div>
+        </div>
+    </div>
 </div>

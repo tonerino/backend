@@ -33,7 +33,8 @@ export async function add(req: Request, res: Response): Promise<void> {
         errors = req.validationErrors(true);
         if (validatorResult.isEmpty()) {
             try {
-                const movie = createMovieFromBody(req.body);
+                req.body.id = '';
+                let movie = createMovieFromBody(req);
                 const creativeWorkService = new chevre.service.CreativeWork({
                     endpoint: <string>process.env.API_ENDPOINT,
                     auth: req.user.authClient
@@ -45,9 +46,9 @@ export async function add(req: Request, res: Response): Promise<void> {
                 }
 
                 debug('saving an movie...', movie);
-                await creativeWorkService.createMovie(movie);
+                movie = await creativeWorkService.createMovie(movie);
                 req.flash('message', '登録しました');
-                res.redirect(`/creativeWorks/movie/${movie.identifier}/update`);
+                res.redirect(`/creativeWorks/movie/${movie.id}/update`);
 
                 return;
             } catch (error) {
@@ -82,8 +83,8 @@ export async function update(req: Request, res: Response, next: NextFunction): P
         let message = '';
         let errors: any = {};
 
-        let movie = await creativeWorkService.findMovieByIdentifier({
-            identifier: req.params.identifier
+        let movie = await creativeWorkService.findMovieById({
+            id: req.params.id
         });
 
         if (req.method === 'POST') {
@@ -94,7 +95,8 @@ export async function update(req: Request, res: Response, next: NextFunction): P
             if (validatorResult.isEmpty()) {
                 // 作品DB登録
                 try {
-                    movie = createMovieFromBody(req.body);
+                    req.body.id = req.params.id;
+                    movie = createMovieFromBody(req);
                     debug('saving an movie...', movie);
                     await creativeWorkService.updateMovie(movie);
                     req.flash('message', '更新しました');
@@ -142,8 +144,12 @@ export async function update(req: Request, res: Response, next: NextFunction): P
         next(error);
     }
 }
-function createMovieFromBody(body: any): chevre.factory.creativeWork.movie.ICreativeWork {
+function createMovieFromBody(req: Request): chevre.factory.creativeWork.movie.ICreativeWork {
+    const body = req.body;
+
     const movie: chevre.factory.creativeWork.movie.ICreativeWork = {
+        id: body.id,
+        project: req.project,
         typeOf: chevre.factory.creativeWorkType.Movie,
         identifier: body.identifier,
         name: body.name,

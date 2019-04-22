@@ -61,10 +61,17 @@ function add(req, res) {
             if (validatorResult.isEmpty()) {
                 // 作品DB登録
                 try {
-                    const movie = yield creativeWorkService.findMovieByIdentifier({ identifier: req.body.workPerformed.identifier });
+                    const searchResult = yield creativeWorkService.searchMovies({
+                        // project: { ids: [req.project.id] },
+                        identifier: req.body.workPerformed.identifier
+                    });
+                    const movie = searchResult.data.shift();
+                    if (movie === undefined) {
+                        throw new Error(`Movie ${req.query.identifier} Not Found`);
+                    }
                     const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: req.body.locationBranchCode });
                     req.body.contentRating = movie.contentRating;
-                    const attributes = createEventFromBody(req.body, movie, movieTheater);
+                    const attributes = createEventFromBody(req, movie, movieTheater);
                     debug('saving an event...', attributes);
                     const events = yield eventService.create(attributes);
                     req.flash('message', '登録しました');
@@ -134,10 +141,17 @@ function update(req, res) {
             if (validatorResult.isEmpty()) {
                 // 作品DB登録
                 try {
-                    const movie = yield creativeWorkService.findMovieByIdentifier({ identifier: req.body.workPerformed.identifier });
+                    const searchResult = yield creativeWorkService.searchMovies({
+                        // project: { ids: [req.project.id] },
+                        identifier: req.body.workPerformed.identifier
+                    });
+                    const movie = searchResult.data.shift();
+                    if (movie === undefined) {
+                        throw new Error(`Movie ${req.query.identifier} Not Found`);
+                    }
                     const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: req.body.locationBranchCode });
                     req.body.contentRating = movie.contentRating;
-                    const attributes = createEventFromBody(req.body, movie, movieTheater);
+                    const attributes = createEventFromBody(req, movie, movieTheater);
                     debug('saving an event...', attributes);
                     yield eventService.update({
                         id: eventId,
@@ -200,9 +214,14 @@ function getRating(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const movie = yield creativeWorkService.findMovieByIdentifier({
+            const searchResult = yield creativeWorkService.searchMovies({
+                // project: { ids: [req.project.id] },
                 identifier: req.query.identifier
             });
+            const movie = searchResult.data.shift();
+            if (movie === undefined) {
+                throw new Error(`Movie ${req.query.identifier} Not Found`);
+            }
             res.json({
                 success: true,
                 results: movie.contentRating
@@ -222,7 +241,8 @@ exports.getRating = getRating;
  * リクエストボディからイベントオブジェクトを作成する
  */
 // tslint:disable-next-line:max-func-body-length
-function createEventFromBody(body, movie, movieTheater) {
+function createEventFromBody(req, movie, movieTheater) {
+    const body = req.body;
     const videoFormat = (Array.isArray(body.videoFormatType)) ? body.videoFormatType.map((f) => {
         return { typeOf: f, name: f };
     }) : [];
@@ -258,6 +278,7 @@ function createEventFromBody(body, movie, movieTheater) {
         throw new Error('作品の上映時間が未登録です');
     }
     return {
+        project: req.project,
         typeOf: chevre.factory.eventType.ScreeningEventSeries,
         name: {
             ja: body.nameJa,
@@ -266,6 +287,7 @@ function createEventFromBody(body, movie, movieTheater) {
         },
         kanaName: body.kanaName,
         location: {
+            project: req.project,
             id: movieTheater.id,
             typeOf: movieTheater.typeOf,
             branchCode: movieTheater.branchCode,
