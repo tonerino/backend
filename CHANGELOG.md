@@ -18,6 +18,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.1.0 - 2019-04-22
+
+### Added
+
+- cognitoGroupsによる権限分け機能追加
+
+### Changed
+
+- 興行区分、券種、券種グループのidentifier属性に対応
+- 全リソースにプロジェクトを結合
+
 ## v1.0.2 - 2019-04-12
 
 ### Changed
