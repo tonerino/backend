@@ -9,5 +9,5 @@ const movieRouter = express_1.Router();
 movieRouter.all('/add', MovieController.add);
 movieRouter.all('', MovieController.index);
 movieRouter.all('/getlist', MovieController.getList);
-movieRouter.all('/:identifier/update', MovieController.update);
+movieRouter.all('/:id/update', MovieController.update);
 exports.default = movieRouter;

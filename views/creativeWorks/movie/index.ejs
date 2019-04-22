@@ -37,11 +37,11 @@ Aa-10
                 公開日（From - To）
             </label>
             <div class="col-sm-9">
-                <input class="form-control datepicker" style="width:30%;display:inline-block;" placeholder="" maxlength=10
-                    name="datePublishedFrom" id="datePublishedFrom" value="" />
+                <input class="form-control datepicker" style="width:30%;display:inline-block;" placeholder=""
+                    maxlength=10 name="datePublishedFrom" id="datePublishedFrom" value="" />
                 ～
-                <input class="form-control datepicker" style="width:30%;display:inline-block;" placeholder="" maxlength=10
-                    name="datePublishedThrough" id="datePublishedThrough" value="" />
+                <input class="form-control datepicker" style="width:30%;display:inline-block;" placeholder=""
+                    maxlength=10 name="datePublishedThrough" id="datePublishedThrough" value="" />
             </div>
         </div>
         <div class="form-group">
@@ -72,7 +72,7 @@ Aa-10
                 </tr>
             </thead>
             <tbody>
-                <tr id="templateRow" identifier="$identifier$">
+                <tr id="templateRow" identifier="$id$">
                     <td name="identifier">$identifier$</td>
                     <td name="name__headline">
                         $name$<br>$headline$
@@ -80,9 +80,9 @@ Aa-10
                     <td name="duration" class="text-right">$duration$</td>
                     <td name="contentRating" class="text-left">$contentRating$</td>
                     <% if (user.cognitoGroups.movieTheaters === undefined || user.cognitoGroups.movieTheaters.length === 0) { %>
-                    <td name="edit" class="center">
+                    <td name="edit__id" class="center">
                         <div class="btn-area">
-                            <a class="btn btn-list edit" data-toggle="modal" data-target="#myModal">
+                            <a class="btn btn-list edit" data-toggle="modal" data-target="#myModal" data-id="$id$">
                                 <span>編集</span>
                             </a>
                         </div>

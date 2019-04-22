@@ -61,7 +61,14 @@ function add(req, res) {
             if (validatorResult.isEmpty()) {
                 // 作品DB登録
                 try {
-                    const movie = yield creativeWorkService.findMovieByIdentifier({ identifier: req.body.workPerformed.identifier });
+                    const searchResult = yield creativeWorkService.searchMovies({
+                        // project: { ids: [req.project.id] },
+                        identifier: req.body.workPerformed.identifier
+                    });
+                    const movie = searchResult.data.shift();
+                    if (movie === undefined) {
+                        throw new Error(`Movie ${req.query.identifier} Not Found`);
+                    }
                     const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: req.body.locationBranchCode });
                     req.body.contentRating = movie.contentRating;
                     const attributes = createEventFromBody(req, movie, movieTheater);
@@ -134,7 +141,14 @@ function update(req, res) {
             if (validatorResult.isEmpty()) {
                 // 作品DB登録
                 try {
-                    const movie = yield creativeWorkService.findMovieByIdentifier({ identifier: req.body.workPerformed.identifier });
+                    const searchResult = yield creativeWorkService.searchMovies({
+                        // project: { ids: [req.project.id] },
+                        identifier: req.body.workPerformed.identifier
+                    });
+                    const movie = searchResult.data.shift();
+                    if (movie === undefined) {
+                        throw new Error(`Movie ${req.query.identifier} Not Found`);
+                    }
                     const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: req.body.locationBranchCode });
                     req.body.contentRating = movie.contentRating;
                     const attributes = createEventFromBody(req, movie, movieTheater);
@@ -200,9 +214,14 @@ function getRating(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const movie = yield creativeWorkService.findMovieByIdentifier({
+            const searchResult = yield creativeWorkService.searchMovies({
+                // project: { ids: [req.project.id] },
                 identifier: req.query.identifier
             });
+            const movie = searchResult.data.shift();
+            if (movie === undefined) {
+                throw new Error(`Movie ${req.query.identifier} Not Found`);
+            }
             res.json({
                 success: true,
                 results: movie.contentRating

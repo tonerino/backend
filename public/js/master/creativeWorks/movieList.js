@@ -28,10 +28,8 @@ $(function () {
 
     // 編集ボタンイベント
     $(document).on('click', 'a.edit', function () {
-        // イベント識別子取得&url編集
-        console.log($('td[name="identifier"]', $(this).closest('tr')));
-        var identifier = $('td[name="identifier"]', $(this).closest('tr')).html();
-        var url = '/creativeWorks/movie/' + identifier + '/update';
+        var id = $(this).attr('data-id');
+        var url = '/creativeWorks/movie/' + id + '/update';
         window.location.href = url;
     });
 
