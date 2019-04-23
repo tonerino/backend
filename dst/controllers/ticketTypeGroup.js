@@ -89,7 +89,10 @@ function add(req, res) {
             });
             ticketTypes = searchTicketTypesResult.data;
         }
-        const searchServiceTypesResult = yield serviceTypeService.search({ limit: 100 });
+        const searchServiceTypesResult = yield serviceTypeService.search({
+            limit: 100,
+            project: { ids: [req.project.id] }
+        });
         res.render('ticketTypeGroup/add', {
             message: message,
             errors: errors,
@@ -113,7 +116,10 @@ function update(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const searchServiceTypesResult = yield serviceTypeService.search({ limit: 100 });
+        const searchServiceTypesResult = yield serviceTypeService.search({
+            limit: 100,
+            project: { ids: [req.project.id] }
+        });
         let message = '';
         let errors = {};
         if (req.method === 'POST') {
@@ -148,6 +154,7 @@ function update(req, res) {
                 // sort: {
                 //     'priceSpecification.price': chevre.factory.sortType.Descending
                 // },
+                project: { ids: [req.project.id] },
                 ids: forms.ticketTypes
             });
             ticketTypes = searchTicketTypesResult.data;
@@ -211,6 +218,7 @@ function getList(req, res) {
             const { totalCount, data } = yield offerService.searchTicketTypeGroups({
                 limit: req.query.limit,
                 page: req.query.page,
+                project: { ids: [req.project.id] },
                 identifier: req.query.identifier,
                 name: req.query.name
             });
@@ -246,6 +254,7 @@ function getTicketTypeList(req, res) {
             const ticketGroup = yield offerService.findTicketTypeGroupById({ id: req.query.id });
             const searchTicketTypesResult = yield offerService.searchTicketTypes({
                 limit: 100,
+                project: { ids: [req.project.id] },
                 ids: ticketGroup.ticketTypes
             });
             res.json({
@@ -279,6 +288,7 @@ function getTicketTypePriceList(req, res) {
                 sort: {
                     'priceSpecification.price': chevre.factory.sortType.Descending
                 },
+                project: { ids: [req.project.id] },
                 priceSpecification: {
                     // 売上金額で検索
                     accounting: {
@@ -321,6 +331,7 @@ function deleteById(req, res) {
             const searchEventsResult = yield eventService.search({
                 limit: 1,
                 typeOf: chevre.factory.eventType.ScreeningEvent,
+                project: { ids: [req.project.id] },
                 offers: {
                     ids: [ticketTypeGroupId]
                 },

@@ -21,7 +21,9 @@ timeMeterRouter.get('', (req, res, next) => __awaiter(this, void 0, void 0, func
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({});
+        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
+            project: { ids: [req.project.id] }
+        });
         if (searchMovieTheatersResult.totalCount === 0) {
             throw new Error('劇場が見つかりません');
         }
@@ -44,6 +46,7 @@ timeMeterRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, fun
             typeOf: chevre.factory.eventType.ScreeningEvent,
             limit: req.query.limit,
             page: req.query.page,
+            project: { ids: [req.project.id] },
             startFrom: (req.query.startFrom !== '')
                 ? moment(`${String(req.query.startFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate()
                 : undefined,

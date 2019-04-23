@@ -28,6 +28,7 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, 
         const { totalCount, data } = yield placeService.searchMovieTheaters({
             limit: req.query.limit,
             page: req.query.page,
+            project: { ids: [req.project.id] },
             name: req.query.name
         });
         const results = data.map((movieTheater) => {
@@ -64,14 +65,20 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, 
 }));
 movieTheaterRouter.get('/getScreenListByTheaterBranchCode', (req, res) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const branchCode = req.query.branchCode;
         const placeService = new chevre.service.Place({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const branchCode = req.query.branchCode;
-        const place = yield placeService.findMovieTheaterByBranchCode({
-            branchCode
+        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
+            project: { ids: [req.project.id] },
+            branchCodes: [branchCode]
         });
+        const movieTheaterWithoutScreeningRoom = searchMovieTheatersResult.data.shift();
+        if (movieTheaterWithoutScreeningRoom === undefined) {
+            throw new Error(`Movie Theater ${branchCode} Not Found`);
+        }
+        const place = yield placeService.findMovieTheaterById({ id: movieTheaterWithoutScreeningRoom.id });
         const results = place.containsPlace.map((screen) => ({
             branchCode: screen.branchCode,
             name: screen.name !== undefined ? screen.name.ja : ''

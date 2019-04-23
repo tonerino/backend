@@ -191,6 +191,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
         const result = await creativeWorkService.searchMovies({
             limit: req.query.limit,
             page: req.query.page,
+            project: { ids: [req.project.id] },
             identifier: req.query.identifier,
             name: req.query.name,
             datePublishedFrom: (!_.isEmpty(req.query.datePublishedFrom)) ?

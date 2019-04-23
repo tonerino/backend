@@ -35,16 +35,22 @@ export async function add(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
+
     const searchMoviesResult = await creativeWorkService.searchMovies({
         sort: {
             datePublished: chevre.factory.sortType.Descending
         },
+        project: { ids: [req.project.id] },
         offers: {
             availableFrom: new Date()
         }
     });
     const movies = searchMoviesResult.data;
-    const searchMovieTheatersResult = await placeService.searchMovieTheaters({});
+
+    const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+        project: { ids: [req.project.id] }
+    });
+
     let message = '';
     let errors: any = {};
     if (req.method === 'POST') {
@@ -56,7 +62,7 @@ export async function add(req: Request, res: Response): Promise<void> {
             // 作品DB登録
             try {
                 const searchResult = await creativeWorkService.searchMovies({
-                    // project: { ids: [req.project.id] },
+                    project: { ids: [req.project.id] },
                     identifier: req.body.workPerformed.identifier
                 });
                 const movie = searchResult.data.shift();
@@ -64,7 +70,7 @@ export async function add(req: Request, res: Response): Promise<void> {
                     throw new Error(`Movie ${req.query.identifier} Not Found`);
                 }
 
-                const movieTheater = await placeService.findMovieTheaterByBranchCode({ branchCode: req.body.locationBranchCode });
+                const movieTheater = await placeService.findMovieTheaterById({ id: req.body.locationId });
                 req.body.contentRating = movie.contentRating;
                 const attributes = createEventFromBody(req, movie, movieTheater);
                 debug('saving an event...', attributes);
@@ -116,15 +122,21 @@ export async function update(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
+
     const searchMoviesResult = await creativeWorkService.searchMovies({
         sort: {
             datePublished: chevre.factory.sortType.Descending
         },
+        project: { ids: [req.project.id] },
         offers: {
             availableFrom: new Date()
         }
     });
-    const searchMovieTheatersResult = await placeService.searchMovieTheaters({});
+
+    const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+        project: { ids: [req.project.id] }
+    });
+
     let message = '';
     let errors: any = {};
     const eventId = req.params.eventId;
@@ -141,7 +153,7 @@ export async function update(req: Request, res: Response): Promise<void> {
             // 作品DB登録
             try {
                 const searchResult = await creativeWorkService.searchMovies({
-                    // project: { ids: [req.project.id] },
+                    project: { ids: [req.project.id] },
                     identifier: req.body.workPerformed.identifier
                 });
                 const movie = searchResult.data.shift();
@@ -149,7 +161,7 @@ export async function update(req: Request, res: Response): Promise<void> {
                     throw new Error(`Movie ${req.query.identifier} Not Found`);
                 }
 
-                const movieTheater = await placeService.findMovieTheaterByBranchCode({ branchCode: req.body.locationBranchCode });
+                const movieTheater = await placeService.findMovieTheaterById({ id: req.body.locationId });
                 req.body.contentRating = movie.contentRating;
                 const attributes = createEventFromBody(req, movie, movieTheater);
                 debug('saving an event...', attributes);
@@ -198,7 +210,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         nameJa: (_.isEmpty(req.body.nameJa)) ? event.name.ja : req.body.nameJa,
         nameEn: (_.isEmpty(req.body.nameEn)) ? event.name.en : req.body.nameEn,
         duration: (_.isEmpty(req.body.duration)) ? moment.duration(event.duration).asMinutes() : req.body.duration,
-        locationBranchCode: event.location.branchCode,
+        locationId: event.location.id,
         translationType: translationType,
         videoFormatType: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf) : [],
         startDate: (_.isEmpty(req.body.startDate)) ?
@@ -231,7 +243,7 @@ export async function getRating(req: Request, res: Response): Promise<void> {
             auth: req.user.authClient
         });
         const searchResult = await creativeWorkService.searchMovies({
-            // project: { ids: [req.project.id] },
+            project: { ids: [req.project.id] },
             identifier: req.query.identifier
         });
         const movie = searchResult.data.shift();
@@ -381,6 +393,7 @@ export async function search(req: Request, res: Response): Promise<void> {
         }
         // 上映終了して「いない」劇場上映作品を検索
         const { totalCount, data } = await eventService.search({
+            project: { ids: [req.project.id] },
             typeOf: chevre.factory.eventType.ScreeningEventSeries,
             inSessionFrom: (fromDate !== undefined) ? moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : new Date(),
             inSessionThrough: (toDate !== undefined) ? moment(`${toDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : undefined,
@@ -450,6 +463,7 @@ export async function searchScreeningEvents(req: Request, res: Response) {
         });
         const searchScreeningEventsResult = await eventService.search({
             ...req.query,
+            project: { ids: [req.project.id] },
             typeOf: chevre.factory.eventType.ScreeningEvent,
             superEvent: { ids: [req.params.eventId] }
         });
@@ -470,6 +484,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
         const { totalCount, data } = await eventService.search({
             limit: req.query.limit,
             page: req.query.page,
+            project: { ids: [req.project.id] },
             typeOf: chevre.factory.eventType.ScreeningEventSeries,
             name: req.query.name,
             endFrom: (req.query.containsEnded === '1') ? undefined : new Date(),
@@ -519,7 +534,10 @@ export async function index(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const searchMovieTheatersResult = await placeService.searchMovieTheaters({});
+    const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+        project: { ids: [req.project.id] }
+    });
+
     res.render('events/screeningEventSeries/index', {
         movieTheaters: searchMovieTheatersResult.data
     });

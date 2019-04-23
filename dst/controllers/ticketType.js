@@ -249,6 +249,7 @@ function getList(req, res) {
             const result = yield offerService.searchTicketTypes({
                 limit: req.query.limit,
                 page: req.query.page,
+                project: { ids: [req.project.id] },
                 ids: (ticketTypeIds.length > 0) ? ticketTypeIds : undefined,
                 identifier: req.query.identifier,
                 name: req.query.name
@@ -280,7 +281,9 @@ function index(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const ticketTypeGroupsList = yield offerService.searchTicketTypeGroups({});
+        const ticketTypeGroupsList = yield offerService.searchTicketTypeGroups({
+            project: { ids: [req.project.id] }
+        });
         // 券種マスタ画面遷移
         res.render('ticketType/index', {
             message: '',
@@ -301,6 +304,7 @@ function getTicketTypeGroupList(req, res) {
             });
             const { totalCount, data } = yield offerService.searchTicketTypeGroups({
                 limit: 100,
+                project: { ids: [req.project.id] },
                 ticketTypes: [req.params.ticketTypeId]
             });
             res.json({

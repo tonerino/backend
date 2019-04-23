@@ -21,7 +21,9 @@ ordersRouter.get('', async (req, res, next) => {
     });
 
     try {
-        const searchMovieTheatersResult = await placeService.searchMovieTheaters({});
+        const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+            project: { ids: [req.project.id] }
+        });
         res.render('orders/index', {
             message: '',
             movieTheaters: searchMovieTheatersResult.data
@@ -36,6 +38,7 @@ ordersRouter.get('/cancel', async (req, res) => {
 
     try {
         const transaction = await returnOrderService.start({
+            // project: req.project,
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(15, 'minutes').toDate(),
             object: {
