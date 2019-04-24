@@ -44,6 +44,16 @@ export async function add(req: Request, res: Response): Promise<void> {
             try {
                 req.body.id = '';
                 let ticketType = createFromBody(req);
+
+                // 券種コード重複確認
+                const { totalCount } = await offerService.searchTicketTypes({
+                    project: { ids: [req.project.id] },
+                    identifier: `^${ticketType.identifier}$`
+                });
+                if (totalCount > 0) {
+                    throw new Error(`既に存在する券種コードです: ${ticketType.identifier}`);
+                }
+
                 ticketType = await offerService.createTicketType(ticketType);
                 req.flash('message', '登録しました');
                 res.redirect(`/ticketTypes/${ticketType.id}/update`);
