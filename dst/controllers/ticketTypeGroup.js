@@ -58,6 +58,14 @@ function add(req, res) {
                 try {
                     req.body.id = '';
                     let ticketTypeGroup = yield createFromBody(req);
+                    // 券種グループコード重複確認
+                    const { totalCount } = yield offerService.searchTicketTypeGroups({
+                        project: { ids: [req.project.id] },
+                        identifier: `^${ticketTypeGroup.identifier}$`
+                    });
+                    if (totalCount > 0) {
+                        throw new Error(`既に存在する券種グループコードです: ${ticketTypeGroup.identifier}`);
+                    }
                     ticketTypeGroup = yield offerService.createTicketTypeGroup(ticketTypeGroup);
                     req.flash('message', '登録しました');
                     res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);

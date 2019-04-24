@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 券種コード重複チェックを追加
+- 券種グループコード重複チェックを追加
+
 ### Deprecated
 
 ### Removed
