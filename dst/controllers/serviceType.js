@@ -39,7 +39,10 @@ function add(req, res) {
                 try {
                     req.body.id = '';
                     let serviceType = createFromBody(req);
-                    const { totalCount } = yield serviceTypeService.search({ identifiers: [serviceType.identifier] });
+                    const { totalCount } = yield serviceTypeService.search({
+                        project: { ids: [req.project.id] },
+                        identifiers: [serviceType.identifier]
+                    });
                     if (totalCount > 0) {
                         throw new Error('既に存在する興行区分コードです');
                     }
@@ -73,6 +76,9 @@ function getList(req, res) {
                 auth: req.user.authClient
             });
             const result = yield serviceTypeService.search({
+                limit: req.query.limit,
+                page: req.query.page,
+                project: { ids: [req.project.id] },
                 ids: [req.query.id],
                 name: req.query.name,
                 sort: { _id: chevre.factory.sortType.Ascending }

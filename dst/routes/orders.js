@@ -27,7 +27,9 @@ ordersRouter.get('', (req, res, next) => __awaiter(this, void 0, void 0, functio
         auth: req.user.authClient
     });
     try {
-        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({});
+        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
+            project: { ids: [req.project.id] }
+        });
         res.render('orders/index', {
             message: '',
             movieTheaters: searchMovieTheatersResult.data
@@ -42,6 +44,7 @@ ordersRouter.get('/cancel', (req, res) => __awaiter(this, void 0, void 0, functi
     const returnOrderService = new cinerino.service.txn.ReturnOrder(options);
     try {
         const transaction = yield returnOrderService.start({
+            // project: req.project,
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(15, 'minutes').toDate(),
             object: {

@@ -19,6 +19,7 @@ movieTheaterRouter.get('/search', async (req, res) => {
         const { totalCount, data } = await placeService.searchMovieTheaters({
             limit: req.query.limit,
             page: req.query.page,
+            project: { ids: [req.project.id] },
             name: req.query.name
         });
 
@@ -64,14 +65,23 @@ movieTheaterRouter.get('/search', async (req, res) => {
 });
 movieTheaterRouter.get('/getScreenListByTheaterBranchCode', async (req, res) => {
     try {
+        const branchCode = req.query.branchCode;
+
         const placeService = new chevre.service.Place({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const branchCode = req.query.branchCode;
-        const place = await placeService.findMovieTheaterByBranchCode({
-            branchCode
+
+        const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+            project: { ids: [req.project.id] },
+            branchCodes: [branchCode]
         });
+        const movieTheaterWithoutScreeningRoom = searchMovieTheatersResult.data.shift();
+        if (movieTheaterWithoutScreeningRoom === undefined) {
+            throw new Error(`Movie Theater ${branchCode} Not Found`);
+        }
+        const place = await placeService.findMovieTheaterById({ id: movieTheaterWithoutScreeningRoom.id });
+
         const results = place.containsPlace.map((screen) => ({
             branchCode: screen.branchCode,
             name: screen.name !== undefined ? screen.name.ja : ''

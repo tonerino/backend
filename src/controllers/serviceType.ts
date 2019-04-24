@@ -33,7 +33,10 @@ export async function add(req: Request, res: Response): Promise<void> {
             try {
                 req.body.id = '';
                 let serviceType = createFromBody(req);
-                const { totalCount } = await serviceTypeService.search({ identifiers: [serviceType.identifier] });
+                const { totalCount } = await serviceTypeService.search({
+                    project: { ids: [req.project.id] },
+                    identifiers: [serviceType.identifier]
+                });
                 if (totalCount > 0) {
                     throw new Error('既に存在する興行区分コードです');
                 }
@@ -68,6 +71,9 @@ export async function getList(req: Request, res: Response): Promise<void> {
         });
 
         const result = await serviceTypeService.search({
+            limit: req.query.limit,
+            page: req.query.page,
+            project: { ids: [req.project.id] },
             ids: [req.query.id],
             name: req.query.name,
             sort: { _id: chevre.factory.sortType.Ascending }

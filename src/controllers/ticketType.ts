@@ -267,6 +267,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
         const result = await offerService.searchTicketTypes({
             limit: req.query.limit,
             page: req.query.page,
+            project: { ids: [req.project.id] },
             ids: (ticketTypeIds.length > 0) ? ticketTypeIds : undefined,
             identifier: req.query.identifier,
             name: req.query.name
@@ -297,7 +298,11 @@ export async function index(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const ticketTypeGroupsList = await offerService.searchTicketTypeGroups({});
+
+    const ticketTypeGroupsList = await offerService.searchTicketTypeGroups({
+        project: { ids: [req.project.id] }
+    });
+
     // 券種マスタ画面遷移
     res.render('ticketType/index', {
         message: '',
@@ -315,6 +320,7 @@ export async function getTicketTypeGroupList(req: Request, res: Response): Promi
         });
         const { totalCount, data } = await offerService.searchTicketTypeGroups({
             limit: 100,
+            project: { ids: [req.project.id] },
             ticketTypes: [req.params.ticketTypeId]
         });
         res.json({

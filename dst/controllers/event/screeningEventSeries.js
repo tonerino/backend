@@ -45,12 +45,15 @@ function add(req, res) {
             sort: {
                 datePublished: chevre.factory.sortType.Descending
             },
+            project: { ids: [req.project.id] },
             offers: {
                 availableFrom: new Date()
             }
         });
         const movies = searchMoviesResult.data;
-        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({});
+        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
+            project: { ids: [req.project.id] }
+        });
         let message = '';
         let errors = {};
         if (req.method === 'POST') {
@@ -62,14 +65,14 @@ function add(req, res) {
                 // 作品DB登録
                 try {
                     const searchResult = yield creativeWorkService.searchMovies({
-                        // project: { ids: [req.project.id] },
+                        project: { ids: [req.project.id] },
                         identifier: req.body.workPerformed.identifier
                     });
                     const movie = searchResult.data.shift();
                     if (movie === undefined) {
                         throw new Error(`Movie ${req.query.identifier} Not Found`);
                     }
-                    const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: req.body.locationBranchCode });
+                    const movieTheater = yield placeService.findMovieTheaterById({ id: req.body.locationId });
                     req.body.contentRating = movie.contentRating;
                     const attributes = createEventFromBody(req, movie, movieTheater);
                     debug('saving an event...', attributes);
@@ -122,11 +125,14 @@ function update(req, res) {
             sort: {
                 datePublished: chevre.factory.sortType.Descending
             },
+            project: { ids: [req.project.id] },
             offers: {
                 availableFrom: new Date()
             }
         });
-        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({});
+        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
+            project: { ids: [req.project.id] }
+        });
         let message = '';
         let errors = {};
         const eventId = req.params.eventId;
@@ -142,14 +148,14 @@ function update(req, res) {
                 // 作品DB登録
                 try {
                     const searchResult = yield creativeWorkService.searchMovies({
-                        // project: { ids: [req.project.id] },
+                        project: { ids: [req.project.id] },
                         identifier: req.body.workPerformed.identifier
                     });
                     const movie = searchResult.data.shift();
                     if (movie === undefined) {
                         throw new Error(`Movie ${req.query.identifier} Not Found`);
                     }
-                    const movieTheater = yield placeService.findMovieTheaterByBranchCode({ branchCode: req.body.locationBranchCode });
+                    const movieTheater = yield placeService.findMovieTheaterById({ id: req.body.locationId });
                     req.body.contentRating = movie.contentRating;
                     const attributes = createEventFromBody(req, movie, movieTheater);
                     debug('saving an event...', attributes);
@@ -186,7 +192,7 @@ function update(req, res) {
         const signageDisplayName = additionalProperty.find((p) => p.name === 'signageDisplayName');
         const signageDislaySubtitleName = additionalProperty.find((p) => p.name === 'signageDislaySubtitleName');
         const summaryStartDay = additionalProperty.find((p) => p.name === 'summaryStartDay');
-        const forms = Object.assign({ headline: {} }, event, { signageDisplayName: (signageDisplayName !== undefined) ? signageDisplayName.value : '', signageDislaySubtitleName: (signageDislaySubtitleName !== undefined) ? signageDislaySubtitleName.value : '', summaryStartDay: (summaryStartDay !== undefined) ? summaryStartDay.value : '' }, req.body, { nameJa: (_.isEmpty(req.body.nameJa)) ? event.name.ja : req.body.nameJa, nameEn: (_.isEmpty(req.body.nameEn)) ? event.name.en : req.body.nameEn, duration: (_.isEmpty(req.body.duration)) ? moment.duration(event.duration).asMinutes() : req.body.duration, locationBranchCode: event.location.branchCode, translationType: translationType, videoFormatType: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf) : [], startDate: (_.isEmpty(req.body.startDate)) ?
+        const forms = Object.assign({ headline: {} }, event, { signageDisplayName: (signageDisplayName !== undefined) ? signageDisplayName.value : '', signageDislaySubtitleName: (signageDislaySubtitleName !== undefined) ? signageDislaySubtitleName.value : '', summaryStartDay: (summaryStartDay !== undefined) ? summaryStartDay.value : '' }, req.body, { nameJa: (_.isEmpty(req.body.nameJa)) ? event.name.ja : req.body.nameJa, nameEn: (_.isEmpty(req.body.nameEn)) ? event.name.en : req.body.nameEn, duration: (_.isEmpty(req.body.duration)) ? moment.duration(event.duration).asMinutes() : req.body.duration, locationId: event.location.id, translationType: translationType, videoFormatType: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf) : [], startDate: (_.isEmpty(req.body.startDate)) ?
                 (event.startDate !== null) ? moment(event.startDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
                 req.body.startDate, endDate: (_.isEmpty(req.body.endDate)) ?
                 (event.endDate !== null) ? moment(event.endDate).tz('Asia/Tokyo').add(-1, 'day').format('YYYY/MM/DD') : '' :
@@ -215,7 +221,7 @@ function getRating(req, res) {
                 auth: req.user.authClient
             });
             const searchResult = yield creativeWorkService.searchMovies({
-                // project: { ids: [req.project.id] },
+                project: { ids: [req.project.id] },
                 identifier: req.query.identifier
             });
             const movie = searchResult.data.shift();
@@ -354,6 +360,7 @@ function search(req, res) {
             }
             // 上映終了して「いない」劇場上映作品を検索
             const { totalCount, data } = yield eventService.search({
+                project: { ids: [req.project.id] },
                 typeOf: chevre.factory.eventType.ScreeningEventSeries,
                 inSessionFrom: (fromDate !== undefined) ? moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : new Date(),
                 inSessionThrough: (toDate !== undefined) ? moment(`${toDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : undefined,
@@ -411,7 +418,7 @@ function searchScreeningEvents(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const searchScreeningEventsResult = yield eventService.search(Object.assign({}, req.query, { typeOf: chevre.factory.eventType.ScreeningEvent, superEvent: { ids: [req.params.eventId] } }));
+            const searchScreeningEventsResult = yield eventService.search(Object.assign({}, req.query, { project: { ids: [req.project.id] }, typeOf: chevre.factory.eventType.ScreeningEvent, superEvent: { ids: [req.params.eventId] } }));
             res.json(searchScreeningEventsResult);
         }
         catch (error) {
@@ -433,6 +440,7 @@ function getList(req, res) {
             const { totalCount, data } = yield eventService.search({
                 limit: req.query.limit,
                 page: req.query.page,
+                project: { ids: [req.project.id] },
                 typeOf: chevre.factory.eventType.ScreeningEventSeries,
                 name: req.query.name,
                 endFrom: (req.query.containsEnded === '1') ? undefined : new Date(),
@@ -478,7 +486,9 @@ function index(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({});
+        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
+            project: { ids: [req.project.id] }
+        });
         res.render('events/screeningEventSeries/index', {
             movieTheaters: searchMovieTheatersResult.data
         });

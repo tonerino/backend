@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+### Changed
+
+## v1.1.1 - 2019-04-24
+
+- Chevreのマルチプロジェクト対応F
+- フッターにプロジェクトID追加
+
 ## v1.1.0 - 2019-04-22
 
 ### Added

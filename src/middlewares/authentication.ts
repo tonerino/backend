@@ -29,6 +29,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         }
 
         await req.user.retrieveProfile();
+
+        res.locals.project = req.project;
         res.locals.user = req.user;
         next();
     } catch (error) {

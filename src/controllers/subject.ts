@@ -32,7 +32,7 @@ export async function add(req: Request, res: Response): Promise<void> {
         errors = req.validationErrors(true);
         if (validatorResult.isEmpty()) {
             try {
-                const subjectAttributest = createSubjectFromBody(req.body);
+                const subjectAttributest = createSubjectFromBody(req);
                 debug('saving an subject...', subjectAttributest);
                 const subjectService = new chevre.service.Subject({
                     endpoint: <string>process.env.API_ENDPOINT,
@@ -84,7 +84,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         if (validatorResult.isEmpty()) {
             // 作品DB登録
             try {
-                const subjectData = createSubjectFromBody(req.body);
+                const subjectData = createSubjectFromBody(req);
                 debug('saving an subject...', subjectData);
                 await subjectService.updateSubject({
                     id: subject.id,
@@ -121,10 +121,11 @@ export async function update(req: Request, res: Response): Promise<void> {
         forms: forms
     });
 }
-function createSubjectFromBody(
-    body: chevre.factory.subject.ISubjectAttributes
-): chevre.factory.subject.ISubjectAttributes {
+function createSubjectFromBody(req: Request): chevre.factory.subject.ISubjectAttributes {
+    const body = req.body;
+
     return {
+        ...{ project: req.project }, // 型未定義なので
         subjectClassificationCd: body.subjectClassificationCd,
         subjectClassificationName: body.subjectClassificationName,
         subjectCd: body.subjectCd,
