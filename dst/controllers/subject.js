@@ -38,7 +38,7 @@ function add(req, res) {
             errors = req.validationErrors(true);
             if (validatorResult.isEmpty()) {
                 try {
-                    const subjectAttributest = createSubjectFromBody(req.body);
+                    const subjectAttributest = createSubjectFromBody(req);
                     debug('saving an subject...', subjectAttributest);
                     const subjectService = new chevre.service.Subject({
                         endpoint: process.env.API_ENDPOINT,
@@ -92,7 +92,7 @@ function update(req, res) {
             if (validatorResult.isEmpty()) {
                 // 作品DB登録
                 try {
-                    const subjectData = createSubjectFromBody(req.body);
+                    const subjectData = createSubjectFromBody(req);
                     debug('saving an subject...', subjectData);
                     yield subjectService.updateSubject({
                         id: subject.id,
@@ -131,15 +131,9 @@ function update(req, res) {
     });
 }
 exports.update = update;
-function createSubjectFromBody(body) {
-    return {
-        subjectClassificationCd: body.subjectClassificationCd,
-        subjectClassificationName: body.subjectClassificationName,
-        subjectCd: body.subjectCd,
-        subjectName: body.subjectName,
-        detailCd: body.detailCd,
-        detailName: body.detailName
-    };
+function createSubjectFromBody(req) {
+    const body = req.body;
+    return Object.assign({ project: req.project }, { subjectClassificationCd: body.subjectClassificationCd, subjectClassificationName: body.subjectClassificationName, subjectCd: body.subjectCd, subjectName: body.subjectName, detailCd: body.detailCd, detailName: body.detailName });
 }
 /**
  * 一覧データ取得API
