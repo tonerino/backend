@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 券種コード重複チェックを追加
-- 券種グループコード重複チェックを追加
-
 ### Deprecated
 
 ### Removed
@@ -22,6 +19,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 ### Changed
+
+## v1.1.2 - 2019-04-24
+
+### Changed
+
+- 券種コード重複チェックを追加
+- 券種グループコード重複チェックを追加
 
 ## v1.1.1 - 2019-04-24
 
