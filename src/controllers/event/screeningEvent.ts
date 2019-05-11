@@ -370,6 +370,15 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         });
     }
 
+    // 必ず座席指定イベント
+    const serviceOutput: chevre.factory.event.screeningEvent.IServiceOutput = {
+        typeOf: chevre.factory.reservationType.EventReservation,
+        reservedTicket: {
+            typeOf: 'Ticket',
+            ticketedSeat: { typeOf: chevre.factory.placeType.Seat }
+        }
+    };
+
     const offers: chevre.factory.event.screeningEvent.IOffer = {
         id: ticketTypeGroup.id,
         name: ticketTypeGroup.name,
@@ -384,7 +393,8 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
             value: 1
         },
         itemOffered: {
-            serviceType: serviceType
+            serviceType: serviceType,
+            serviceOutput: serviceOutput
         },
         validFrom: salesStartDate,
         validThrough: salesEndDate,
@@ -517,6 +527,15 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
                     throw new Error('Service Type Not Found');
                 }
 
+                // 必ず座席指定イベント
+                const serviceOutput: chevre.factory.event.screeningEvent.IServiceOutput = {
+                    typeOf: chevre.factory.reservationType.EventReservation,
+                    reservedTicket: {
+                        typeOf: 'Ticket',
+                        ticketedSeat: { typeOf: chevre.factory.placeType.Seat }
+                    }
+                };
+
                 const offers: chevre.factory.event.screeningEvent.IOffer = {
                     id: ticketTypeGroup.id,
                     name: ticketTypeGroup.name,
@@ -531,7 +550,8 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
                         value: 1
                     },
                     itemOffered: {
-                        serviceType: serviceType
+                        serviceType: serviceType,
+                        serviceOutput: serviceOutput
                     },
                     validFrom: salesStartDate,
                     validThrough: salesEndDate,
