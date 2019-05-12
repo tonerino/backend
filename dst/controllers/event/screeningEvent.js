@@ -374,6 +374,14 @@ function createEventFromBody(req) {
                 }
             });
         }
+        // 必ず座席指定イベント
+        const serviceOutput = {
+            typeOf: chevre.factory.reservationType.EventReservation,
+            reservedTicket: {
+                typeOf: 'Ticket',
+                ticketedSeat: { typeOf: chevre.factory.placeType.Seat }
+            }
+        };
         const offers = {
             id: ticketTypeGroup.id,
             name: ticketTypeGroup.name,
@@ -388,7 +396,8 @@ function createEventFromBody(req) {
                 value: 1
             },
             itemOffered: {
-                serviceType: serviceType
+                serviceType: serviceType,
+                serviceOutput: serviceOutput
             },
             validFrom: salesStartDate,
             validThrough: salesEndDate,
@@ -511,6 +520,14 @@ function createMultipleEventFromBody(req, user) {
                     if (serviceType === undefined) {
                         throw new Error('Service Type Not Found');
                     }
+                    // 必ず座席指定イベント
+                    const serviceOutput = {
+                        typeOf: chevre.factory.reservationType.EventReservation,
+                        reservedTicket: {
+                            typeOf: 'Ticket',
+                            ticketedSeat: { typeOf: chevre.factory.placeType.Seat }
+                        }
+                    };
                     const offers = {
                         id: ticketTypeGroup.id,
                         name: ticketTypeGroup.name,
@@ -525,7 +542,8 @@ function createMultipleEventFromBody(req, user) {
                             value: 1
                         },
                         itemOffered: {
-                            serviceType: serviceType
+                            serviceType: serviceType,
+                            serviceOutput: serviceOutput
                         },
                         validFrom: salesStartDate,
                         validThrough: salesEndDate,
