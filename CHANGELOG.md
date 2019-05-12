@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- イベントが必ず座席指定イベントとして作成されるように調整
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +19,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 ### Changed
+
+## v1.1.3 - 2019-05-12
+
+### Changed
+
+- イベントが必ず座席指定イベントとして作成されるように調整
 
 ## v1.1.2 - 2019-04-24
 
