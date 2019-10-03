@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 注文検索結果の購入者名を調整
+
 ### Deprecated
 
 ### Removed

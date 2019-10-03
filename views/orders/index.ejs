@@ -98,7 +98,8 @@ Aa-20
                 購入番号
             </label>
             <div class="col-sm-9">
-                <input class="form-control" name="confirmationNumber" id="confirmationNumber" placeholder="" maxlength=64>
+                <input class="form-control" name="confirmationNumber" id="confirmationNumber" placeholder=""
+                    maxlength=64>
             </div>
         </div>
         <div class="form-group">
@@ -149,13 +150,15 @@ Aa-20
             </thead>
             <tbody>
                 <tr id="templateRow" _id="$id$">
-                    <td name="orderDate|parseDateTime__acceptedOffers.0.itemOffered.reservationFor.startDate|parseDateTime__orderNumber">
+                    <td
+                        name="orderDate|parseDateTime__acceptedOffers.0.itemOffered.reservationFor.startDate|parseDateTime__orderNumber">
                         $orderDate$<br>
                         $acceptedOffers.0.itemOffered.reservationFor.startDate$
                         <input type="hidden" name="orderNumber" value="$orderNumber$">
                     </td>
-                    <td name="customer.name__customer.telephone__customer.email__confirmationNumber__paymentMethodId">
-                        $customer.name$<br>
+                    <td
+                        name="customer.familyName__customer.givenName__customer.telephone__customer.email__confirmationNumber__paymentMethodId">
+                        $customer.familyName$ $customer.givenName$<br>
                         $customer.telephone$<br>
                         $customer.email$<br>
                         $confirmationNumber$<br>
@@ -164,7 +167,8 @@ Aa-20
                     <td name="ticketInfo">
                         $ticketInfo$
                     </td>
-                    <td name="acceptedOffers.0.itemOffered.reservationFor.superEvent.name.ja__acceptedOffers.0.itemOffered.reservationFor.superEvent.location.name.ja">
+                    <td
+                        name="acceptedOffers.0.itemOffered.reservationFor.superEvent.name.ja__acceptedOffers.0.itemOffered.reservationFor.superEvent.location.name.ja">
                         $acceptedOffers.0.itemOffered.reservationFor.superEvent.name.ja$<br>
                         $acceptedOffers.0.itemOffered.reservationFor.superEvent.location.name.ja$
                     </td>
