@@ -171,7 +171,7 @@ ordersRouter.get('/search', async (req, res) => {
                                 ? offer.itemOffered.reservedTicket.ticketedSeat.seatNumber
                                 : '座席指定なし',
                             (offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
-                                ? offer.itemOffered.additionalTicketText
+                                ? offer.itemOffered.reservedTicket.ticketType.name.ja
                                 : '',
                             priceStr
                         );

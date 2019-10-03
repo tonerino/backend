@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - 時間メータ表示設定を追加
+- 注文検索結果の券種名を調整
 
 ### Deprecated
 
