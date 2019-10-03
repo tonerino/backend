@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 時間メータ表示設定を追加
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +19,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 ### Changed
+
+## v1.2.1 - 2019-10-03
+
+### Changed
+
+- 時間メータ表示設定を追加
+- 注文検索結果の券種名を調整
 
 ## v1.1.3 - 2019-05-12
 

@@ -154,7 +154,7 @@ ordersRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, functi
                             && offer.itemOffered.reservedTicket.ticketedSeat !== undefined)
                             ? offer.itemOffered.reservedTicket.ticketedSeat.seatNumber
                             : '座席指定なし', (offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
-                            ? offer.itemOffered.additionalTicketText
+                            ? offer.itemOffered.reservedTicket.ticketType.name.ja
                             : '', priceStr);
                     }).join('<br>') });
             }),
