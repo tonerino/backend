@@ -16,11 +16,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
-- 購入者がWebApplicationの注文を検索できないバグ対応
-
 ### Security
 
 ### Changed
+
+## v1.2.3 - 2019-12-25
+
+### Fixed
+
+- 購入者がWebApplicationの注文を検索できないバグ対応
 
 ## v1.2.2 - 2019-10-03
 
