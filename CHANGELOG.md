@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+- 購入者がWebApplicationの注文を検索できないバグ対応
+
 ### Security
 
 ### Changed

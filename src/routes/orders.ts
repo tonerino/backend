@@ -57,6 +57,8 @@ ordersRouter.get('/cancel', async (req, res) => {
 // tslint:disable-next-line:max-func-body-length
 ordersRouter.get('/search', async (req, res) => {
     try {
+        const now = new Date();
+
         const options = getOptions(req, ApiEndpoint.cinerino);
         const orderService = new cinerino.service.Order(options);
         const transactionService = new cinerino.service.txn.ReturnOrder(options);
@@ -91,13 +93,15 @@ ordersRouter.get('/search', async (req, res) => {
             page: Number(req.query.page),
             orderDateFrom: (req.query.orderDateFrom !== undefined && req.query.orderDateFrom !== '')
                 ? moment(`${req.query.orderDateFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate()
-                : moment(`2018-10-01T00:00:00+09:00`).toDate(),
+                : moment(now)
+                    .add(-1, 'month')
+                    .toDate(),
             orderDateThrough: (req.query.orderDateFrom !== undefined && req.query.orderDateFrom !== '')
                 ? moment(`${req.query.orderDateThrough}T23:59:59+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate()
-                : moment().toDate(),
+                : moment(now)
+                    .toDate(),
             // 購入番号
             customer: {
-                typeOf: cinerino.factory.personType.Person,
                 // 電話番号
                 telephone: req.query.telephone ? req.query.telephone : undefined,
                 identifiers: customerIdentifiers
