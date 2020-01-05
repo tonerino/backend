@@ -43,17 +43,29 @@ ordersRouter.get('/cancel', (req, res) => __awaiter(this, void 0, void 0, functi
     const options = base_controller_1.getOptions(req, user_1.ApiEndpoint.cinerino);
     const returnOrderService = new cinerino.service.txn.ReturnOrder(options);
     try {
+        const orderNumber = req.query.orderNumber;
+        if (typeof orderNumber !== 'string') {
+            throw new Error('OrderNumber not specified');
+        }
         const transaction = yield returnOrderService.start({
             // project: req.project,
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(15, 'minutes').toDate(),
             object: {
                 order: {
-                    orderNumber: req.query.orderNumber ? req.query.orderNumber : undefined
+                    orderNumber: orderNumber
                 }
             }
         });
-        void returnOrderService.confirm(transaction);
+        yield returnOrderService.confirm(transaction);
+        // 返品処理中の注文番号をセッション補完
+        let returningOrderNumbers = [];
+        const returningOrderNumbersStr = req.session.returningOrderNumbers;
+        if (typeof returningOrderNumbersStr === 'string') {
+            returningOrderNumbers = JSON.parse(returningOrderNumbersStr);
+        }
+        returningOrderNumbers.push(orderNumber);
+        req.session.returningOrderNumbers = JSON.stringify(returningOrderNumbers);
         res.json({ success: true });
     }
     catch (error) {
@@ -66,7 +78,6 @@ ordersRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, functi
         const now = new Date();
         const options = base_controller_1.getOptions(req, user_1.ApiEndpoint.cinerino);
         const orderService = new cinerino.service.Order(options);
-        const transactionService = new cinerino.service.txn.ReturnOrder(options);
         // 購入場所(customerのクライアントID識別子で判断する、どのアプリで注文されたか、ということ)
         const customerIdentifiers = [];
         switch (req.query.placeTicket) {
@@ -127,17 +138,12 @@ ordersRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, functi
         debug('searching orders...', params);
         const searchResult = yield orderService.search(params);
         debug(searchResult.totalCount, 'orders found');
-        //キャンセル処理しているオーダーの取得
-        const orderNotCanceled = searchResult.data.filter((d) => d.acceptedOffers.length > 0)
-            .filter((d) => d.orderStatus !== cinerino.factory.orderStatus.OrderReturned)
-            .map((d) => d.orderNumber);
-        let orderCancellings = [];
-        if (orderNotCanceled.length > 0) {
-            orderCancellings = yield transactionService.search({
-                typeOf: cinerino.factory.transactionType.ReturnOrder,
-                object: { order: { orderNumbers: orderNotCanceled } }
-            }).then((docs) => docs.data.map((d) => d.object.order.orderNumber));
+        let returningOrderNumbers = [];
+        const returningOrderNumbersStr = req.session.returningOrderNumbers;
+        if (typeof returningOrderNumbersStr === 'string') {
+            returningOrderNumbers = JSON.parse(returningOrderNumbersStr);
         }
+        const orderCancellings = returningOrderNumbers;
         res.json({
             success: true,
             count: searchResult.totalCount,

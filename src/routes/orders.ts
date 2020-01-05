@@ -37,17 +37,31 @@ ordersRouter.get('/cancel', async (req, res) => {
     const returnOrderService = new cinerino.service.txn.ReturnOrder(options);
 
     try {
+        const orderNumber = req.query.orderNumber;
+        if (typeof orderNumber !== 'string') {
+            throw new Error('OrderNumber not specified');
+        }
+
         const transaction = await returnOrderService.start({
             // project: req.project,
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(15, 'minutes').toDate(),
             object: {
                 order: {
-                    orderNumber: req.query.orderNumber ? req.query.orderNumber : undefined
+                    orderNumber: orderNumber
                 }
             }
         });
-        void returnOrderService.confirm(transaction);
+        await returnOrderService.confirm(transaction);
+
+        // 返品処理中の注文番号をセッション補完
+        let returningOrderNumbers: string[] = [];
+        const returningOrderNumbersStr = (<Express.Session>req.session).returningOrderNumbers;
+        if (typeof returningOrderNumbersStr === 'string') {
+            returningOrderNumbers = JSON.parse(returningOrderNumbersStr);
+        }
+        returningOrderNumbers.push(orderNumber);
+        (<Express.Session>req.session).returningOrderNumbers = JSON.stringify(returningOrderNumbers);
 
         res.json({ success: true });
     } catch (error) {
@@ -61,7 +75,6 @@ ordersRouter.get('/search', async (req, res) => {
 
         const options = getOptions(req, ApiEndpoint.cinerino);
         const orderService = new cinerino.service.Order(options);
-        const transactionService = new cinerino.service.txn.ReturnOrder(options);
 
         // 購入場所(customerのクライアントID識別子で判断する、どのアプリで注文されたか、ということ)
         const customerIdentifiers = [];
@@ -127,18 +140,13 @@ ordersRouter.get('/search', async (req, res) => {
         const searchResult = await orderService.search(params);
         debug(searchResult.totalCount, 'orders found');
 
-        //キャンセル処理しているオーダーの取得
-        const orderNotCanceled: string[] = searchResult.data.filter((d: cinerino.factory.order.IOrder) => d.acceptedOffers.length > 0)
-            .filter((d: cinerino.factory.order.IOrder) => d.orderStatus !== cinerino.factory.orderStatus.OrderReturned)
-            .map((d: cinerino.factory.order.IOrder) => d.orderNumber);
-
-        let orderCancellings: string[] = [];
-        if (orderNotCanceled.length > 0) {
-            orderCancellings = await transactionService.search({
-                typeOf: cinerino.factory.transactionType.ReturnOrder,
-                object: { order: { orderNumbers: orderNotCanceled } }
-            }).then((docs: any) => docs.data.map((d: any) => d.object.order.orderNumber));
+        let returningOrderNumbers: string[] = [];
+        const returningOrderNumbersStr = (<Express.Session>req.session).returningOrderNumbers;
+        if (typeof returningOrderNumbersStr === 'string') {
+            returningOrderNumbers = JSON.parse(returningOrderNumbersStr);
         }
+
+        const orderCancellings: string[] = returningOrderNumbers;
 
         res.json({
             success: true,

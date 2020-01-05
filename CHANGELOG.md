@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 返品処理中の注文番号をアプリケーション側で管理するように変更
+
 ## v1.2.3 - 2019-12-25
 
 ### Fixed
