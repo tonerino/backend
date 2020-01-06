@@ -18,7 +18,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.3.0 - 2020-01-06
+
 ### Changed
+
+- 返品処理中の注文番号をアプリケーション側で管理するように変更
 
 ## v1.2.3 - 2019-12-25
 
