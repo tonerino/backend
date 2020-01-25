@@ -150,7 +150,10 @@ ordersRouter.get('/search', async (req, res) => {
 
         res.json({
             success: true,
-            count: searchResult.totalCount,
+            count: (searchResult.data.length === Number(params.limit))
+                ? (Number(params.page) * Number(params.limit)) + 1
+                : ((Number(params.page) - 1) * Number(params.limit)) + Number(searchResult.data.length),
+            // count: searchResult.totalCount,
             results: searchResult.data.map((o) => {
                 return {
                     ...o,
