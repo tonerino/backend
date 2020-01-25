@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.3.1 - 2020-01-25
+
+- 各リソース検索についてX-Total-Countが未定義の場合に対応
+
 ## v1.3.0 - 2020-01-06
 
 ### Changed
