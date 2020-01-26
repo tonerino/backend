@@ -243,7 +243,8 @@ function createFromBody(req: Request): chevre.factory.ticketType.ITicketType {
             }
         ],
         category: {
-            id: <chevre.factory.ticketTypeCategory>req.body.category
+            project: { typeOf: req.project.typeOf, id: req.project.id },
+            id: req.body.category
         },
         color: <string>req.body.indicatorColor
     };

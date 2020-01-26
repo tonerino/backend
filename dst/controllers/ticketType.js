@@ -223,6 +223,7 @@ function createFromBody(req) {
             }
         ],
         category: {
+            project: { typeOf: req.project.typeOf, id: req.project.id },
             id: req.body.category
         },
         color: req.body.indicatorColor
