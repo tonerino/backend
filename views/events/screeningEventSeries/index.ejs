@@ -23,19 +23,19 @@ Aa-3
                 <select class="form-control" name="locationBranchCode">
                     <option value="">選択してください</option>
                     <% if (user.cognitoGroups.movieTheaters === undefined || user.cognitoGroups.movieTheaters.length === 0) { %>
-                        <% for (const movieTheater of movieTheaters) { %>
-                        <option value="<%= movieTheater.branchCode %>">
-                            <%= movieTheater.name.ja %>
-                        </option>
-                        <% } %>            
-                    <% } else { %>
-                        <% for (const movieTheater of user.cognitoGroups.movieTheaters) { %>
-                            <option value="<%= movieTheater.branchCode %>">
-                                <%= movieTheater.name.ja %>
-                            </option>
-                        <% } %>                                 
+                    <% for (const movieTheater of movieTheaters) { %>
+                    <option value="<%= movieTheater.branchCode %>">
+                        <%= movieTheater.name.ja %>
+                    </option>
                     <% } %>
-                    
+                    <% } else { %>
+                    <% for (const movieTheater of user.cognitoGroups.movieTheaters) { %>
+                    <option value="<%= movieTheater.branchCode %>">
+                        <%= movieTheater.name.ja %>
+                    </option>
+                    <% } %>
+                    <% } %>
+
                 </select>
             </div>
         </div>
@@ -79,9 +79,11 @@ Aa-3
 </div>
 <div class="col-sm-12 form-container search">
     <div>
-        <p id="searchedCount" style="display:none;">
-            検索結果 $searched_count$件
+        <p id="resultStats" style="display:none;">
         </p>
+        <!-- <p id="searchedCount" style="display:none;">
+            検索結果 $searched_count$件
+        </p> -->
     </div>
     <div id="list" class="table-responsive" style="display:none;">
         <table class="table table-bordered table-striped">

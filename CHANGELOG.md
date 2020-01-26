@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - update @chevre/api-nodejs-client
 - update @cinerino/api-nodejs-client
+- ページング調整
 
 ### Deprecated
 

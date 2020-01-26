@@ -3,6 +3,7 @@ $(function () {
     $.CommonMasterList = {
         _templateRowSelector: "#templateRow",
         _searchedCountAreaSelector: "#searchedCount",
+        _resultStatsSelector: "#resultStats",
         _searchedCountText: null,
         _startTag: '',
         _endTag: '',
@@ -16,6 +17,9 @@ $(function () {
         },
         getSearchedCountArea: function () {
             return ($(this._searchedCountAreaSelector))
+        },
+        getResultStats: function () {
+            return ($(this._resultStatsSelector))
         },
         getPager: function () {
             return ($(this._pagerSelector))
@@ -52,7 +56,8 @@ $(function () {
                 items: 100,
                 itemsOnPage: itemsOnPage,
                 cssStyle: 'light-theme',
-                displayedPages: 10,
+                displayedPages: 3,
+                edges: 0,
                 onPageClick: function (pageNumber) {
                     onPageChanging(pageNumber);
                 }
@@ -65,10 +70,17 @@ $(function () {
         bind: function (datas, countData, pageNumber) {
             // pager取得
             var pager = this.getPager().hide();
+
             // 件数表示
-            var searchedCountArea = this.getSearchedCountArea();
-            searchedCountArea.text(this._searchedCountText.replace("\$searched_count\$", countData));
-            searchedCountArea.show();
+            // var searchedCountArea = this.getSearchedCountArea();
+            // searchedCountArea.text(this._searchedCountText.replace("\$searched_count\$", countData));
+            // searchedCountArea.show();
+
+            // 検索結果表示
+            var resultStats = this.getResultStats();
+            resultStats.text(this.createResultStatsText(pageNumber, datas.length));
+            resultStats.show();
+
             if (!countData) { return; }
             if (countData <= 0) { return; }
 
@@ -127,6 +139,19 @@ $(function () {
         },
         dummy: function () {
             alert("dummy");
+        },
+
+        /**
+         * 検索結果文字列を作成する
+         */
+        createResultStatsText: function (page, countFileterd) {
+            var text = page + 'ページ目';
+
+            if (page <= 1 && countFileterd <= 0) {
+                text = 'マッチするデータが見つかりませんでした';
+            }
+
+            return text;
         }
     }
 });
