@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- update @chevre/api-nodejs-client
-- update @cinerino/api-nodejs-client
-- ページング調整
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v1.4.0 - 2020-01-27
+
+### Changed
+
+- update @chevre/api-nodejs-client
+- update @cinerino/api-nodejs-client
+- ページング調整
 
 ## v1.3.1 - 2020-01-25
 
