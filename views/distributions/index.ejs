@@ -35,9 +35,11 @@ Aa-15
 </div>
 <div class="col-sm-12 form-container search">
     <div>
-        <p id="searchedCount" style="display:none;">
-            検索結果 $searched_count$件
+        <p id="resultStats" style="display:none;">
         </p>
+        <!-- <p id="searchedCount" style="display:none;">
+            検索結果 $searched_count$件
+        </p> -->
     </div>
     <div id="list" class="table-responsive" style="display:none;">
         <table class="table table-bordered table-striped">
@@ -46,7 +48,7 @@ Aa-15
                     <th>配給コード</th>
                     <th>名称</th>
                     <% if (user.cognitoGroups.movieTheaters === undefined || user.cognitoGroups.movieTheaters.length === 0) { %>
-                        <th></th>                           
+                    <th></th>
                     <% } %>
                 </tr>
             </thead>
@@ -55,13 +57,13 @@ Aa-15
                     <td name="id">$id$</td>
                     <td name="name">$name$</td>
                     <% if (user.cognitoGroups.movieTheaters === undefined || user.cognitoGroups.movieTheaters.length === 0) { %>
-                        <td name="edit" class="center">
-                            <div class="btn-area">
-                                <a class="btn btn-list edit" data-toggle="modal" data-target="#myModal">
-                                    <span>編集</span>
-                                </a>
-                            </div>
-                        </td>                     
+                    <td name="edit" class="center">
+                        <div class="btn-area">
+                            <a class="btn btn-list edit" data-toggle="modal" data-target="#myModal">
+                                <span>編集</span>
+                            </a>
+                        </div>
+                    </td>
                     <% } %>
                 </tr>
             </tbody>

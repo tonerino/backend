@@ -16,7 +16,6 @@ const serviceTypes_1 = require("./serviceTypes");
 const subject_1 = require("./subject");
 const ticketType_1 = require("./ticketType");
 const ticketTypeGroup_1 = require("./ticketTypeGroup");
-const timeMeter_1 = require("./timeMeter");
 const router = express.Router();
 router.use(auth_1.default);
 router.use(authentication_1.default);
@@ -28,7 +27,6 @@ router.use('/events/screeningEventSeries', screeningEventSeries_1.default);
 router.use('/orders', orders_1.default);
 router.use('/places/movieTheater', movieTheater_1.default);
 router.use('/subjects', subject_1.default);
-router.use('/timeMeter', timeMeter_1.default);
 router.use('/ticketTypes', ticketType_1.default);
 router.use('/ticketTypeGroups', ticketTypeGroup_1.default);
 router.get('/', (req, res, next) => {
