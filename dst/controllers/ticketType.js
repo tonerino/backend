@@ -53,11 +53,11 @@ function add(req, res) {
                     req.body.id = '';
                     let ticketType = createFromBody(req);
                     // 券種コード重複確認
-                    const { totalCount } = yield offerService.searchTicketTypes({
+                    const { data } = yield offerService.searchTicketTypes({
                         project: { ids: [req.project.id] },
                         identifier: `^${ticketType.identifier}$`
                     });
-                    if (totalCount > 0) {
+                    if (data.length > 0) {
                         throw new Error(`既に存在する券種コードです: ${ticketType.identifier}`);
                     }
                     ticketType = yield offerService.createTicketType(ticketType);
@@ -255,9 +255,11 @@ function getList(req, res) {
                     });
                 }
             }
-            const result = yield offerService.searchTicketTypes({
-                limit: req.query.limit,
-                page: req.query.page,
+            const limit = Number(req.query.limit);
+            const page = Number(req.query.page);
+            const { data } = yield offerService.searchTicketTypes({
+                limit: limit,
+                page: page,
                 project: { ids: [req.project.id] },
                 ids: (ticketTypeIds.length > 0) ? ticketTypeIds : undefined,
                 identifier: req.query.identifier,
@@ -265,8 +267,10 @@ function getList(req, res) {
             });
             res.json({
                 success: true,
-                count: result.totalCount,
-                results: result.data.map((t) => {
+                count: (data.length === Number(limit))
+                    ? (Number(page) * Number(limit)) + 1
+                    : ((Number(page) - 1) * Number(limit)) + Number(data.length),
+                results: data.map((t) => {
                     return Object.assign({}, t, { ticketCode: t.identifier });
                 })
             });
@@ -311,14 +315,19 @@ function getTicketTypeGroupList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const { totalCount, data } = yield offerService.searchTicketTypeGroups({
-                limit: 100,
+            const limit = 100;
+            const page = 1;
+            const { data } = yield offerService.searchTicketTypeGroups({
+                limit: limit,
+                page: page,
                 project: { ids: [req.project.id] },
                 ticketTypes: [req.params.ticketTypeId]
             });
             res.json({
                 success: true,
-                count: totalCount,
+                count: (data.length === Number(limit))
+                    ? (Number(page) * Number(limit)) + 1
+                    : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data
             });
         }

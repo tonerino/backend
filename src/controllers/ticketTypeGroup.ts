@@ -50,11 +50,11 @@ export async function add(req: Request, res: Response): Promise<void> {
                 let ticketTypeGroup = await createFromBody(req);
 
                 // 券種グループコード重複確認
-                const { totalCount } = await offerService.searchTicketTypeGroups({
+                const { data } = await offerService.searchTicketTypeGroups({
                     project: { ids: [req.project.id] },
                     identifier: `^${ticketTypeGroup.identifier}$`
                 });
-                if (totalCount > 0) {
+                if (data.length > 0) {
                     throw new Error(`既に存在する券種グループコードです: ${ticketTypeGroup.identifier}`);
                 }
 
@@ -231,16 +231,21 @@ export async function getList(req: Request, res: Response): Promise<void> {
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const { totalCount, data } = await offerService.searchTicketTypeGroups({
-            limit: req.query.limit,
-            page: req.query.page,
+
+        const limit = Number(req.query.limit);
+        const page = Number(req.query.page);
+        const { data } = await offerService.searchTicketTypeGroups({
+            limit: limit,
+            page: page,
             project: { ids: [req.project.id] },
             identifier: req.query.identifier,
             name: req.query.name
         });
         res.json({
             success: true,
-            count: totalCount,
+            count: (data.length === Number(limit))
+                ? (Number(page) * Number(limit)) + 1
+                : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((g) => {
                 return {
                     ...g,
@@ -267,15 +272,21 @@ export async function getTicketTypeList(req: Request, res: Response): Promise<vo
         });
         // 券種グループ取得
         const ticketGroup = await offerService.findTicketTypeGroupById({ id: req.query.id });
-        const searchTicketTypesResult = await offerService.searchTicketTypes({
-            limit: 100,
+
+        const limit = 100;
+        const page = 1;
+        const { data } = await offerService.searchTicketTypes({
+            limit: limit,
+            page: page,
             project: { ids: [req.project.id] },
             ids: ticketGroup.ticketTypes
         });
         res.json({
             success: true,
-            count: searchTicketTypesResult.totalCount,
-            results: searchTicketTypesResult.data.map((t) => (t.alternateName !== undefined) ? t.alternateName.ja : t.name.ja)
+            count: (data.length === Number(limit))
+                ? (Number(page) * Number(limit)) + 1
+                : ((Number(page) - 1) * Number(limit)) + Number(data.length),
+            results: data.map((t) => (t.alternateName !== undefined) ? t.alternateName.ja : t.name.ja)
         });
     } catch (err) {
         res.json({
@@ -293,9 +304,13 @@ export async function getTicketTypePriceList(req: Request, res: Response): Promi
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
+
         // 指定価格の券種検索
-        const searchTicketTypesResult = await offerService.searchTicketTypes({
-            limit: 100,
+        const limit = 100;
+        const page = 1;
+        const { data } = await offerService.searchTicketTypes({
+            limit: limit,
+            page: page,
             sort: {
                 'priceSpecification.price': chevre.factory.sortType.Descending
             },
@@ -310,8 +325,10 @@ export async function getTicketTypePriceList(req: Request, res: Response): Promi
         });
         res.json({
             success: true,
-            count: searchTicketTypesResult.totalCount,
-            results: searchTicketTypesResult.data
+            count: (data.length === Number(limit))
+                ? (Number(page) * Number(limit)) + 1
+                : ((Number(page) - 1) * Number(limit)) + Number(data.length),
+            results: data
         });
     } catch (err) {
         res.json({

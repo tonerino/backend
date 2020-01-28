@@ -40,11 +40,11 @@ export async function add(req: Request, res: Response): Promise<void> {
                     auth: req.user.authClient
                 });
 
-                const { totalCount } = await creativeWorkService.searchMovies({
+                const { data } = await creativeWorkService.searchMovies({
                     project: { ids: [req.project.id] },
                     identifier: `^${movie.identifier}$`
                 });
-                if (totalCount > 0) {
+                if (data.length > 0) {
                     throw new Error('既に存在する作品コードです');
                 }
 
@@ -191,9 +191,12 @@ export async function getList(req: Request, res: Response): Promise<void> {
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const result = await creativeWorkService.searchMovies({
-            limit: req.query.limit,
-            page: req.query.page,
+
+        const limit = Number(req.query.limit);
+        const page = Number(req.query.page);
+        const { data } = await creativeWorkService.searchMovies({
+            limit: limit,
+            page: page,
             project: { ids: [req.project.id] },
             identifier: req.query.identifier,
             name: req.query.name,
@@ -202,10 +205,13 @@ export async function getList(req: Request, res: Response): Promise<void> {
             datePublishedThrough: (!_.isEmpty(req.query.datePublishedThrough)) ?
                 moment(`${req.query.datePublishedThrough}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined
         });
+
         res.json({
             success: true,
-            count: result.totalCount,
-            results: result.data
+            count: (data.length === Number(limit))
+                ? (Number(page) * Number(limit)) + 1
+                : ((Number(page) - 1) * Number(limit)) + Number(data.length),
+            results: data
         });
     } catch (error) {
         res.json({

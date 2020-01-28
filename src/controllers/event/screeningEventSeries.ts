@@ -392,7 +392,11 @@ export async function search(req: Request, res: Response): Promise<void> {
             throw new Error();
         }
         // 上映終了して「いない」劇場上映作品を検索
-        const { totalCount, data } = await eventService.search({
+        const limit = 100;
+        const page = 1;
+        const { data } = await eventService.search({
+            limit: limit,
+            page: page,
             project: { ids: [req.project.id] },
             typeOf: chevre.factory.eventType.ScreeningEventSeries,
             inSessionFrom: (fromDate !== undefined) ? moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : new Date(),
@@ -441,7 +445,9 @@ export async function search(req: Request, res: Response): Promise<void> {
         });
         res.json({
             success: true,
-            count: totalCount,
+            count: (data.length === Number(limit))
+                ? (Number(page) * Number(limit)) + 1
+                : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: results
         });
     } catch (_) {
@@ -481,9 +487,12 @@ export async function getList(req: Request, res: Response): Promise<void> {
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const { totalCount, data } = await eventService.search({
-            limit: req.query.limit,
-            page: req.query.page,
+
+        const limit = Number(req.query.limit);
+        const page = Number(req.query.page);
+        const { data } = await eventService.search({
+            limit: limit,
+            page: page,
             project: { ids: [req.project.id] },
             typeOf: chevre.factory.eventType.ScreeningEventSeries,
             name: req.query.name,
@@ -515,7 +524,9 @@ export async function getList(req: Request, res: Response): Promise<void> {
         });
         res.json({
             success: true,
-            count: totalCount,
+            count: (data.length === Number(limit))
+                ? (Number(page) * Number(limit)) + 1
+                : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: results
         });
     } catch (error) {

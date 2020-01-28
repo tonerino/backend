@@ -33,11 +33,11 @@ export async function add(req: Request, res: Response): Promise<void> {
             try {
                 req.body.id = '';
                 let serviceType = createFromBody(req);
-                const { totalCount } = await serviceTypeService.search({
+                const { data } = await serviceTypeService.search({
                     project: { ids: [req.project.id] },
                     identifiers: [serviceType.identifier]
                 });
-                if (totalCount > 0) {
+                if (data.length > 0) {
                     throw new Error('既に存在する興行区分コードです');
                 }
 
@@ -70,9 +70,11 @@ export async function getList(req: Request, res: Response): Promise<void> {
             auth: req.user.authClient
         });
 
-        const result = await serviceTypeService.search({
-            limit: req.query.limit,
-            page: req.query.page,
+        const limit = Number(req.query.limit);
+        const page = Number(req.query.page);
+        const { data } = await serviceTypeService.search({
+            limit: limit,
+            page: page,
             project: { ids: [req.project.id] },
             ids: [req.query.id],
             name: req.query.name,
@@ -81,8 +83,10 @@ export async function getList(req: Request, res: Response): Promise<void> {
 
         res.json({
             success: true,
-            count: result.totalCount,
-            results: result.data
+            count: (data.length === Number(limit))
+                ? (Number(page) * Number(limit)) + 1
+                : ((Number(page) - 1) * Number(limit)) + Number(data.length),
+            results: data
         });
     } catch (err) {
         res.json({

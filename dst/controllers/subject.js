@@ -77,13 +77,13 @@ function update(req, res) {
         });
         let message = '';
         let errors = {};
-        const searchSubjectsResult = yield subjectService.searchSubject({
+        const { data } = yield subjectService.searchSubject({
             detailCd: req.params.id
         });
-        if (searchSubjectsResult.totalCount === 0) {
+        if (data.length === 0) {
             throw new Error('Subject Not Found');
         }
-        const subject = searchSubjectsResult.data[0];
+        const subject = data[0];
         if (req.method === 'POST') {
             // バリデーション
             validate(req);
@@ -145,14 +145,18 @@ function getList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const { totalCount, data } = yield subjectService.searchSubject({
-                limit: req.query.limit,
-                page: req.query.page,
+            const limit = Number(req.query.limit);
+            const page = Number(req.query.page);
+            const { data } = yield subjectService.searchSubject({
+                limit: limit,
+                page: page,
                 detailCd: req.query.detailCd
             });
             res.json({
                 success: true,
-                count: totalCount,
+                count: (data.length === Number(limit))
+                    ? (Number(page) * Number(limit)) + 1
+                    : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data.map((g) => {
                     return {
                         id: g.detailCd,

@@ -359,7 +359,11 @@ function search(req, res) {
                 throw new Error();
             }
             // 上映終了して「いない」劇場上映作品を検索
-            const { totalCount, data } = yield eventService.search({
+            const limit = 100;
+            const page = 1;
+            const { data } = yield eventService.search({
+                limit: limit,
+                page: page,
                 project: { ids: [req.project.id] },
                 typeOf: chevre.factory.eventType.ScreeningEventSeries,
                 inSessionFrom: (fromDate !== undefined) ? moment(`${fromDate}T23:59:59+09:00`, 'YYYYMMDDTHH:mm:ssZ').toDate() : new Date(),
@@ -394,7 +398,9 @@ function search(req, res) {
             });
             res.json({
                 success: true,
-                count: totalCount,
+                count: (data.length === Number(limit))
+                    ? (Number(page) * Number(limit)) + 1
+                    : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: results
             });
         }
@@ -437,9 +443,11 @@ function getList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const { totalCount, data } = yield eventService.search({
-                limit: req.query.limit,
-                page: req.query.page,
+            const limit = Number(req.query.limit);
+            const page = Number(req.query.page);
+            const { data } = yield eventService.search({
+                limit: limit,
+                page: page,
                 project: { ids: [req.project.id] },
                 typeOf: chevre.factory.eventType.ScreeningEventSeries,
                 name: req.query.name,
@@ -463,7 +471,9 @@ function getList(req, res) {
             });
             res.json({
                 success: true,
-                count: totalCount,
+                count: (data.length === Number(limit))
+                    ? (Number(page) * Number(limit)) + 1
+                    : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: results
             });
         }
