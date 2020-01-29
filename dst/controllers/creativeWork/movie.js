@@ -45,11 +45,11 @@ function add(req, res) {
                         endpoint: process.env.API_ENDPOINT,
                         auth: req.user.authClient
                     });
-                    const { totalCount } = yield creativeWorkService.searchMovies({
+                    const { data } = yield creativeWorkService.searchMovies({
                         project: { ids: [req.project.id] },
                         identifier: `^${movie.identifier}$`
                     });
-                    if (totalCount > 0) {
+                    if (data.length > 0) {
                         throw new Error('既に存在する作品コードです');
                     }
                     debug('saving an movie...', movie);
@@ -190,9 +190,11 @@ function getList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const result = yield creativeWorkService.searchMovies({
-                limit: req.query.limit,
-                page: req.query.page,
+            const limit = Number(req.query.limit);
+            const page = Number(req.query.page);
+            const { data } = yield creativeWorkService.searchMovies({
+                limit: limit,
+                page: page,
                 project: { ids: [req.project.id] },
                 identifier: req.query.identifier,
                 name: req.query.name,
@@ -203,8 +205,10 @@ function getList(req, res) {
             });
             res.json({
                 success: true,
-                count: result.totalCount,
-                results: result.data
+                count: (data.length === Number(limit))
+                    ? (Number(page) * Number(limit)) + 1
+                    : ((Number(page) - 1) * Number(limit)) + Number(data.length),
+                results: data
             });
         }
         catch (error) {

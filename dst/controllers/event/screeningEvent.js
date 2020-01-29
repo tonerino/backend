@@ -31,7 +31,7 @@ function index(req, res, next) {
             const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
                 project: { ids: [req.project.id] }
             });
-            if (searchMovieTheatersResult.totalCount === 0) {
+            if (searchMovieTheatersResult.data.length === 0) {
                 throw new Error('劇場が見つかりません');
             }
             const searchTicketTypeGroupsResult = yield offerService.searchTicketTypeGroups({
@@ -76,7 +76,9 @@ function search(req, res) {
                 throw new Error(`Movie Theater ${req.query.theater} Not Found`);
             }
             const movieTheater = yield placeService.findMovieTheaterById({ id: movieTheaterWithoutScreeningRoom.id });
+            const limit = 100;
             const searchResult = yield eventService.search({
+                limit: limit,
                 project: { ids: [req.project.id] },
                 typeOf: chevre.factory.eventType.ScreeningEvent,
                 eventStatuses: [chevre.factory.eventStatusType.EventScheduled],
@@ -90,9 +92,10 @@ function search(req, res) {
             let screens;
             if (screen !== undefined) {
                 data = searchResult.data.filter((event) => event.location.branchCode === screen);
-                if (searchResult.data.length < searchResult.totalCount) {
+                if (searchResult.data.length >= limit) {
                     let dataPage2;
                     const searchResultPage2 = yield eventService.search({
+                        limit: limit,
                         project: { ids: [req.project.id] },
                         typeOf: chevre.factory.eventType.ScreeningEvent,
                         eventStatuses: [chevre.factory.eventStatusType.EventScheduled],
@@ -336,14 +339,14 @@ function createEventFromBody(req) {
             throw new Error('上映スクリーン名が見つかりません');
         }
         const ticketTypeGroup = yield offerService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
-        const searchBoxOfficeTypeResult = yield serviceTypeService.search({
+        const { data } = yield serviceTypeService.search({
             project: { ids: [req.project.id] },
             ids: [ticketTypeGroup.itemOffered.serviceType.id]
         });
-        if (searchBoxOfficeTypeResult.totalCount === 0) {
+        if (data.length === 0) {
             throw new Error('興行区分が見つかりません');
         }
-        const serviceType = searchBoxOfficeTypeResult.data[0];
+        const serviceType = data[0];
         let offersValidAfterStart;
         if (body.endSaleTimeAfterScreening !== undefined && body.endSaleTimeAfterScreening !== '') {
             offersValidAfterStart = Number(body.endSaleTimeAfterScreening);

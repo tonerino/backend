@@ -138,7 +138,6 @@ ordersRouter.get('/search', async (req, res) => {
 
         debug('searching orders...', params);
         const searchResult = await orderService.search(params);
-        debug(searchResult.totalCount, 'orders found');
 
         let returningOrderNumbers: string[] = [];
         const returningOrderNumbersStr = (<Express.Session>req.session).returningOrderNumbers;
@@ -153,7 +152,6 @@ ordersRouter.get('/search', async (req, res) => {
             count: (searchResult.data.length === Number(params.limit))
                 ? (Number(params.page) * Number(params.limit)) + 1
                 : ((Number(params.page) - 1) * Number(params.limit)) + Number(searchResult.data.length),
-            // count: searchResult.totalCount,
             results: searchResult.data.map((o) => {
                 return {
                     ...o,

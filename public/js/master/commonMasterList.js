@@ -1,6 +1,7 @@
 $(function () {
     $.CommonMasterList = $.CommonMasterList || {};
     $.CommonMasterList = {
+        _listTableBodySelector: "",
         _templateRowSelector: "#templateRow",
         _searchedCountAreaSelector: "#searchedCount",
         _resultStatsSelector: "#resultStats",
@@ -11,7 +12,15 @@ $(function () {
         _itemsOnPage: 10,
         _listNames: [],
         _listCols: {},
+        /**
+         * 現在表示中のデータリスト
+         */
+        _datas: [],
+
         onPageChanging: function (pageNumber) { },
+        getListBody: function () {
+            return ($(this._listTableBodySelector))
+        },
         getTemplateRow: function () {
             return ($(this._templateRowSelector))
         },
@@ -28,6 +37,7 @@ $(function () {
         // init: 初期化
         //----------------------
         init: function (templateRowSelector, searchedCountAreaSelector) {
+            this._listTableBodySelector = $(templateRowSelector).closest('tbody');
             this._templateRowSelector = templateRowSelector;
             this._searchedCountAreaSelector = searchedCountAreaSelector;
             this._searchedCountText = this.getSearchedCountArea().text();
@@ -53,7 +63,7 @@ $(function () {
             this._itemsOnPage = itemsOnPage;
             var pager = this.getPager().hide();
             pager.pagination({
-                items: 100,
+                // items: 100,
                 itemsOnPage: itemsOnPage,
                 cssStyle: 'light-theme',
                 displayedPages: 3,
@@ -64,10 +74,13 @@ $(function () {
             })
             pager.hide();
         },
+
         //----------------------
         // bind: データ分の表示行作成
         //----------------------
         bind: function (datas, countData, pageNumber) {
+            this._datas = datas;
+
             // pager取得
             var pager = this.getPager().hide();
 
@@ -130,7 +143,10 @@ $(function () {
                 htmlRow[cntRow] = startTagTemp + tempRow.join("") + endTag;
                 cntRow++;
             });
-            this.getTemplateRow().closest("tbody").html(htmlRow.join(""));
+
+            var listBody = this.getListBody();
+            listBody.html(htmlRow.join(''));
+
             // ページャアイテム数・現在ぺージ再セット
             pager.pagination('updateItems', countData);
             pager.pagination('drawPage', pageNumber);
@@ -139,6 +155,13 @@ $(function () {
         },
         dummy: function () {
             alert("dummy");
+        },
+
+        /**
+         * 現在表示中のデータリストを取得する
+         */
+        getDatas: function () {
+            return this._datas;
         },
 
         /**

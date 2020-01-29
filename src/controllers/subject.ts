@@ -68,13 +68,13 @@ export async function update(req: Request, res: Response): Promise<void> {
     });
     let message = '';
     let errors: any = {};
-    const searchSubjectsResult = await subjectService.searchSubject({
+    const { data } = await subjectService.searchSubject({
         detailCd: req.params.id
     });
-    if (searchSubjectsResult.totalCount === 0) {
+    if (data.length === 0) {
         throw new Error('Subject Not Found');
     }
-    const subject = searchSubjectsResult.data[0];
+    const subject = data[0];
 
     if (req.method === 'POST') {
         // バリデーション
@@ -143,14 +143,19 @@ export async function getList(req: Request, res: Response): Promise<void> {
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const { totalCount, data } = await subjectService.searchSubject({
-            limit: req.query.limit,
-            page: req.query.page,
+
+        const limit = Number(req.query.limit);
+        const page = Number(req.query.page);
+        const { data } = await subjectService.searchSubject({
+            limit: limit,
+            page: page,
             detailCd: req.query.detailCd
         });
         res.json({
             success: true,
-            count: totalCount,
+            count: (data.length === Number(limit))
+                ? (Number(page) * Number(limit)) + 1
+                : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((g) => {
                 return {
                     id: g.detailCd,

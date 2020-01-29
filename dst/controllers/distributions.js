@@ -42,10 +42,10 @@ function add(req, res) {
                         id: req.body.id,
                         name: req.body.name
                     };
-                    const searchDistribution = yield distributionService.searchDistribution({
+                    const { data } = yield distributionService.searchDistribution({
                         id: req.body.id
                     });
-                    if (searchDistribution.totalCount > 0) {
+                    if (data.length > 0) {
                         message = '配給コードが既に登録されています。';
                     }
                     else {
@@ -82,16 +82,20 @@ function getList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const result = yield distributionService.searchDistribution({
-                limit: req.query.limit,
-                page: req.query.page,
+            const limit = Number(req.query.limit);
+            const page = Number(req.query.page);
+            const { data } = yield distributionService.searchDistribution({
+                limit: limit,
+                page: page,
                 id: req.query.id,
                 name: req.query.name
             });
             res.json({
                 success: true,
-                count: result.totalCount,
-                results: result.data.map((t) => {
+                count: (data.length === Number(limit))
+                    ? (Number(page) * Number(limit)) + 1
+                    : ((Number(page) - 1) * Number(limit)) + Number(data.length),
+                results: data.map((t) => {
                     return {
                         id: t.id,
                         name: t.name

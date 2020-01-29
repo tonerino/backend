@@ -137,7 +137,6 @@ ordersRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, functi
         };
         debug('searching orders...', params);
         const searchResult = yield orderService.search(params);
-        debug(searchResult.totalCount, 'orders found');
         let returningOrderNumbers = [];
         const returningOrderNumbersStr = req.session.returningOrderNumbers;
         if (typeof returningOrderNumbersStr === 'string') {
@@ -149,7 +148,6 @@ ordersRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, functi
             count: (searchResult.data.length === Number(params.limit))
                 ? (Number(params.page) * Number(params.limit)) + 1
                 : ((Number(params.page) - 1) * Number(params.limit)) + Number(searchResult.data.length),
-            // count: searchResult.totalCount,
             results: searchResult.data.map((o) => {
                 return Object.assign({}, o, { paymentMethodId: o.paymentMethods.map((p) => p.paymentMethodId).join(','), ticketInfo: o.acceptedOffers.map((offer) => {
                         let priceStr = String(offer.price);

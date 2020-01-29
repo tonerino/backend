@@ -59,11 +59,11 @@ function add(req, res) {
                     req.body.id = '';
                     let ticketTypeGroup = yield createFromBody(req);
                     // 券種グループコード重複確認
-                    const { totalCount } = yield offerService.searchTicketTypeGroups({
+                    const { data } = yield offerService.searchTicketTypeGroups({
                         project: { ids: [req.project.id] },
                         identifier: `^${ticketTypeGroup.identifier}$`
                     });
-                    if (totalCount > 0) {
+                    if (data.length > 0) {
                         throw new Error(`既に存在する券種グループコードです: ${ticketTypeGroup.identifier}`);
                     }
                     ticketTypeGroup = yield offerService.createTicketTypeGroup(ticketTypeGroup);
@@ -223,16 +223,20 @@ function getList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const { totalCount, data } = yield offerService.searchTicketTypeGroups({
-                limit: req.query.limit,
-                page: req.query.page,
+            const limit = Number(req.query.limit);
+            const page = Number(req.query.page);
+            const { data } = yield offerService.searchTicketTypeGroups({
+                limit: limit,
+                page: page,
                 project: { ids: [req.project.id] },
                 identifier: req.query.identifier,
                 name: req.query.name
             });
             res.json({
                 success: true,
-                count: totalCount,
+                count: (data.length === Number(limit))
+                    ? (Number(page) * Number(limit)) + 1
+                    : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data.map((g) => {
                     return Object.assign({}, g, { ticketGroupCode: g.identifier });
                 })
@@ -260,15 +264,20 @@ function getTicketTypeList(req, res) {
             });
             // 券種グループ取得
             const ticketGroup = yield offerService.findTicketTypeGroupById({ id: req.query.id });
-            const searchTicketTypesResult = yield offerService.searchTicketTypes({
-                limit: 100,
+            const limit = 100;
+            const page = 1;
+            const { data } = yield offerService.searchTicketTypes({
+                limit: limit,
+                page: page,
                 project: { ids: [req.project.id] },
                 ids: ticketGroup.ticketTypes
             });
             res.json({
                 success: true,
-                count: searchTicketTypesResult.totalCount,
-                results: searchTicketTypesResult.data.map((t) => (t.alternateName !== undefined) ? t.alternateName.ja : t.name.ja)
+                count: (data.length === Number(limit))
+                    ? (Number(page) * Number(limit)) + 1
+                    : ((Number(page) - 1) * Number(limit)) + Number(data.length),
+                results: data.map((t) => (t.alternateName !== undefined) ? t.alternateName.ja : t.name.ja)
             });
         }
         catch (err) {
@@ -291,8 +300,11 @@ function getTicketTypePriceList(req, res) {
                 auth: req.user.authClient
             });
             // 指定価格の券種検索
-            const searchTicketTypesResult = yield offerService.searchTicketTypes({
-                limit: 100,
+            const limit = 100;
+            const page = 1;
+            const { data } = yield offerService.searchTicketTypes({
+                limit: limit,
+                page: page,
                 sort: {
                     'priceSpecification.price': chevre.factory.sortType.Descending
                 },
@@ -307,8 +319,10 @@ function getTicketTypePriceList(req, res) {
             });
             res.json({
                 success: true,
-                count: searchTicketTypesResult.totalCount,
-                results: searchTicketTypesResult.data
+                count: (data.length === Number(limit))
+                    ? (Number(page) * Number(limit)) + 1
+                    : ((Number(page) - 1) * Number(limit)) + Number(data.length),
+                results: data
             });
         }
         catch (err) {
