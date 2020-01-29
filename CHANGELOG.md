@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- APIのX-Total-Count削除への対応
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v1.5.0 - 2020-01-29
+
+### Changed
+
+- APIのX-Total-Count削除への対応
 
 ## v1.4.0 - 2020-01-27
 
