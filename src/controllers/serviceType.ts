@@ -148,8 +148,15 @@ function createFromBody(req: Request): chevre.factory.serviceType.IServiceType {
         project: req.project,
         typeOf: <'ServiceType'>'ServiceType',
         id: <string>body.id,
-        identifier: <string>body.identifier,
-        name: <string>body.name
+        identifier: body.identifier,
+        name: <string>body.name,
+        ...{
+            codeValue: body.identifier,
+            inCodeSet: {
+                typeOf: 'CategoryCodeSet',
+                identifier: 'ServiceType'
+            }
+        }
     };
 }
 

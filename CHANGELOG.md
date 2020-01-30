@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 興行区分をカテゴリーコードに統合
+
 ### Deprecated
 
 ### Removed

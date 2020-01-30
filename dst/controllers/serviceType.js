@@ -153,13 +153,13 @@ function update(req, res) {
 exports.update = update;
 function createFromBody(req) {
     const body = req.body;
-    return {
-        project: req.project,
-        typeOf: 'ServiceType',
-        id: body.id,
-        identifier: body.identifier,
-        name: body.name
-    };
+    return Object.assign({ project: req.project, typeOf: 'ServiceType', id: body.id, identifier: body.identifier, name: body.name }, {
+        codeValue: body.identifier,
+        inCodeSet: {
+            typeOf: 'CategoryCodeSet',
+            identifier: 'ServiceType'
+        }
+    });
 }
 /**
  * 興行区分マスタ新規登録画面検証
