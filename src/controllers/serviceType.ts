@@ -36,7 +36,7 @@ export async function add(req: Request, res: Response): Promise<void> {
                 const { data } = await serviceTypeService.search({
                     project: { id: { $eq: req.project.id } },
                     codeValue: {
-                        $eq: (req.query.identifier !== undefined && req.query.identifier !== '') ? req.query.identifier : undefined
+                        $eq: serviceType.codeValue
                     }
                 });
                 if (data.length > 0) {

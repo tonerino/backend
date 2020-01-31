@@ -42,7 +42,7 @@ function add(req, res) {
                     const { data } = yield serviceTypeService.search({
                         project: { id: { $eq: req.project.id } },
                         codeValue: {
-                            $eq: (req.query.identifier !== undefined && req.query.identifier !== '') ? req.query.identifier : undefined
+                            $eq: serviceType.codeValue
                         }
                     });
                     if (data.length > 0) {
