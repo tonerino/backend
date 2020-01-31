@@ -99,7 +99,7 @@ export async function add(req: Request, res: Response): Promise<void> {
 
     const searchServiceTypesResult = await serviceTypeService.search({
         limit: 100,
-        project: { ids: [req.project.id] }
+        project: { id: { $eq: req.project.id } }
     });
 
     res.render('ticketTypeGroup/add', {
@@ -125,7 +125,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     });
     const searchServiceTypesResult = await serviceTypeService.search({
         limit: 100,
-        project: { ids: [req.project.id] }
+        project: { id: { $eq: req.project.id } }
     });
     let message = '';
     let errors: any = {};
@@ -154,7 +154,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     const ticketGroup = await offerService.findTicketTypeGroupById({ id: req.params.id });
     const forms = {
         ...ticketGroup,
-        serviceType: ticketGroup.itemOffered.serviceType.id,
+        serviceType: ticketGroup.itemOffered.serviceType.codeValue,
         ...req.body,
         ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : []
     };
@@ -206,7 +206,15 @@ async function createFromBody(req: Request): Promise<chevre.factory.ticketType.I
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const serviceType = await serviceTypeService.findById({ id: req.body.serviceType });
+
+    const searchServiceTypesResult = await serviceTypeService.search({
+        limit: 1,
+        codeValue: { $eq: req.body.serviceType }
+    });
+    const serviceType = searchServiceTypesResult.data.shift();
+    if (serviceType === undefined) {
+        throw new Error('興行タイプが見つかりません');
+    }
 
     return {
         project: req.project,

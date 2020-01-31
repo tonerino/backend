@@ -34,8 +34,10 @@ export async function add(req: Request, res: Response): Promise<void> {
                 req.body.id = '';
                 let serviceType = createFromBody(req);
                 const { data } = await serviceTypeService.search({
-                    project: { ids: [req.project.id] },
-                    identifiers: [serviceType.identifier]
+                    project: { id: { $eq: req.project.id } },
+                    codeValue: {
+                        $eq: (req.query.identifier !== undefined && req.query.identifier !== '') ? req.query.identifier : undefined
+                    }
                 });
                 if (data.length > 0) {
                     throw new Error('既に存在する興行区分コードです');
@@ -75,10 +77,13 @@ export async function getList(req: Request, res: Response): Promise<void> {
         const { data } = await serviceTypeService.search({
             limit: limit,
             page: page,
-            project: { ids: [req.project.id] },
-            ids: [req.query.id],
+            project: { id: { $eq: req.project.id } },
+            codeValue: {
+                $eq: (req.query.id !== undefined && req.query.id !== '') ? req.query.id : undefined
+            },
+            // identifiers: (req.query.identifier !== undefined && req.query.identifier !== '') ? [req.query.identifier] : undefined,
             name: req.query.name,
-            sort: { _id: chevre.factory.sortType.Ascending }
+            sort: { codeValue: chevre.factory.sortType.Ascending }
         });
 
         res.json({
@@ -146,17 +151,15 @@ function createFromBody(req: Request): chevre.factory.serviceType.IServiceType {
 
     return {
         project: req.project,
-        typeOf: <'ServiceType'>'ServiceType',
+        typeOf: <any>'ServiceType',
         id: <string>body.id,
         identifier: body.identifier,
-        name: <string>body.name,
-        ...{
-            codeValue: body.identifier,
-            inCodeSet: {
-                typeOf: 'CategoryCodeSet',
-                identifier: 'ServiceType'
-            }
-        }
+        codeValue: body.identifier,
+        inCodeSet: {
+            typeOf: 'CategoryCodeSet',
+            identifier: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType
+        },
+        name: <string>body.name
     };
 }
 

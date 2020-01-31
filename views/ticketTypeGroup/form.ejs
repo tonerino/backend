@@ -104,16 +104,16 @@
     <div class="col-sm-9">
         <select name="serviceType" id="serviceType" class="form-control">
             <% for (let boxOffice of boxOfficeTypeList) { %>
-            <% if (forms.serviceType === boxOffice.id) { %>
-            <option value="<%= boxOffice.id %>" selected>
+            <% if (forms.serviceType === boxOffice.codeValue) { %>
+            <option value="<%= boxOffice.codeValue %>" selected>
                 <%= boxOffice.name %>
             </option>
             <% } else if (boxOffice.name === '通常興行') { %>
-            <option value="<%= boxOffice.id %>" selected>
+            <option value="<%= boxOffice.codeValue %>" selected>
                 <%= boxOffice.name %>
             </option>
             <% } else { %>
-            <option value="<%= boxOffice.id %>">
+            <option value="<%= boxOffice.codeValue %>">
                 <%= boxOffice.name %>
             </option>
             <% } %>
