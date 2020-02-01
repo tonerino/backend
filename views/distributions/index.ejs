@@ -54,7 +54,8 @@ Aa-15
             </thead>
             <tbody>
                 <tr id="templateRow" identifier="$id$">
-                    <td name="id">$id$</td>
+                    <td name="id" class="hidden">$id$</td>
+                    <td name="codeValue">$codeValue$</td>
                     <td name="name">$name$</td>
                     <% if (user.cognitoGroups.movieTheaters === undefined || user.cognitoGroups.movieTheaters.length === 0) { %>
                     <td name="edit" class="center">

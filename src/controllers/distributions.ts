@@ -77,20 +77,15 @@ export async function getList(req: Request, res: Response): Promise<void> {
         const { data } = await distributionService.searchDistribution({
             limit: limit,
             page: page,
-            id: req.query.id,
-            name: req.query.name
+            id: (typeof req.query.id === 'string' && req.query.id.length > 0) ? req.query.id : undefined,
+            name: (typeof req.query.name === 'string' && req.query.name.length > 0) ? req.query.name : undefined
         });
         res.json({
             success: true,
             count: (data.length === Number(limit))
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
-            results: data.map((t) => {
-                return {
-                    id: t.id,
-                    name: t.name
-                };
-            })
+            results: data
         });
     } catch (err) {
         res.json({
