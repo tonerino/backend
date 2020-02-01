@@ -122,7 +122,9 @@ function update(req, res, next) {
                 auth: req.user.authClient
             });
             const distributions = yield distributionsService.getDistributionsList();
-            const forms = Object.assign({}, movie, { distribution: (movie.distributor !== undefined) ? movie.distributor.id : '' }, req.body, { duration: (_.isEmpty(req.body.duration))
+            const forms = Object.assign({}, movie, { distribution: (movie.distributor !== undefined && movie.distributor !== null)
+                    ? movie.distributor.distributorType
+                    : '' }, req.body, { duration: (_.isEmpty(req.body.duration))
                     ? (typeof movie.duration === 'string') ? moment.duration(movie.duration).asMinutes() : ''
                     : req.body.duration, datePublished: (_.isEmpty(req.body.datePublished)) ?
                     (movie.datePublished !== undefined) ? moment(movie.datePublished).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
@@ -169,7 +171,8 @@ function createMovieFromBody(req) {
         },
         distributor: {
             id: body.distribution,
-            name: ''
+            name: '',
+            distributorType: body.distribution
         }
     };
     if (movie.offers !== undefined
@@ -208,7 +211,11 @@ function getList(req, res) {
                 count: (data.length === Number(limit))
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
-                results: data
+                results: data.map((d) => {
+                    return Object.assign({}, d, { distributorType: (d.distributor !== undefined && d.distributor !== null)
+                            ? d.distributor.distributorType
+                            : '' });
+                })
             });
         }
         catch (error) {

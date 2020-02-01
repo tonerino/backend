@@ -119,7 +119,9 @@ export async function update(req: Request, res: Response, next: NextFunction): P
         const distributions = await distributionsService.getDistributionsList();
         const forms = {
             ...movie,
-            distribution: (movie.distributor !== undefined) ? movie.distributor.id : '',
+            distribution: (movie.distributor !== undefined && movie.distributor !== null)
+                ? movie.distributor.distributorType
+                : '',
             ...req.body,
             duration: (_.isEmpty(req.body.duration))
                 ? (typeof movie.duration === 'string') ? moment.duration(movie.duration).asMinutes() : ''
@@ -169,7 +171,8 @@ function createMovieFromBody(req: Request): chevre.factory.creativeWork.movie.IC
         },
         distributor: {
             id: <string>body.distribution,
-            name: ''
+            name: '',
+            distributorType: <string>body.distribution
         }
     };
 
@@ -211,7 +214,14 @@ export async function getList(req: Request, res: Response): Promise<void> {
             count: (data.length === Number(limit))
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
-            results: data
+            results: data.map((d) => {
+                return {
+                    ...d,
+                    distributorType: (d.distributor !== undefined && d.distributor !== null)
+                        ? d.distributor.distributorType
+                        : ''
+                };
+            })
         });
     } catch (error) {
         res.json({
