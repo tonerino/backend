@@ -32,11 +32,15 @@ export async function add(req: Request, res: Response): Promise<void> {
             // 配給DB登録プロセス
             try {
                 const distribution = {
+                    project: { id: req.project.id },
                     id: req.body.id,
                     name: req.body.name
                 };
-                const { data } = await distributionService.searchDistribution({
-                    id: req.body.id
+                const { data } = await distributionService.searchDistribution(<any>{
+                    project: { id: { $eq: req.project.id } },
+                    codeValue: {
+                        $eq: req.body.id
+                    }
                 });
                 if (data.length > 0) {
                     message = '配給コードが既に登録されています。';
@@ -77,6 +81,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
         const { data } = await distributionService.searchDistribution({
             limit: limit,
             page: page,
+            project: <any>{ id: { $eq: req.project.id } },
             id: (typeof req.query.id === 'string' && req.query.id.length > 0) ? req.query.id : undefined,
             name: (typeof req.query.name === 'string' && req.query.name.length > 0) ? req.query.name : undefined
         });
@@ -98,16 +103,10 @@ export async function getList(req: Request, res: Response): Promise<void> {
 /**
  * 一覧
  */
-export async function index(req: Request, res: Response): Promise<void> {
-    const offerService = new chevre.service.Offer({
-        endpoint: <string>process.env.API_ENDPOINT,
-        auth: req.user.authClient
-    });
-    const ticketTypeGroupsList = await offerService.searchTicketTypeGroups({});
+export async function index(__: Request, res: Response): Promise<void> {
     // 配給マスタ画面遷移
     res.render('distributions/index', {
-        message: '',
-        ticketTypeGroupsList: ticketTypeGroupsList.data
+        message: ''
     });
 }
 
@@ -134,6 +133,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     // 配給DB更新プロセス
     try {
         const distribution = {
+            project: { id: req.project.id },
             id: req.params.id,
             name: req.body.name
         };
