@@ -102,7 +102,7 @@
         <select name="distribution" id="distribution" class="form-control">
             <option value="">---</option>
             <% for (let distribution of distributions) { %>
-            <option value="<%= distribution.id %>" <% if (forms.distribution===distribution.id) { %>
+            <option value="<%= distribution.codeValue %>" <% if (forms.distribution===distribution.codeValue) { %>
                 selected="selected"
                 <% } %>>
                 <%- distribution.name %>

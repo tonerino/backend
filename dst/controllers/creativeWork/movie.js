@@ -68,14 +68,17 @@ function add(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const distributions = yield distributionsService.getDistributionsList();
+        const searchDistributionResult = yield distributionsService.searchDistribution({
+            limit: 100,
+            project: { id: { $eq: req.project.id } }
+        });
         const forms = req.body;
         // 作品マスタ画面遷移
         res.render('creativeWorks/movie/add', {
             message: message,
             errors: errors,
             forms: forms,
-            distributions: distributions
+            distributions: searchDistributionResult.data
         });
     });
 }
@@ -121,8 +124,13 @@ function update(req, res, next) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const distributions = yield distributionsService.getDistributionsList();
-            const forms = Object.assign({}, movie, { distribution: (movie.distributor !== undefined) ? movie.distributor.id : '' }, req.body, { duration: (_.isEmpty(req.body.duration))
+            const { data } = yield distributionsService.searchDistribution({
+                limit: 100,
+                project: { id: { $eq: req.project.id } }
+            });
+            const forms = Object.assign({}, movie, { distribution: (movie.distributor !== undefined && movie.distributor !== null)
+                    ? movie.distributor.distributorType
+                    : '' }, req.body, { duration: (_.isEmpty(req.body.duration))
                     ? (typeof movie.duration === 'string') ? moment.duration(movie.duration).asMinutes() : ''
                     : req.body.duration, datePublished: (_.isEmpty(req.body.datePublished)) ?
                     (movie.datePublished !== undefined) ? moment(movie.datePublished).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
@@ -139,7 +147,7 @@ function update(req, res, next) {
                 message: message,
                 errors: errors,
                 forms: forms,
-                distributions: distributions
+                distributions: data
             });
         }
         catch (error) {
@@ -169,7 +177,8 @@ function createMovieFromBody(req) {
         },
         distributor: {
             id: body.distribution,
-            name: ''
+            name: '',
+            distributorType: body.distribution
         }
     };
     if (movie.offers !== undefined
@@ -208,7 +217,11 @@ function getList(req, res) {
                 count: (data.length === Number(limit))
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
-                results: data
+                results: data.map((d) => {
+                    return Object.assign({}, d, { distributorType: (d.distributor !== undefined && d.distributor !== null)
+                            ? d.distributor.distributorType
+                            : '' });
+                })
             });
         }
         catch (error) {

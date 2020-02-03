@@ -39,11 +39,15 @@ function add(req, res) {
                 // 配給DB登録プロセス
                 try {
                     const distribution = {
+                        project: { id: req.project.id },
                         id: req.body.id,
                         name: req.body.name
                     };
                     const { data } = yield distributionService.searchDistribution({
-                        id: req.body.id
+                        project: { id: { $eq: req.project.id } },
+                        codeValue: {
+                            $eq: req.body.id
+                        }
                     });
                     if (data.length > 0) {
                         message = '配給コードが既に登録されています。';
@@ -87,20 +91,16 @@ function getList(req, res) {
             const { data } = yield distributionService.searchDistribution({
                 limit: limit,
                 page: page,
-                id: req.query.id,
-                name: req.query.name
+                project: { id: { $eq: req.project.id } },
+                id: (typeof req.query.id === 'string' && req.query.id.length > 0) ? req.query.id : undefined,
+                name: (typeof req.query.name === 'string' && req.query.name.length > 0) ? req.query.name : undefined
             });
             res.json({
                 success: true,
                 count: (data.length === Number(limit))
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
-                results: data.map((t) => {
-                    return {
-                        id: t.id,
-                        name: t.name
-                    };
-                })
+                results: data
             });
         }
         catch (err) {
@@ -116,17 +116,11 @@ exports.getList = getList;
 /**
  * 一覧
  */
-function index(req, res) {
+function index(__, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const offerService = new chevre.service.Offer({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient
-        });
-        const ticketTypeGroupsList = yield offerService.searchTicketTypeGroups({});
         // 配給マスタ画面遷移
         res.render('distributions/index', {
-            message: '',
-            ticketTypeGroupsList: ticketTypeGroupsList.data
+            message: ''
         });
     });
 }
@@ -154,6 +148,7 @@ function update(req, res) {
         // 配給DB更新プロセス
         try {
             const distribution = {
+                project: { id: req.project.id },
                 id: req.params.id,
                 name: req.body.name
             };

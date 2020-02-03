@@ -64,14 +64,20 @@ export async function add(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const distributions = await distributionsService.getDistributionsList();
+
+    const searchDistributionResult = await distributionsService.searchDistribution({
+        limit: 100,
+        project: <any>{ id: { $eq: req.project.id } }
+    });
+
     const forms = req.body;
+
     // 作品マスタ画面遷移
     res.render('creativeWorks/movie/add', {
         message: message,
         errors: errors,
         forms: forms,
-        distributions: distributions
+        distributions: searchDistributionResult.data
     });
 }
 /**
@@ -116,10 +122,17 @@ export async function update(req: Request, res: Response, next: NextFunction): P
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const distributions = await distributionsService.getDistributionsList();
+
+        const { data } = await distributionsService.searchDistribution({
+            limit: 100,
+            project: <any>{ id: { $eq: req.project.id } }
+        });
+
         const forms = {
             ...movie,
-            distribution: (movie.distributor !== undefined) ? movie.distributor.id : '',
+            distribution: (movie.distributor !== undefined && movie.distributor !== null)
+                ? movie.distributor.distributorType
+                : '',
             ...req.body,
             duration: (_.isEmpty(req.body.duration))
                 ? (typeof movie.duration === 'string') ? moment.duration(movie.duration).asMinutes() : ''
@@ -141,7 +154,7 @@ export async function update(req: Request, res: Response, next: NextFunction): P
             message: message,
             errors: errors,
             forms: forms,
-            distributions: distributions
+            distributions: data
         });
     } catch (error) {
         next(error);
@@ -169,7 +182,8 @@ function createMovieFromBody(req: Request): chevre.factory.creativeWork.movie.IC
         },
         distributor: {
             id: <string>body.distribution,
-            name: ''
+            name: '',
+            distributorType: <string>body.distribution
         }
     };
 
@@ -211,7 +225,14 @@ export async function getList(req: Request, res: Response): Promise<void> {
             count: (data.length === Number(limit))
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
-            results: data
+            results: data.map((d) => {
+                return {
+                    ...d,
+                    distributorType: (d.distributor !== undefined && d.distributor !== null)
+                        ? d.distributor.distributorType
+                        : ''
+                };
+            })
         });
     } catch (error) {
         res.json({

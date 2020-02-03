@@ -40,8 +40,10 @@ function add(req, res) {
                     req.body.id = '';
                     let serviceType = createFromBody(req);
                     const { data } = yield serviceTypeService.search({
-                        project: { ids: [req.project.id] },
-                        identifiers: [serviceType.identifier]
+                        project: { id: { $eq: req.project.id } },
+                        codeValue: {
+                            $eq: serviceType.codeValue
+                        }
                     });
                     if (data.length > 0) {
                         throw new Error('既に存在する興行区分コードです');
@@ -80,10 +82,13 @@ function getList(req, res) {
             const { data } = yield serviceTypeService.search({
                 limit: limit,
                 page: page,
-                project: { ids: [req.project.id] },
-                ids: [req.query.id],
+                project: { id: { $eq: req.project.id } },
+                codeValue: {
+                    $eq: (req.query.id !== undefined && req.query.id !== '') ? req.query.id : undefined
+                },
+                // identifiers: (req.query.identifier !== undefined && req.query.identifier !== '') ? [req.query.identifier] : undefined,
                 name: req.query.name,
-                sort: { _id: chevre.factory.sortType.Ascending }
+                sort: { codeValue: chevre.factory.sortType.Ascending }
             });
             res.json({
                 success: true,
@@ -158,6 +163,11 @@ function createFromBody(req) {
         typeOf: 'ServiceType',
         id: body.id,
         identifier: body.identifier,
+        codeValue: body.identifier,
+        inCodeSet: {
+            typeOf: 'CategoryCodeSet',
+            identifier: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType
+        },
         name: body.name
     };
 }
