@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 興行区分をカテゴリーコードに統合
-- 配給区分をカテゴリーコードに統合
-- update @chevre/api-nodejs-client
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v1.6.0 - 2020-02-03
+
+### Changed
+
+- 興行区分をカテゴリーコードに統合
+- 配給区分をカテゴリーコードに統合
+- update @chevre/api-nodejs-client
 
 ## v1.5.0 - 2020-01-29
 
