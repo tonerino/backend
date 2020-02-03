@@ -68,14 +68,17 @@ function add(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const distributions = yield distributionsService.getDistributionsList();
+        const searchDistributionResult = yield distributionsService.searchDistribution({
+            limit: 100,
+            project: { id: { $eq: req.project.id } }
+        });
         const forms = req.body;
         // 作品マスタ画面遷移
         res.render('creativeWorks/movie/add', {
             message: message,
             errors: errors,
             forms: forms,
-            distributions: distributions
+            distributions: searchDistributionResult.data
         });
     });
 }
@@ -121,7 +124,10 @@ function update(req, res, next) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const distributions = yield distributionsService.getDistributionsList();
+            const { data } = yield distributionsService.searchDistribution({
+                limit: 100,
+                project: { id: { $eq: req.project.id } }
+            });
             const forms = Object.assign({}, movie, { distribution: (movie.distributor !== undefined && movie.distributor !== null)
                     ? movie.distributor.distributorType
                     : '' }, req.body, { duration: (_.isEmpty(req.body.duration))
@@ -141,7 +147,7 @@ function update(req, res, next) {
                 message: message,
                 errors: errors,
                 forms: forms,
-                distributions: distributions
+                distributions: data
             });
         }
         catch (error) {

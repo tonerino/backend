@@ -64,14 +64,20 @@ export async function add(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const distributions = await distributionsService.getDistributionsList();
+
+    const searchDistributionResult = await distributionsService.searchDistribution({
+        limit: 100,
+        project: <any>{ id: { $eq: req.project.id } }
+    });
+
     const forms = req.body;
+
     // 作品マスタ画面遷移
     res.render('creativeWorks/movie/add', {
         message: message,
         errors: errors,
         forms: forms,
-        distributions: distributions
+        distributions: searchDistributionResult.data
     });
 }
 /**
@@ -116,7 +122,12 @@ export async function update(req: Request, res: Response, next: NextFunction): P
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const distributions = await distributionsService.getDistributionsList();
+
+        const { data } = await distributionsService.searchDistribution({
+            limit: 100,
+            project: <any>{ id: { $eq: req.project.id } }
+        });
+
         const forms = {
             ...movie,
             distribution: (movie.distributor !== undefined && movie.distributor !== null)
@@ -143,7 +154,7 @@ export async function update(req: Request, res: Response, next: NextFunction): P
             message: message,
             errors: errors,
             forms: forms,
-            distributions: distributions
+            distributions: data
         });
     } catch (error) {
         next(error);

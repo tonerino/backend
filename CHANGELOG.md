@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 興行区分をカテゴリーコードに統合
 - 配給区分をカテゴリーコードに統合
+- update @chevre/api-nodejs-client
 
 ### Deprecated
 
