@@ -80,19 +80,20 @@ $(function () {
     function edit(target) {
         var id = $('td[name="id"]', $(target).closest('tr')).html();
         var codeValue = $('td[name="codeValue"]', $(target).closest('tr')).html();
-        var name = $('td[name="name"]', $(target).closest('tr')).html();
+        var name = $('td[name="name.ja"]', $(target).closest('tr')).html();
         var modal = $('#editModal');
         modal.find('input[name=id]').val(id);
         modal.find('input[name=codeValue]').val(codeValue);
-        modal.find('input[name=name]').val(name);
+        modal.find('input[name="name[ja]"]').val(name);
         modal.modal();
     }
 
     function update() {
         var modal = $('#editModal');
         var id = modal.find('input[name=id]').val();
-        var name = modal.find('input[name=name]').val();
-        if (id.length === 0 || name.length === 0) {
+        var codeValue = modal.find('input[name=codeValue]').val();
+        var name = modal.find('input[name="name[ja]"]').val();
+        if (codeValue.length === 0 || name.length === 0) {
             alert('名称を入力してください！');
             return;
         }
@@ -102,12 +103,13 @@ $(function () {
             url: '/distributions/' + id + '/update',
             type: 'POST',
             data: {
-                name: name
+                codeValue: codeValue,
+                name: { ja: name }
             }
         }).done(function (data, textStatus) {
             if (textStatus === 'nocontent') {
                 modal.modal('hide');
-                $('table tbody tr[identifier=' + id + ']').find('td[name=name]').html(name);
+                $('table tbody tr[identifier=' + id + ']').find('td[name="name.ja"]').html(name);
                 return;
             } else {
                 console.error(data.results);

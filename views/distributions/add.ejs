@@ -18,36 +18,38 @@ Aa-14
         </div>
         <% /* 配給コード */ %>
         <div class="form-group ">
-            <label for="identifier" class="col-sm-3 control-label label-title">
+            <label for="codeValue" class="col-sm-3 control-label label-title">
                 配給コード<font color="red">＊</font>
             </label>
             <div class="col-sm-9">
-                <input type="text" class="form-control" name="id" id="id" placeholder="" maxlength=64 value="<%= forms.id %>">
+                <input type="text" class="form-control" name="codeValue" id="codeValue" placeholder="" maxlength=64
+                    value="<%= forms.codeValue %>">
                 <p class="message">
                     <% /*半角64文字以内でご入力ください。*/ %>
                     半角64文字以内でご入力ください。
                 </p>
                 <p class="error message text-danger">
-                    <% if (errors && errors.id) { %>
-                    <%- errors.id.msg %>
+                    <% if (errors && errors.codeValue) { %>
+                    <%- errors.codeValue.msg %>
                     <% } %>
                 </p>
             </div>
         </div>
         <% /* 配給名 */ %>
         <div class="form-group ">
-            <label for="name" class="col-sm-3 control-label label-title">
+            <label for="name[ja]" class="col-sm-3 control-label label-title">
                 名称<font color="red">＊</font>
             </label>
             <div class="col-sm-9">
-                <input type="text" class="form-control" name="name" id="name" placeholder="" maxlength=64 value="<%= forms.name %>">
+                <input type="text" class="form-control" name="name[ja]" id="name[ja]" placeholder="" maxlength=64
+                    value="<%= (forms.name !== undefined && forms.name !== null) ? forms.name.ja : '' %>">
                 <p class="message">
                     <% /64文字以内でご入力ください。*/ %>
                     64文字以内でご入力ください。
                 </p>
                 <p class="error message text-danger">
-                    <% if (errors && errors.name) { %>
-                    <%- errors.name.msg %>
+                    <% if (errors && errors['name.ja']) { %>
+                    <%- errors['name.ja'].msg %>
                     <% } %>
                 </p>
             </div>

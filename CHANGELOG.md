@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - 興行区分サービスを使用しないように調整
+- 配給区分サービスを使用しないように調整
 
 ### Deprecated
 
