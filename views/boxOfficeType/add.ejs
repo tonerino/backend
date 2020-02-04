@@ -33,16 +33,16 @@ Aa-18
         </div>
         <% /* 興行区分名 */ %>
         <div class="form-group ">
-            <label for="name" class="col-sm-3 control-label label-title">
+            <label for="name[ja]" class="col-sm-3 control-label label-title">
                 名称<font color="red">＊</font>
             </label>
             <div class="col-sm-9">
-                <input type="text" class="form-control" name="name" id="name" placeholder="" maxlength=64
-                    value="<%= forms.name %>">
+                <input type="text" class="form-control" name="name[ja]" id="name[ja]" placeholder="" maxlength=64
+                    value="<%= (forms.name !== undefined && forms.name !== null) ? forms.name.ja : '' %>">
                 <p class="message">64文字以内でご入力ください。</p>
                 <p class="error message text-danger">
-                    <% if (errors && errors.name) { %>
-                    <%- errors.name.msg %>
+                    <% if (errors && errors['name.ja']) { %>
+                    <%- errors['name.ja'].msg %>
                     <% } %>
                 </p>
             </div>

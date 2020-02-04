@@ -315,7 +315,7 @@ function createEventFromBody(req) {
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
-        const serviceTypeService = new chevre.service.ServiceType({
+        const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
@@ -339,8 +339,10 @@ function createEventFromBody(req) {
             throw new Error('上映スクリーン名が見つかりません');
         }
         const ticketTypeGroup = yield offerService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
-        const searchServiceTypesResult = yield serviceTypeService.search({
+        const searchServiceTypesResult = yield categoryCodeService.search({
             limit: 1,
+            project: { id: { $eq: req.project.id } },
+            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
             codeValue: { $eq: ticketTypeGroup.itemOffered.serviceType.codeValue }
         });
         const serviceType = searchServiceTypesResult.data.shift();
@@ -449,7 +451,7 @@ function createMultipleEventFromBody(req, user) {
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
-        const serviceTypeService = new chevre.service.ServiceType({
+        const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
@@ -483,9 +485,10 @@ function createMultipleEventFromBody(req, user) {
             project: { ids: [req.project.id] }
         });
         const ticketTypeGroups = searchTicketTypeGroupsResult.data;
-        const searchBoxOfficeTypeGroupsResult = yield serviceTypeService.search({
+        const searchBoxOfficeTypeGroupsResult = yield categoryCodeService.search({
             limit: 100,
-            project: { id: { $eq: req.project.id } }
+            project: { id: { $eq: req.project.id } },
+            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
         });
         const serviceTypes = searchBoxOfficeTypeGroupsResult.data;
         const attributes = [];

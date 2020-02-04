@@ -16,10 +16,11 @@ const MAX_LENGTH = 64;
  * 新規登録
  */
 export async function add(req: Request, res: Response): Promise<void> {
-    const serviceTypeService = new chevre.service.ServiceType({
+    const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
+
     let message = '';
     let errors: any = {};
     if (req.method === 'POST') {
@@ -33,8 +34,9 @@ export async function add(req: Request, res: Response): Promise<void> {
             try {
                 req.body.id = '';
                 let serviceType = createFromBody(req);
-                const { data } = await serviceTypeService.search({
+                const { data } = await categoryCodeService.search({
                     project: { id: { $eq: req.project.id } },
+                    inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
                     codeValue: {
                         $eq: serviceType.codeValue
                     }
@@ -43,7 +45,7 @@ export async function add(req: Request, res: Response): Promise<void> {
                     throw new Error('既に存在する興行区分コードです');
                 }
 
-                serviceType = await serviceTypeService.create(serviceType);
+                serviceType = await categoryCodeService.create(serviceType);
                 req.flash('message', '作成しました');
                 res.redirect('/boxOfficeTypes');
 
@@ -67,21 +69,21 @@ export async function add(req: Request, res: Response): Promise<void> {
  */
 export async function getList(req: Request, res: Response): Promise<void> {
     try {
-        const serviceTypeService = new chevre.service.ServiceType({
+        const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
 
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
-        const { data } = await serviceTypeService.search({
+        const { data } = await categoryCodeService.search({
             limit: limit,
             page: page,
             project: { id: { $eq: req.project.id } },
+            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
             codeValue: {
                 $eq: (req.query.id !== undefined && req.query.id !== '') ? req.query.id : undefined
             },
-            // identifiers: (req.query.identifier !== undefined && req.query.identifier !== '') ? [req.query.identifier] : undefined,
             name: req.query.name,
             sort: { codeValue: chevre.factory.sortType.Ascending }
         });
@@ -115,10 +117,11 @@ export async function index(__: Request, res: Response): Promise<void> {
  * 編集
  */
 export async function update(req: Request, res: Response): Promise<void> {
-    const serviceTypeService = new chevre.service.ServiceType({
+    const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
+
     // 検証
     validateForm(req, false);
     const validatorResult = await req.getValidationResult();
@@ -135,7 +138,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     try {
         req.body.id = req.params.id;
         const serviceType = createFromBody(req);
-        await serviceTypeService.update(serviceType);
+        await categoryCodeService.update(serviceType);
         res.status(NO_CONTENT).end();
     } catch (err) {
         debug('update error', err);
@@ -151,9 +154,8 @@ function createFromBody(req: Request): chevre.factory.serviceType.IServiceType {
 
     return {
         project: req.project,
-        typeOf: <any>'ServiceType',
+        typeOf: 'CategoryCode',
         id: <string>body.id,
-        identifier: body.identifier,
         codeValue: body.identifier,
         inCodeSet: {
             typeOf: 'CategoryCodeSet',
@@ -175,6 +177,6 @@ function validateForm(req: Request, idAdd: boolean = true): void {
             .isAlphanumeric().len({ max: MAX_LENGTH });
     }
     colName = '名称';
-    req.checkBody('name', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('name', Message.Common.getMaxLength(colName, MAX_LENGTH)).len({ max: MAX_LENGTH });
+    req.checkBody('name.ja', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('name.ja', Message.Common.getMaxLength(colName, MAX_LENGTH)).len({ max: MAX_LENGTH });
 }

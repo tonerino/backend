@@ -22,7 +22,7 @@ const MAX_LENGTH = 64;
  */
 function add(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const serviceTypeService = new chevre.service.ServiceType({
+        const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
@@ -39,8 +39,9 @@ function add(req, res) {
                 try {
                     req.body.id = '';
                     let serviceType = createFromBody(req);
-                    const { data } = yield serviceTypeService.search({
+                    const { data } = yield categoryCodeService.search({
                         project: { id: { $eq: req.project.id } },
+                        inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
                         codeValue: {
                             $eq: serviceType.codeValue
                         }
@@ -48,7 +49,7 @@ function add(req, res) {
                     if (data.length > 0) {
                         throw new Error('既に存在する興行区分コードです');
                     }
-                    serviceType = yield serviceTypeService.create(serviceType);
+                    serviceType = yield categoryCodeService.create(serviceType);
                     req.flash('message', '作成しました');
                     res.redirect('/boxOfficeTypes');
                     return;
@@ -73,20 +74,20 @@ exports.add = add;
 function getList(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const serviceTypeService = new chevre.service.ServiceType({
+            const categoryCodeService = new chevre.service.CategoryCode({
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
-            const { data } = yield serviceTypeService.search({
+            const { data } = yield categoryCodeService.search({
                 limit: limit,
                 page: page,
                 project: { id: { $eq: req.project.id } },
+                inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
                 codeValue: {
                     $eq: (req.query.id !== undefined && req.query.id !== '') ? req.query.id : undefined
                 },
-                // identifiers: (req.query.identifier !== undefined && req.query.identifier !== '') ? [req.query.identifier] : undefined,
                 name: req.query.name,
                 sort: { codeValue: chevre.factory.sortType.Ascending }
             });
@@ -125,7 +126,7 @@ exports.index = index;
  */
 function update(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const serviceTypeService = new chevre.service.ServiceType({
+        const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
@@ -143,7 +144,7 @@ function update(req, res) {
         try {
             req.body.id = req.params.id;
             const serviceType = createFromBody(req);
-            yield serviceTypeService.update(serviceType);
+            yield categoryCodeService.update(serviceType);
             res.status(http_status_1.NO_CONTENT).end();
         }
         catch (err) {
@@ -160,9 +161,8 @@ function createFromBody(req) {
     const body = req.body;
     return {
         project: req.project,
-        typeOf: 'ServiceType',
+        typeOf: 'CategoryCode',
         id: body.id,
-        identifier: body.identifier,
         codeValue: body.identifier,
         inCodeSet: {
             typeOf: 'CategoryCodeSet',
@@ -183,6 +183,6 @@ function validateForm(req, idAdd = true) {
             .isAlphanumeric().len({ max: MAX_LENGTH });
     }
     colName = '名称';
-    req.checkBody('name', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('name', Message.Common.getMaxLength(colName, MAX_LENGTH)).len({ max: MAX_LENGTH });
+    req.checkBody('name.ja', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('name.ja', Message.Common.getMaxLength(colName, MAX_LENGTH)).len({ max: MAX_LENGTH });
 }

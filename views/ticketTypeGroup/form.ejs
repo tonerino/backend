@@ -106,15 +106,15 @@
             <% for (let boxOffice of boxOfficeTypeList) { %>
             <% if (forms.serviceType === boxOffice.codeValue) { %>
             <option value="<%= boxOffice.codeValue %>" selected>
-                <%= boxOffice.name %>
+                <%= boxOffice.name.ja %>
             </option>
             <% } else if (boxOffice.name === '通常興行') { %>
             <option value="<%= boxOffice.codeValue %>" selected>
-                <%= boxOffice.name %>
+                <%= boxOffice.name.ja %>
             </option>
             <% } else { %>
             <option value="<%= boxOffice.codeValue %>">
-                <%= boxOffice.name %>
+                <%= boxOffice.name.ja %>
             </option>
             <% } %>
             <% } %>

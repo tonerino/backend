@@ -77,20 +77,20 @@ $(function () {
 
     function edit(target) {
         var id = $(target).attr('data-id');
-        var identifier = $('td[name="identifier"]', $(target).closest('tr')).html();
-        var name = $('td[name="name"]', $(target).closest('tr')).html();
+        var codeValue = $('td[name="codeValue"]', $(target).closest('tr')).html();
+        var name = $('td[name="name.ja"]', $(target).closest('tr')).html();
         var modal = $('#editModal');
         modal.find('input[name=id]').val(id);
-        modal.find('input[name=identifier]').val(identifier);
-        modal.find('input[name=name]').val(name);
+        modal.find('input[name=identifier]').val(codeValue);
+        modal.find('input[name="name[ja]"]').val(name);
         modal.modal();
     }
 
     function update() {
         var modal = $('#editModal');
         var id = modal.find('input[name=id]').val();
-        var identifier = modal.find('input[name=identifier]').val();
-        var name = modal.find('input[name=name]').val();
+        var codeValue = modal.find('input[name=identifier]').val();
+        var name = modal.find('input[name="name[ja]"]').val();
         if (identifier.length === 0 || name.length === 0) {
             alert('名称を入力してください！');
             return;
@@ -101,13 +101,13 @@ $(function () {
             url: '/boxOfficeTypes/' + id + '/update',
             type: 'POST',
             data: {
-                identifier: identifier,
-                name: name
+                identifier: codeValue,
+                name: { ja: name }
             }
         }).done(function (data, textStatus) {
             if (textStatus === 'nocontent') {
                 modal.modal('hide');
-                $('table tbody tr[identifier=' + id + ']').find('td[name=name]').html(name);
+                $('table tbody tr[identifier=' + id + ']').find('td[name="name.ja"]').html(name);
                 return;
             } else {
                 console.error(data.results);
