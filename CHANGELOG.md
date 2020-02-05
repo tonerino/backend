@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 興行区分サービスを使用しないように調整
 - 配給区分サービスを使用しないように調整
+- 券種種別をカテゴリーコード管理から検索するように調整
 
 ### Deprecated
 

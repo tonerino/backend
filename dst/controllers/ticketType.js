@@ -38,7 +38,16 @@ function add(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
+        const categoryCodeService = new chevre.service.CategoryCode({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
         const subjectList = yield subjectService.getSubjectList();
+        const searchOfferCategoryTypesResult = yield categoryCodeService.search({
+            limit: 100,
+            project: { id: { $eq: req.project.id } },
+            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } }
+        });
         let message = '';
         let errors = {};
         if (req.method === 'POST') {
@@ -75,7 +84,8 @@ function add(req, res) {
             message: message,
             errors: errors,
             forms: forms,
-            subjectList: subjectList
+            subjectList: subjectList,
+            offerCategoryTypes: searchOfferCategoryTypesResult.data
         });
     });
 }
@@ -94,7 +104,16 @@ function update(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
+        const categoryCodeService = new chevre.service.CategoryCode({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
         const subjectList = yield subjectService.getSubjectList();
+        const searchOfferCategoryTypesResult = yield categoryCodeService.search({
+            limit: 100,
+            project: { id: { $eq: req.project.id } },
+            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } }
+        });
         let message = '';
         let errors = {};
         let ticketType = yield offerService.findTicketTypeById({ id: req.params.id });
@@ -158,7 +177,8 @@ function update(req, res) {
             message: message,
             errors: errors,
             forms: forms,
-            subjectList: subjectList
+            subjectList: subjectList,
+            offerCategoryTypes: searchOfferCategoryTypesResult.data
         });
     });
 }

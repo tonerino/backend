@@ -165,7 +165,7 @@ ordersRouter.get('/search', async (req, res) => {
                             // tslint:disable-next-line:max-line-length
                             const priceComponent = <chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.UnitPriceSpecification> | undefined>
                                 priceSpecification.priceComponent.find(
-                                    (c) => c.typeOf === chevre.factory.priceSpecificationType.UnitPriceSpecification
+                                    (c) => (<any>c).typeOf === chevre.factory.priceSpecificationType.UnitPriceSpecification
                                 );
                             if (priceComponent !== undefined) {
                                 // 単価仕様をテキスト表現

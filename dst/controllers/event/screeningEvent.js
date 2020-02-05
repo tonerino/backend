@@ -388,6 +388,7 @@ function createEventFromBody(req) {
             }
         };
         const offers = {
+            project: { typeOf: req.project.typeOf, id: req.project.id },
             id: ticketTypeGroup.id,
             name: ticketTypeGroup.name,
             typeOf: 'Offer',
@@ -535,6 +536,7 @@ function createMultipleEventFromBody(req, user) {
                         }
                     };
                     const offers = {
+                        project: { typeOf: req.project.typeOf, id: req.project.id },
                         id: ticketTypeGroup.id,
                         name: ticketTypeGroup.name,
                         typeOf: 'Offer',
