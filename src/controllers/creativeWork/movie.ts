@@ -60,14 +60,15 @@ export async function add(req: Request, res: Response): Promise<void> {
         }
     }
     // 配給
-    const distributionsService = new chevre.service.Distributions({
+    const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
 
-    const searchDistributionResult = await distributionsService.searchDistribution({
+    const searchDistributionResult = await categoryCodeService.search({
         limit: 100,
-        project: <any>{ id: { $eq: req.project.id } }
+        project: { id: { $eq: req.project.id } },
+        inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } }
     });
 
     const forms = req.body;
@@ -118,14 +119,15 @@ export async function update(req: Request, res: Response, next: NextFunction): P
             }
         }
         // 配給
-        const distributionsService = new chevre.service.Distributions({
+        const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
 
-        const { data } = await distributionsService.searchDistribution({
+        const { data } = await categoryCodeService.search({
             limit: 100,
-            project: <any>{ id: { $eq: req.project.id } }
+            project: { id: { $eq: req.project.id } },
+            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } }
         });
 
         const forms = {
@@ -175,6 +177,7 @@ function createMovieFromBody(req: Request): chevre.factory.creativeWork.movie.IC
         datePublished: (!_.isEmpty(body.datePublished)) ?
             moment(`${body.datePublished}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
         offers: {
+            project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: 'Offer',
             priceCurrency: chevre.factory.priceCurrency.JPY,
             availabilityEnds: (!_.isEmpty(body.offers) && !_.isEmpty(body.offers.availabilityEnds)) ?

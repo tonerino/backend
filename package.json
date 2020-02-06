@@ -13,7 +13,7 @@
     }
   ],
   "dependencies": {
-    "@chevre/api-nodejs-client": "2.2.0-alpha.7",
+    "@chevre/api-nodejs-client": "3.0.0-alpha.1",
     "@cinerino/api-nodejs-client": "2.0.0-alpha.64",
     "body-parser": "^1.17.2",
     "connect-redis": "^3.4.1",
@@ -101,5 +101,5 @@
     "scss": "node-sass public/scss/import.scss public/css/style.css",
     "public-ts": "webpack --progress --colors --config ./public/webpack.config.js --watch"
   },
-  "version": "1.6.0"
+  "version": "1.6.1"
 }

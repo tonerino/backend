@@ -30,7 +30,19 @@ export async function add(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
+    const categoryCodeService = new chevre.service.CategoryCode({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient
+    });
+
     const subjectList = await subjectService.getSubjectList();
+
+    const searchOfferCategoryTypesResult = await categoryCodeService.search({
+        limit: 100,
+        project: { id: { $eq: req.project.id } },
+        inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } }
+    });
+
     let message = '';
     let errors: any = {};
     if (req.method === 'POST') {
@@ -74,11 +86,13 @@ export async function add(req: Request, res: Response): Promise<void> {
         seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? 1 : req.body.seatReservationUnit,
         ...req.body
     };
+
     res.render('ticketType/add', {
         message: message,
         errors: errors,
         forms: forms,
-        subjectList: subjectList
+        subjectList: subjectList,
+        offerCategoryTypes: searchOfferCategoryTypesResult.data
     });
 }
 
@@ -95,7 +109,19 @@ export async function update(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
+    const categoryCodeService = new chevre.service.CategoryCode({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient
+    });
+
     const subjectList = await subjectService.getSubjectList();
+
+    const searchOfferCategoryTypesResult = await categoryCodeService.search({
+        limit: 100,
+        project: { id: { $eq: req.project.id } },
+        inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } }
+    });
+
     let message = '';
     let errors: any = {};
     let ticketType = await offerService.findTicketTypeById({ id: req.params.id });
@@ -173,11 +199,13 @@ export async function update(req: Request, res: Response): Promise<void> {
                 ? (<any>ticketType.priceSpecification.accounting.nonOperatingRevenue).identifier : undefined
             : req.body.nonBoxOfficeSubject
     };
+
     res.render('ticketType/update', {
         message: message,
         errors: errors,
         forms: forms,
-        subjectList: subjectList
+        subjectList: subjectList,
+        offerCategoryTypes: searchOfferCategoryTypesResult.data
     });
 }
 

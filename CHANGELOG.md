@@ -18,6 +18,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.6.1 - 2020-02-06
+
+### Changed
+
+- 興行区分サービスを使用しないように調整
+- 配給区分サービスを使用しないように調整
+- 券種種別をカテゴリーコード管理から検索するように調整
+
 ## v1.6.0 - 2020-02-03
 
 ### Changed

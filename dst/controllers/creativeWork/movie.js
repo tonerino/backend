@@ -64,13 +64,14 @@ function add(req, res) {
             }
         }
         // 配給
-        const distributionsService = new chevre.service.Distributions({
+        const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const searchDistributionResult = yield distributionsService.searchDistribution({
+        const searchDistributionResult = yield categoryCodeService.search({
             limit: 100,
-            project: { id: { $eq: req.project.id } }
+            project: { id: { $eq: req.project.id } },
+            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } }
         });
         const forms = req.body;
         // 作品マスタ画面遷移
@@ -120,13 +121,14 @@ function update(req, res, next) {
                 }
             }
             // 配給
-            const distributionsService = new chevre.service.Distributions({
+            const categoryCodeService = new chevre.service.CategoryCode({
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const { data } = yield distributionsService.searchDistribution({
+            const { data } = yield categoryCodeService.search({
                 limit: 100,
-                project: { id: { $eq: req.project.id } }
+                project: { id: { $eq: req.project.id } },
+                inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } }
             });
             const forms = Object.assign({}, movie, { distribution: (movie.distributor !== undefined && movie.distributor !== null)
                     ? movie.distributor.distributorType
@@ -170,6 +172,7 @@ function createMovieFromBody(req) {
         datePublished: (!_.isEmpty(body.datePublished)) ?
             moment(`${body.datePublished}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
         offers: {
+            project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: 'Offer',
             priceCurrency: chevre.factory.priceCurrency.JPY,
             availabilityEnds: (!_.isEmpty(body.offers) && !_.isEmpty(body.offers.availabilityEnds)) ?

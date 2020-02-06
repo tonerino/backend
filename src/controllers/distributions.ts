@@ -16,10 +16,11 @@ const MAX_LENGTH = 64;
  * 新規登録
  */
 export async function add(req: Request, res: Response): Promise<void> {
-    const distributionService = new chevre.service.Distributions({
+    const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
+
     let message = '';
     let errors: any = {};
     if (req.method === 'POST') {
@@ -32,12 +33,19 @@ export async function add(req: Request, res: Response): Promise<void> {
             // 配給DB登録プロセス
             try {
                 const distribution = {
-                    project: { id: req.project.id },
-                    id: req.body.id,
+                    project: { typeOf: <'Project'>'Project', id: req.project.id },
+                    typeOf: <'CategoryCode'>'CategoryCode',
+                    id: '',
+                    codeValue: req.body.codeVale,
+                    inCodeSet: {
+                        typeOf: <'CategoryCodeSet'>'CategoryCodeSet',
+                        identifier: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType
+                    },
                     name: req.body.name
                 };
-                const { data } = await distributionService.searchDistribution(<any>{
+                const { data } = await categoryCodeService.search({
                     project: { id: { $eq: req.project.id } },
+                    inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } },
                     codeValue: {
                         $eq: req.body.id
                     }
@@ -45,7 +53,7 @@ export async function add(req: Request, res: Response): Promise<void> {
                 if (data.length > 0) {
                     message = '配給コードが既に登録されています。';
                 } else {
-                    await distributionService.createDistribution(distribution);
+                    await categoryCodeService.create(distribution);
                     req.flash('message', '登録しました');
                     res.redirect('/distributions');
 
@@ -56,10 +64,11 @@ export async function add(req: Request, res: Response): Promise<void> {
             }
         }
     }
+
     const forms = {
-        id: (_.isEmpty(req.body.id)) ? '' : req.body.id,
-        name: (_.isEmpty(req.body.name)) ? '' : req.body.name
+        ...req.body
     };
+
     res.render('distributions/add', {
         message: message,
         errors: errors,
@@ -71,19 +80,22 @@ export async function add(req: Request, res: Response): Promise<void> {
  */
 export async function getList(req: Request, res: Response): Promise<void> {
     try {
-        const distributionService = new chevre.service.Distributions({
+        const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
 
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
-        const { data } = await distributionService.searchDistribution({
+        const { data } = await categoryCodeService.search({
             limit: limit,
             page: page,
             project: <any>{ id: { $eq: req.project.id } },
-            id: (typeof req.query.id === 'string' && req.query.id.length > 0) ? req.query.id : undefined,
-            name: (typeof req.query.name === 'string' && req.query.name.length > 0) ? req.query.name : undefined
+            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } },
+            codeValue: { $eq: (typeof req.query.id === 'string' && req.query.id.length > 0) ? req.query.id : undefined },
+            name: {
+                $regex: (typeof req.query.name === 'string' && req.query.name.length > 0) ? req.query.name : undefined
+            }
         });
         res.json({
             success: true,
@@ -114,10 +126,11 @@ export async function index(__: Request, res: Response): Promise<void> {
  * 編集
  */
 export async function update(req: Request, res: Response): Promise<void> {
-    const distributionService = new chevre.service.Distributions({
+    const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
+
     // 検証
     validateForm(req, false);
     const validatorResult = await req.getValidationResult();
@@ -133,11 +146,19 @@ export async function update(req: Request, res: Response): Promise<void> {
     // 配給DB更新プロセス
     try {
         const distribution = {
-            project: { id: req.project.id },
+            project: { typeOf: <'Project'>'Project', id: req.project.id },
+            typeOf: <'CategoryCode'>'CategoryCode',
             id: req.params.id,
+            codeValue: req.body.codeValue,
+            inCodeSet: {
+                typeOf: <'CategoryCodeSet'>'CategoryCodeSet',
+                identifier: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType
+            },
             name: req.body.name
+            // id: req.params.id,
+            // name: req.body.name
         };
-        await distributionService.updateDistribution(distribution);
+        await categoryCodeService.update(distribution);
         res.status(NO_CONTENT).end();
     } catch (err) {
         debug('update error', err);
@@ -155,11 +176,11 @@ function validateForm(req: Request, idAdd: boolean = true): void {
     let colName: string = '';
     if (idAdd) {
         colName = '配給コード';
-        req.checkBody('id', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-        req.checkBody('id', Message.Common.getMaxLengthHalfByte(colName, MAX_LENGTH))
+        req.checkBody('codeVale', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+        req.checkBody('codeVale', Message.Common.getMaxLengthHalfByte(colName, MAX_LENGTH))
             .isAlphanumeric().len({ max: MAX_LENGTH });
     }
     colName = '名称';
-    req.checkBody('name', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-    req.checkBody('name', Message.Common.getMaxLength(colName, MAX_LENGTH)).len({ max: MAX_LENGTH });
+    req.checkBody('name.ja', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
+    req.checkBody('name.ja', Message.Common.getMaxLength(colName, MAX_LENGTH)).len({ max: MAX_LENGTH });
 }

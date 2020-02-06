@@ -3,19 +3,12 @@
         券種の種別
     </label>
     <div class="col-sm-9">
-        <%
-            let noteTypes = [
-                {code: '1', name: '有料券'},
-                {code: '2', name: '前売券'},
-                {code: '3', name: '無料券'}
-            ];
-        %>
         <select class="form-control" name="category">
             <option value="" disabled selected>選択してください</option>
-            <% for (let noteType of noteTypes) { %>
-            <option value="<%= noteType.code %>" <% if (forms.category==noteType.code ) { %> selected
-                <% } %> >
-                <%= noteType.name %>
+            <% for (let offerCategoryType of offerCategoryTypes) { %>
+            <option value="<%= offerCategoryType.codeValue %>"
+                <% if (forms.category === offerCategoryType.codeValue ) { %> selected <% } %>>
+                <%= offerCategoryType.name.ja %>
             </option>
             <% } %>
         </select>
@@ -128,8 +121,7 @@
         BOX利用
     </label>
     <div class="col-sm-9 form-inline">
-        <input type="checkbox" value="1" name="isBoxTicket" <% if (forms.isBoxTicket) { %> checked
-        <% } %> >
+        <input type="checkbox" value="1" name="isBoxTicket" <% if (forms.isBoxTicket) { %> checked <% } %>>
     </div>
 </div>
 <div class="form-group ">
@@ -137,8 +129,7 @@
         オンライン利用
     </label>
     <div class="col-sm-9">
-        <input type="checkbox" value="1" name="isOnlineTicket" <% if (forms.isOnlineTicket) { %> checked
-        <% } %> >
+        <input type="checkbox" value="1" name="isOnlineTicket" <% if (forms.isOnlineTicket) { %> checked <% } %>>
     </div>
 </div>
 <div class="form-group ">
@@ -149,8 +140,7 @@
         <select class="form-control" name="seatReservationUnit">
             <option value="" disabled selected>選択してください</option>
             <% for (let i = 1; i <= 4; i++) { %>
-            <option value="<%= i %>" <% if (forms.seatReservationUnit==i) { %> selected
-                <% } %> >
+            <option value="<%= i %>" <% if (forms.seatReservationUnit==i) { %> selected <% } %>>
                 <%= i %>
             </option>
             <% } %>
@@ -231,8 +221,7 @@
         <select class="form-control" name="subject">
             <option value="" disabled selected>選択してください</option>
             <% for (let subject of subjectList) { %>
-            <option value="<%= subject.detailCd %>" <% if (forms.subject==subject.detailCd) { %> selected
-                <% } %> >
+            <option value="<%= subject.detailCd %>" <% if (forms.subject==subject.detailCd) { %> selected <% } %>>
                 <%= subject.detailName %>
             </option>
             <% } %>
