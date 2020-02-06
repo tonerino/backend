@@ -55,7 +55,7 @@ export async function add(req: Request, res: Response): Promise<void> {
             // 券種DB登録プロセス
             try {
                 req.body.id = '';
-                let ticketType = createFromBody(req);
+                let ticketType = await createFromBody(req);
 
                 // 券種コード重複確認
                 const { data } = await offerService.searchTicketTypes({
@@ -135,7 +135,7 @@ export async function update(req: Request, res: Response): Promise<void> {
             // 券種DB更新プロセス
             try {
                 req.body.id = req.params.id;
-                ticketType = createFromBody(req);
+                ticketType = await createFromBody(req);
                 await offerService.updateTicketType(ticketType);
                 req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
@@ -181,7 +181,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     const forms = {
         alternateName: {},
         ...ticketType,
-        category: (ticketType.category !== undefined) ? ticketType.category.id : '',
+        category: (ticketType.category !== undefined) ? ticketType.category.codeValue : '',
         nameForPrinting: (nameForPrinting !== undefined) ? nameForPrinting.value : '',
         price: Math.floor(Number(ticketType.priceSpecification.price) / seatReservationUnit),
         accountsReceivable: Math.floor(Number(accountsReceivable) / seatReservationUnit),
@@ -209,7 +209,28 @@ export async function update(req: Request, res: Response): Promise<void> {
     });
 }
 
-function createFromBody(req: Request): chevre.factory.ticketType.ITicketType {
+// tslint:disable-next-line:max-func-body-length
+async function createFromBody(req: Request): Promise<chevre.factory.ticketType.ITicketType> {
+    const categoryCodeService = new chevre.service.CategoryCode({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient
+    });
+
+    let offerCategory: chevre.factory.categoryCode.ICategoryCode | undefined;
+
+    if (typeof req.body.category === 'string' && req.body.category.length > 0) {
+        const searchOfferCategoryTypesResult = await categoryCodeService.search({
+            limit: 1,
+            project: { id: { $eq: req.project.id } },
+            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } },
+            codeValue: { $eq: req.body.category }
+        });
+        if (searchOfferCategoryTypesResult.data.length === 0) {
+            throw new Error('オファーカテゴリーが見つかりません');
+        }
+        offerCategory = searchOfferCategoryTypesResult.data[0];
+    }
+
     // availabilityをフォーム値によって作成
     let availability: chevre.factory.itemAvailability = chevre.factory.itemAvailability.OutOfStock;
     if (req.body.isBoxTicket === '1' && req.body.isOnlineTicket === '1') {
@@ -270,11 +291,21 @@ function createFromBody(req: Request): chevre.factory.ticketType.ITicketType {
                 value: <string>req.body.nameForPrinting
             }
         ],
-        category: {
-            project: { typeOf: req.project.typeOf, id: req.project.id },
-            id: req.body.category
-        },
-        color: <string>req.body.indicatorColor
+        color: <string>req.body.indicatorColor,
+        ...(offerCategory !== undefined)
+            ? {
+                category: {
+                    project: offerCategory.project,
+                    id: offerCategory.id,
+                    codeValue: offerCategory.codeValue
+                }
+            }
+            : undefined,
+        ...{
+            $unset: {
+                ...(offerCategory === undefined) ? { category: 1 } : undefined
+            }
+        }
     };
 }
 

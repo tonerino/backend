@@ -60,7 +60,7 @@ function add(req, res) {
                 // 券種DB登録プロセス
                 try {
                     req.body.id = '';
-                    let ticketType = createFromBody(req);
+                    let ticketType = yield createFromBody(req);
                     // 券種コード重複確認
                     const { data } = yield offerService.searchTicketTypes({
                         project: { ids: [req.project.id] },
@@ -127,7 +127,7 @@ function update(req, res) {
                 // 券種DB更新プロセス
                 try {
                     req.body.id = req.params.id;
-                    ticketType = createFromBody(req);
+                    ticketType = yield createFromBody(req);
                     yield offerService.updateTicketType(ticketType);
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
@@ -165,7 +165,7 @@ function update(req, res) {
         const accountsReceivable = (ticketType.priceSpecification.accounting !== undefined)
             ? ticketType.priceSpecification.accounting.accountsReceivable
             : '';
-        const forms = Object.assign({ alternateName: {} }, ticketType, { category: (ticketType.category !== undefined) ? ticketType.category.id : '', nameForPrinting: (nameForPrinting !== undefined) ? nameForPrinting.value : '', price: Math.floor(Number(ticketType.priceSpecification.price) / seatReservationUnit), accountsReceivable: Math.floor(Number(accountsReceivable) / seatReservationUnit) }, req.body, { isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket, isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket, seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit, subject: (_.isEmpty(req.body.subject))
+        const forms = Object.assign({ alternateName: {} }, ticketType, { category: (ticketType.category !== undefined) ? ticketType.category.codeValue : '', nameForPrinting: (nameForPrinting !== undefined) ? nameForPrinting.value : '', price: Math.floor(Number(ticketType.priceSpecification.price) / seatReservationUnit), accountsReceivable: Math.floor(Number(accountsReceivable) / seatReservationUnit) }, req.body, { isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket, isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket, seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit, subject: (_.isEmpty(req.body.subject))
                 ? (ticketType.priceSpecification.accounting !== undefined)
                     ? ticketType.priceSpecification.accounting.operatingRevenue.identifier : undefined
                 : req.body.subject, nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject))
@@ -183,71 +183,84 @@ function update(req, res) {
     });
 }
 exports.update = update;
+// tslint:disable-next-line:max-func-body-length
 function createFromBody(req) {
-    // availabilityをフォーム値によって作成
-    let availability = chevre.factory.itemAvailability.OutOfStock;
-    if (req.body.isBoxTicket === '1' && req.body.isOnlineTicket === '1') {
-        availability = chevre.factory.itemAvailability.InStock;
-    }
-    else if (req.body.isBoxTicket === '1') {
-        availability = chevre.factory.itemAvailability.InStoreOnly;
-    }
-    else if (req.body.isOnlineTicket === '1') {
-        availability = chevre.factory.itemAvailability.OnlineOnly;
-    }
-    const referenceQuantity = {
-        typeOf: 'QuantitativeValue',
-        value: Number(req.body.seatReservationUnit),
-        unitCode: chevre.factory.unitCode.C62
-    };
-    const appliesToMovieTicketType = (typeof req.body.appliesToMovieTicketType === 'string' && req.body.appliesToMovieTicketType.length > 0)
-        ? req.body.appliesToMovieTicketType
-        : undefined;
-    return {
-        project: req.project,
-        typeOf: 'Offer',
-        priceCurrency: chevre.factory.priceCurrency.JPY,
-        id: req.body.id,
-        identifier: req.body.identifier,
-        name: req.body.name,
-        description: req.body.description,
-        alternateName: { ja: req.body.alternateName.ja, en: '' },
-        availability: availability,
-        priceSpecification: {
-            project: req.project,
-            typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
-            price: Number(req.body.price) * referenceQuantity.value,
-            priceCurrency: chevre.factory.priceCurrency.JPY,
-            valueAddedTaxIncluded: true,
-            referenceQuantity: referenceQuantity,
-            appliesToMovieTicketType: appliesToMovieTicketType,
-            accounting: {
-                typeOf: 'Accounting',
-                operatingRevenue: {
-                    typeOf: 'AccountTitle',
-                    identifier: req.body.subject,
-                    name: ''
-                },
-                nonOperatingRevenue: {
-                    typeOf: 'AccountTitle',
-                    identifier: req.body.nonBoxOfficeSubject,
-                    name: ''
-                },
-                accountsReceivable: Number(req.body.accountsReceivable) * referenceQuantity.value
+    return __awaiter(this, void 0, void 0, function* () {
+        const categoryCodeService = new chevre.service.CategoryCode({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        let offerCategory;
+        if (typeof req.body.category === 'string' && req.body.category.length > 0) {
+            const searchOfferCategoryTypesResult = yield categoryCodeService.search({
+                limit: 1,
+                project: { id: { $eq: req.project.id } },
+                inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } },
+                codeValue: { $eq: req.body.category }
+            });
+            if (searchOfferCategoryTypesResult.data.length === 0) {
+                throw new Error('オファーカテゴリーが見つかりません');
             }
-        },
-        additionalProperty: [
-            {
-                name: 'nameForPrinting',
-                value: req.body.nameForPrinting
+            offerCategory = searchOfferCategoryTypesResult.data[0];
+        }
+        // availabilityをフォーム値によって作成
+        let availability = chevre.factory.itemAvailability.OutOfStock;
+        if (req.body.isBoxTicket === '1' && req.body.isOnlineTicket === '1') {
+            availability = chevre.factory.itemAvailability.InStock;
+        }
+        else if (req.body.isBoxTicket === '1') {
+            availability = chevre.factory.itemAvailability.InStoreOnly;
+        }
+        else if (req.body.isOnlineTicket === '1') {
+            availability = chevre.factory.itemAvailability.OnlineOnly;
+        }
+        const referenceQuantity = {
+            typeOf: 'QuantitativeValue',
+            value: Number(req.body.seatReservationUnit),
+            unitCode: chevre.factory.unitCode.C62
+        };
+        const appliesToMovieTicketType = (typeof req.body.appliesToMovieTicketType === 'string' && req.body.appliesToMovieTicketType.length > 0)
+            ? req.body.appliesToMovieTicketType
+            : undefined;
+        return Object.assign({ project: req.project, typeOf: 'Offer', priceCurrency: chevre.factory.priceCurrency.JPY, id: req.body.id, identifier: req.body.identifier, name: req.body.name, description: req.body.description, alternateName: { ja: req.body.alternateName.ja, en: '' }, availability: availability, priceSpecification: {
+                project: req.project,
+                typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
+                price: Number(req.body.price) * referenceQuantity.value,
+                priceCurrency: chevre.factory.priceCurrency.JPY,
+                valueAddedTaxIncluded: true,
+                referenceQuantity: referenceQuantity,
+                appliesToMovieTicketType: appliesToMovieTicketType,
+                accounting: {
+                    typeOf: 'Accounting',
+                    operatingRevenue: {
+                        typeOf: 'AccountTitle',
+                        identifier: req.body.subject,
+                        name: ''
+                    },
+                    nonOperatingRevenue: {
+                        typeOf: 'AccountTitle',
+                        identifier: req.body.nonBoxOfficeSubject,
+                        name: ''
+                    },
+                    accountsReceivable: Number(req.body.accountsReceivable) * referenceQuantity.value
+                }
+            }, additionalProperty: [
+                {
+                    name: 'nameForPrinting',
+                    value: req.body.nameForPrinting
+                }
+            ], color: req.body.indicatorColor }, (offerCategory !== undefined)
+            ? {
+                category: {
+                    project: offerCategory.project,
+                    id: offerCategory.id,
+                    codeValue: offerCategory.codeValue
+                }
             }
-        ],
-        category: {
-            project: { typeOf: req.project.typeOf, id: req.project.id },
-            id: req.body.category
-        },
-        color: req.body.indicatorColor
-    };
+            : undefined, {
+            $unset: Object.assign({}, (offerCategory === undefined) ? { category: 1 } : undefined)
+        });
+    });
 }
 /**
  * 一覧データ取得API
