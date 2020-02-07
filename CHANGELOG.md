@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+- 注文検索の上映作品選択肢が表示されないバグ対応
+
 ### Security
 
 ## v1.6.1 - 2020-02-06

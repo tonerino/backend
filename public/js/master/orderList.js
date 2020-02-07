@@ -160,8 +160,7 @@ $(function () {
             }
         }).done(function (data) {
             if (data.success) {
-                var dataCount = (data.count) ? (data.count) : 0;
-                if (dataCount > 0) {
+                if (Array.isArray(data.results) && data.results.length > 0) {
                     initScreeningEventSeriesId(data.results);
                 }
             }
