@@ -18,6 +18,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.6.2 - 2020-02-23
+
+### Changed
+
+- 券種グループに登録された券種の順序を変更しないように調整
+
+### Fixed
+
+- 注文検索の上映作品選択肢が表示されないバグ対応
+
 ## v1.6.1 - 2020-02-06
 
 ### Changed
