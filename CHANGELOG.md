@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 券種グループに登録された券種の順序を変更しないように調整
+
 ### Deprecated
 
 ### Removed
