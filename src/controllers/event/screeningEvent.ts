@@ -339,7 +339,7 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         limit: 1,
         project: { id: { $eq: req.project.id } },
         inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
-        codeValue: { $eq: (<any>ticketTypeGroup.itemOffered.serviceType).codeValue }
+        codeValue: { $eq: ticketTypeGroup.itemOffered.serviceType?.codeValue }
     });
     const serviceType = searchServiceTypesResult.data.shift();
     if (serviceType === undefined) {
@@ -530,7 +530,7 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
                 if (ticketTypeGroup === undefined) {
                     throw new Error('Ticket Type Group');
                 }
-                const serviceType = serviceTypes.find((t) => t.codeValue === (<any>ticketTypeGroup.itemOffered.serviceType).codeValue);
+                const serviceType = serviceTypes.find((t) => t.codeValue === ticketTypeGroup.itemOffered.serviceType?.codeValue);
                 if (serviceType === undefined) {
                     throw new Error('Service Type Not Found');
                 }

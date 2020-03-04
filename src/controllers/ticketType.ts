@@ -55,7 +55,7 @@ export async function add(req: Request, res: Response): Promise<void> {
             // 券種DB登録プロセス
             try {
                 req.body.id = '';
-                let ticketType = await createFromBody(req);
+                let ticketType = await createFromBody(req, true);
 
                 // 券種コード重複確認
                 const { data } = await offerService.searchTicketTypes({
@@ -135,7 +135,7 @@ export async function update(req: Request, res: Response): Promise<void> {
             // 券種DB更新プロセス
             try {
                 req.body.id = req.params.id;
-                ticketType = await createFromBody(req);
+                ticketType = await createFromBody(req, false);
                 await offerService.updateTicketType(ticketType);
                 req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
@@ -210,7 +210,7 @@ export async function update(req: Request, res: Response): Promise<void> {
 }
 
 // tslint:disable-next-line:max-func-body-length
-async function createFromBody(req: Request): Promise<chevre.factory.ticketType.ITicketType> {
+async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.ticketType.ITicketType> {
     const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
@@ -301,11 +301,13 @@ async function createFromBody(req: Request): Promise<chevre.factory.ticketType.I
                 }
             }
             : undefined,
-        ...{
-            $unset: {
-                ...(offerCategory === undefined) ? { category: 1 } : undefined
+        ...(!isNew)
+            ? {
+                $unset: {
+                    ...(offerCategory === undefined) ? { category: 1 } : undefined
+                }
             }
-        }
+            : undefined
     };
 }
 

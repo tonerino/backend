@@ -119,6 +119,7 @@ exports.add = add;
  * 編集
  */
 function update(req, res) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const offerService = new chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
@@ -158,7 +159,7 @@ function update(req, res) {
         }
         // 券種グループ取得
         const ticketGroup = yield offerService.findTicketTypeGroupById({ id: req.params.id });
-        const forms = Object.assign(Object.assign(Object.assign(Object.assign({}, ticketGroup), { serviceType: ticketGroup.itemOffered.serviceType.codeValue }), req.body), { ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.itemListElement.map((e) => e.id) : [] });
+        const forms = Object.assign(Object.assign(Object.assign(Object.assign({}, ticketGroup), { serviceType: (_a = ticketGroup.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue }), req.body), { ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.itemListElement.map((e) => e.id) : [] });
         // 券種マスタから取得
         let ticketTypes = [];
         if (forms.ticketTypes.length > 0) {

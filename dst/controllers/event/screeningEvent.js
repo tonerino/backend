@@ -301,6 +301,7 @@ exports.cancelPerformance = cancelPerformance;
  */
 // tslint:disable-next-line:max-func-body-length
 function createEventFromBody(req) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const body = req.body;
         const user = req.user;
@@ -344,7 +345,7 @@ function createEventFromBody(req) {
             limit: 1,
             project: { id: { $eq: req.project.id } },
             inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
-            codeValue: { $eq: ticketTypeGroup.itemOffered.serviceType.codeValue }
+            codeValue: { $eq: (_a = ticketTypeGroup.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue }
         });
         const serviceType = searchServiceTypesResult.data.shift();
         if (serviceType === undefined) {
@@ -524,7 +525,7 @@ function createMultipleEventFromBody(req, user) {
                     if (ticketTypeGroup === undefined) {
                         throw new Error('Ticket Type Group');
                     }
-                    const serviceType = serviceTypes.find((t) => t.codeValue === ticketTypeGroup.itemOffered.serviceType.codeValue);
+                    const serviceType = serviceTypes.find((t) => { var _a; return t.codeValue === ((_a = ticketTypeGroup.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue); });
                     if (serviceType === undefined) {
                         throw new Error('Service Type Not Found');
                     }

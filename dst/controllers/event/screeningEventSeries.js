@@ -75,7 +75,7 @@ function add(req, res) {
                     }
                     const movieTheater = yield placeService.findMovieTheaterById({ id: req.body.locationId });
                     req.body.contentRating = movie.contentRating;
-                    const attributes = createEventFromBody(req, movie, movieTheater);
+                    const attributes = createEventFromBody(req, movie, movieTheater, true);
                     debug('saving an event...', attributes);
                     const events = yield eventService.create(attributes);
                     req.flash('message', '登録しました');
@@ -158,7 +158,7 @@ function update(req, res) {
                     }
                     const movieTheater = yield placeService.findMovieTheaterById({ id: req.body.locationId });
                     req.body.contentRating = movie.contentRating;
-                    const attributes = createEventFromBody(req, movie, movieTheater);
+                    const attributes = createEventFromBody(req, movie, movieTheater, false);
                     debug('saving an event...', attributes);
                     yield eventService.update({
                         id: eventId,
@@ -248,7 +248,7 @@ exports.getRating = getRating;
  * リクエストボディからイベントオブジェクトを作成する
  */
 // tslint:disable-next-line:max-func-body-length
-function createEventFromBody(req, movie, movieTheater) {
+function createEventFromBody(req, movie, movieTheater, isNew) {
     const body = req.body;
     const videoFormat = (Array.isArray(body.videoFormatType)) ? body.videoFormatType.map((f) => {
         return { typeOf: f, name: f };
@@ -274,55 +274,40 @@ function createEventFromBody(req, movie, movieTheater) {
         priceCurrency: chevre.factory.priceCurrency.JPY,
         acceptedPaymentMethod: acceptedPaymentMethod
     };
-    let subtitleLanguage = null;
+    let subtitleLanguage;
     if (body.translationType === '0') {
         subtitleLanguage = { typeOf: 'Language', name: 'Japanese' };
     }
-    let dubLanguage = null;
+    let dubLanguage;
     if (body.translationType === '1') {
         dubLanguage = { typeOf: 'Language', name: 'Japanese' };
     }
     if (typeof movie.duration !== 'string') {
         throw new Error('作品の上映時間が未登録です');
     }
-    return {
-        project: req.project,
-        typeOf: chevre.factory.eventType.ScreeningEventSeries,
-        name: {
+    return Object.assign(Object.assign(Object.assign({ project: req.project, typeOf: chevre.factory.eventType.ScreeningEventSeries, name: {
             ja: body.nameJa,
             en: body.nameEn,
             kr: ''
-        },
-        kanaName: body.kanaName,
-        location: {
+        }, kanaName: body.kanaName, location: {
             project: req.project,
             id: movieTheater.id,
             typeOf: movieTheater.typeOf,
             branchCode: movieTheater.branchCode,
             name: movieTheater.name,
             kanaName: movieTheater.kanaName
-        },
+        }, 
         // organizer: {
         //     typeOf: OrganizationType.MovieTheater,
         //     identifier: params.movieTheater.identifier,
         //     name: params.movieTheater.name
         // },
-        videoFormat: videoFormat,
-        soundFormat: soundFormat,
-        subtitleLanguage: subtitleLanguage,
-        dubLanguage: dubLanguage,
-        workPerformed: movie,
-        duration: movie.duration,
-        startDate: (!_.isEmpty(body.startDate)) ? moment(`${body.startDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
-        endDate: (!_.isEmpty(body.endDate))
+        videoFormat: videoFormat, soundFormat: soundFormat, workPerformed: movie, duration: movie.duration, startDate: (!_.isEmpty(body.startDate)) ? moment(`${body.startDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined, endDate: (!_.isEmpty(body.endDate))
             ? moment(`${body.endDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day').toDate()
-            : undefined,
-        eventStatus: chevre.factory.eventStatusType.EventScheduled,
-        headline: {
+            : undefined, eventStatus: chevre.factory.eventStatusType.EventScheduled, headline: {
             ja: body.headline.ja,
             en: ''
-        },
-        additionalProperty: [
+        }, additionalProperty: [
             {
                 name: 'signageDisplayName',
                 value: body.signageDisplayName
@@ -335,14 +320,15 @@ function createEventFromBody(req, movie, movieTheater) {
                 name: 'summaryStartDay',
                 value: body.summaryStartDay
             }
-        ],
-        offers: offers,
-        description: {
+        ], offers: offers, description: {
             ja: body.description,
             en: '',
             kr: ''
+        } }, (subtitleLanguage !== undefined) ? { subtitleLanguage } : undefined), (dubLanguage !== undefined) ? { dubLanguage } : undefined), (!isNew)
+        ? {
+            $unset: Object.assign(Object.assign({}, (subtitleLanguage === undefined) ? { subtitleLanguage: 1 } : undefined), (dubLanguage === undefined) ? { dubLanguage: 1 } : undefined)
         }
-    };
+        : undefined);
 }
 /**
  * 検索API

@@ -61,7 +61,7 @@ function add(req, res) {
                 // 券種DB登録プロセス
                 try {
                     req.body.id = '';
-                    let ticketType = yield createFromBody(req);
+                    let ticketType = yield createFromBody(req, true);
                     // 券種コード重複確認
                     const { data } = yield offerService.searchTicketTypes({
                         project: { ids: [req.project.id] },
@@ -128,7 +128,7 @@ function update(req, res) {
                 // 券種DB更新プロセス
                 try {
                     req.body.id = req.params.id;
-                    ticketType = yield createFromBody(req);
+                    ticketType = yield createFromBody(req, false);
                     yield offerService.updateTicketType(ticketType);
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
@@ -185,7 +185,7 @@ function update(req, res) {
 }
 exports.update = update;
 // tslint:disable-next-line:max-func-body-length
-function createFromBody(req) {
+function createFromBody(req, isNew) {
     return __awaiter(this, void 0, void 0, function* () {
         const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
@@ -258,9 +258,11 @@ function createFromBody(req) {
                     codeValue: offerCategory.codeValue
                 }
             }
-            : undefined), {
-            $unset: Object.assign({}, (offerCategory === undefined) ? { category: 1 } : undefined)
-        });
+            : undefined), (!isNew)
+            ? {
+                $unset: Object.assign({}, (offerCategory === undefined) ? { category: 1 } : undefined)
+            }
+            : undefined);
     });
 }
 /**

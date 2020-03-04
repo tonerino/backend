@@ -162,7 +162,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     const ticketGroup = await offerService.findTicketTypeGroupById({ id: req.params.id });
     const forms = {
         ...ticketGroup,
-        serviceType: (<any>ticketGroup.itemOffered.serviceType).codeValue,
+        serviceType: ticketGroup.itemOffered.serviceType?.codeValue,
         ...req.body,
         ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.itemListElement.map((e) => e.id) : []
     };
