@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -85,7 +86,7 @@ function add(req, res) {
                 ticketTypeIds = req.body.ticketTypes;
             }
         }
-        const forms = Object.assign({}, req.body, { name: (_.isEmpty(req.body.name)) ? {} : req.body.name, ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? [] : ticketTypeIds, description: (_.isEmpty(req.body.description)) ? {} : req.body.description, alternateName: (_.isEmpty(req.body.alternateName)) ? {} : req.body.alternateName });
+        const forms = Object.assign(Object.assign({}, req.body), { name: (_.isEmpty(req.body.name)) ? {} : req.body.name, ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? [] : ticketTypeIds, description: (_.isEmpty(req.body.description)) ? {} : req.body.description, alternateName: (_.isEmpty(req.body.alternateName)) ? {} : req.body.alternateName });
         // 券種マスタから取得
         let ticketTypes = [];
         if (forms.ticketTypes.length > 0) {
@@ -157,7 +158,7 @@ function update(req, res) {
         }
         // 券種グループ取得
         const ticketGroup = yield offerService.findTicketTypeGroupById({ id: req.params.id });
-        const forms = Object.assign({}, ticketGroup, { serviceType: ticketGroup.itemOffered.serviceType.codeValue }, req.body, { ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.itemListElement.map((e) => e.id) : [] });
+        const forms = Object.assign(Object.assign(Object.assign(Object.assign({}, ticketGroup), { serviceType: ticketGroup.itemOffered.serviceType.codeValue }), req.body), { ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.itemListElement.map((e) => e.id) : [] });
         // 券種マスタから取得
         let ticketTypes = [];
         if (forms.ticketTypes.length > 0) {
@@ -240,7 +241,7 @@ function getList(req, res) {
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data.map((g) => {
-                    return Object.assign({}, g, { ticketGroupCode: g.identifier });
+                    return Object.assign(Object.assign({}, g), { ticketGroupCode: g.identifier });
                 })
             });
         }

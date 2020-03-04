@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -165,7 +166,7 @@ function update(req, res) {
         const accountsReceivable = (ticketType.priceSpecification.accounting !== undefined)
             ? ticketType.priceSpecification.accounting.accountsReceivable
             : '';
-        const forms = Object.assign({ alternateName: {} }, ticketType, { category: (ticketType.category !== undefined) ? ticketType.category.codeValue : '', nameForPrinting: (nameForPrinting !== undefined) ? nameForPrinting.value : '', price: Math.floor(Number(ticketType.priceSpecification.price) / seatReservationUnit), accountsReceivable: Math.floor(Number(accountsReceivable) / seatReservationUnit) }, req.body, { isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket, isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket, seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit, subject: (_.isEmpty(req.body.subject))
+        const forms = Object.assign(Object.assign(Object.assign(Object.assign({ alternateName: {} }, ticketType), { category: (ticketType.category !== undefined) ? ticketType.category.codeValue : '', nameForPrinting: (nameForPrinting !== undefined) ? nameForPrinting.value : '', price: Math.floor(Number(ticketType.priceSpecification.price) / seatReservationUnit), accountsReceivable: Math.floor(Number(accountsReceivable) / seatReservationUnit) }), req.body), { isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket, isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket, seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit, subject: (_.isEmpty(req.body.subject))
                 ? (ticketType.priceSpecification.accounting !== undefined)
                     ? ticketType.priceSpecification.accounting.operatingRevenue.identifier : undefined
                 : req.body.subject, nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject))
@@ -222,7 +223,7 @@ function createFromBody(req) {
         const appliesToMovieTicketType = (typeof req.body.appliesToMovieTicketType === 'string' && req.body.appliesToMovieTicketType.length > 0)
             ? req.body.appliesToMovieTicketType
             : undefined;
-        return Object.assign({ project: req.project, typeOf: 'Offer', priceCurrency: chevre.factory.priceCurrency.JPY, id: req.body.id, identifier: req.body.identifier, name: req.body.name, description: req.body.description, alternateName: { ja: req.body.alternateName.ja, en: '' }, availability: availability, priceSpecification: {
+        return Object.assign(Object.assign({ project: req.project, typeOf: 'Offer', priceCurrency: chevre.factory.priceCurrency.JPY, id: req.body.id, identifier: req.body.identifier, name: req.body.name, description: req.body.description, alternateName: { ja: req.body.alternateName.ja, en: '' }, availability: availability, priceSpecification: {
                 project: req.project,
                 typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
                 price: Number(req.body.price) * referenceQuantity.value,
@@ -257,7 +258,7 @@ function createFromBody(req) {
                     codeValue: offerCategory.codeValue
                 }
             }
-            : undefined, {
+            : undefined), {
             $unset: Object.assign({}, (offerCategory === undefined) ? { category: 1 } : undefined)
         });
     });
@@ -304,7 +305,7 @@ function getList(req, res) {
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data.map((t) => {
-                    return Object.assign({}, t, { ticketCode: t.identifier });
+                    return Object.assign(Object.assign({}, t), { ticketCode: t.identifier });
                 })
             });
         }
