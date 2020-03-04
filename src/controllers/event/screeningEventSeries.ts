@@ -299,7 +299,7 @@ function createEventFromBody(
 
     const offers: chevre.factory.event.screeningEventSeries.IOffer = {
         project: { typeOf: req.project.typeOf, id: req.project.id },
-        typeOf: 'Offer',
+        typeOf: chevre.factory.offerType.Offer,
         priceCurrency: chevre.factory.priceCurrency.JPY,
         acceptedPaymentMethod: acceptedPaymentMethod
     };
@@ -342,8 +342,8 @@ function createEventFromBody(
         // },
         videoFormat: videoFormat,
         soundFormat: soundFormat,
-        subtitleLanguage: subtitleLanguage,
-        dubLanguage: dubLanguage,
+        subtitleLanguage: <any>subtitleLanguage,
+        dubLanguage: <any>dubLanguage,
         workPerformed: movie,
         duration: movie.duration,
         startDate: (!_.isEmpty(body.startDate)) ? moment(`${body.startDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
@@ -424,8 +424,8 @@ export async function search(req: Request, res: Response): Promise<void> {
             return {
                 ...event,
                 id: event.id,
-                filmNameJa: event.name.ja,
-                filmNameEn: event.name.en,
+                filmNameJa: <string>event.name.ja,
+                filmNameEn: <string>event.name.en,
                 kanaName: event.kanaName,
                 duration: moment.duration(event.duration).humanize(),
                 contentRating: event.workPerformed.contentRating,

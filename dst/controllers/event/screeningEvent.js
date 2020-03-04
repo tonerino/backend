@@ -35,7 +35,7 @@ function index(req, res, next) {
                 throw new Error('劇場が見つかりません');
             }
             const searchTicketTypeGroupsResult = yield offerService.searchTicketTypeGroups({
-                project: { ids: [req.project.id] }
+                project: { id: { $eq: req.project.id } }
             });
             res.render('events/screeningEvent/index', {
                 movieTheaters: searchMovieTheatersResult.data,
@@ -118,7 +118,7 @@ function search(req, res) {
                 screens = movieTheater.containsPlace;
             }
             const searchTicketTypeGroupsResult = yield offerService.searchTicketTypeGroups({
-                project: { ids: [req.project.id] }
+                project: { id: { $eq: req.project.id } }
             });
             res.json({
                 validation: null,
@@ -391,7 +391,7 @@ function createEventFromBody(req) {
             project: { typeOf: req.project.typeOf, id: req.project.id },
             id: ticketTypeGroup.id,
             name: ticketTypeGroup.name,
-            typeOf: 'Offer',
+            typeOf: chevre.factory.offerType.Offer,
             priceCurrency: chevre.factory.priceCurrency.JPY,
             availabilityEnds: salesEndDate,
             availabilityStarts: onlineDisplayStartDate,
@@ -483,7 +483,7 @@ function createMultipleEventFromBody(req, user) {
         const timeData = body.timeData;
         const searchTicketTypeGroupsResult = yield offerService.searchTicketTypeGroups({
             limit: 100,
-            project: { ids: [req.project.id] }
+            project: { id: { $eq: req.project.id } }
         });
         const ticketTypeGroups = searchTicketTypeGroupsResult.data;
         const searchBoxOfficeTypeGroupsResult = yield categoryCodeService.search({
@@ -539,7 +539,7 @@ function createMultipleEventFromBody(req, user) {
                         project: { typeOf: req.project.typeOf, id: req.project.id },
                         id: ticketTypeGroup.id,
                         name: ticketTypeGroup.name,
-                        typeOf: 'Offer',
+                        typeOf: chevre.factory.offerType.Offer,
                         priceCurrency: chevre.factory.priceCurrency.JPY,
                         availabilityEnds: salesEndDate,
                         availabilityStarts: onlineDisplayStartDate,

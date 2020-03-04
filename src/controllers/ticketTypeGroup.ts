@@ -52,7 +52,7 @@ export async function add(req: Request, res: Response): Promise<void> {
 
                 // 券種グループコード重複確認
                 const { data } = await offerService.searchTicketTypeGroups({
-                    project: { ids: [req.project.id] },
+                    project: { id: { $eq: req.project.id } },
                     identifier: `^${ticketTypeGroup.identifier}$`
                 });
                 if (data.length > 0) {
@@ -162,9 +162,9 @@ export async function update(req: Request, res: Response): Promise<void> {
     const ticketGroup = await offerService.findTicketTypeGroupById({ id: req.params.id });
     const forms = {
         ...ticketGroup,
-        serviceType: ticketGroup.itemOffered.serviceType.codeValue,
+        serviceType: (<any>ticketGroup.itemOffered.serviceType).codeValue,
         ...req.body,
-        ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : []
+        ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.itemListElement.map((e) => e.id) : []
     };
 
     // 券種マスタから取得
@@ -193,8 +193,16 @@ export async function update(req: Request, res: Response): Promise<void> {
     });
 }
 
-async function createFromBody(req: Request): Promise<chevre.factory.ticketType.ITicketTypeGroup> {
-    const ticketTypes = (Array.isArray(req.body.ticketTypes)) ? <string[]>req.body.ticketTypes : [<string>req.body.ticketTypes];
+async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog.IOfferCatalog> {
+    let ticketTypes = (Array.isArray(req.body.ticketTypes)) ? <string[]>req.body.ticketTypes : [<string>req.body.ticketTypes];
+    ticketTypes = [...new Set(ticketTypes)]; // 念のため券種IDをユニークに
+
+    const itemListElement = ticketTypes.map((offerId) => {
+        return {
+            typeOf: chevre.factory.offerType.Offer,
+            id: offerId
+        };
+    });
 
     const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
@@ -219,9 +227,13 @@ async function createFromBody(req: Request): Promise<chevre.factory.ticketType.I
         name: req.body.name,
         description: req.body.description,
         alternateName: req.body.alternateName,
-        ticketTypes: [...new Set(ticketTypes)], // 念のため券種IDをユニークに
+        itemListElement: itemListElement, // 後にオファーカタログへ統合するため
         itemOffered: {
+            typeOf: 'EventService',
             serviceType: serviceType
+        },
+        ...{
+            ticketTypes: ticketTypes
         }
     };
 }
@@ -241,7 +253,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
         const { data } = await offerService.searchTicketTypeGroups({
             limit: limit,
             page: page,
-            project: { ids: [req.project.id] },
+            project: { id: { $eq: req.project.id } },
             identifier: req.query.identifier,
             name: req.query.name
         });
@@ -276,6 +288,7 @@ export async function getTicketTypeList(req: Request, res: Response): Promise<vo
         });
         // 券種グループ取得
         const ticketGroup = await offerService.findTicketTypeGroupById({ id: req.query.id });
+        const offerIds = ticketGroup.itemListElement.map((e) => e.id);
 
         const limit = 100;
         const page = 1;
@@ -283,11 +296,11 @@ export async function getTicketTypeList(req: Request, res: Response): Promise<vo
             limit: limit,
             page: page,
             project: { ids: [req.project.id] },
-            ids: ticketGroup.ticketTypes
+            ids: offerIds
         });
 
         // 券種を登録順にソート
-        const ticketTypes = data.sort((a, b) => ticketGroup.ticketTypes.indexOf(a.id) - ticketGroup.ticketTypes.indexOf(b.id));
+        const ticketTypes = data.sort((a, b) => offerIds.indexOf(a.id) - offerIds.indexOf(b.id));
 
         res.json({
             success: true,

@@ -322,8 +322,8 @@ export async function getList(req: Request, res: Response): Promise<void> {
         let ticketTypeIds: string[] = [];
         if (req.query.ticketTypeGroups !== undefined && req.query.ticketTypeGroups !== '') {
             const ticketTypeGroup = await offerService.findTicketTypeGroupById({ id: req.query.ticketTypeGroups });
-            if (ticketTypeGroup.ticketTypes !== null) {
-                ticketTypeIds = ticketTypeGroup.ticketTypes;
+            if (Array.isArray(ticketTypeGroup.itemListElement)) {
+                ticketTypeIds = ticketTypeGroup.itemListElement.map((e) => e.id);
             } else {
                 //券種がありません。
                 res.json({
@@ -374,7 +374,7 @@ export async function index(req: Request, res: Response): Promise<void> {
     });
 
     const ticketTypeGroupsList = await offerService.searchTicketTypeGroups({
-        project: { ids: [req.project.id] }
+        project: { id: { $eq: req.project.id } }
     });
 
     // 券種マスタ画面遷移
@@ -398,8 +398,10 @@ export async function getTicketTypeGroupList(req: Request, res: Response): Promi
         const { data } = await offerService.searchTicketTypeGroups({
             limit: limit,
             page: page,
-            project: { ids: [req.project.id] },
-            ticketTypes: [req.params.ticketTypeId]
+            project: { id: { $eq: req.project.id } },
+            itemListElement: {
+                id: { $in: [req.params.ticketTypeId] }
+            }
         });
         res.json({
             success: true,

@@ -276,8 +276,8 @@ function getList(req, res) {
             let ticketTypeIds = [];
             if (req.query.ticketTypeGroups !== undefined && req.query.ticketTypeGroups !== '') {
                 const ticketTypeGroup = yield offerService.findTicketTypeGroupById({ id: req.query.ticketTypeGroups });
-                if (ticketTypeGroup.ticketTypes !== null) {
-                    ticketTypeIds = ticketTypeGroup.ticketTypes;
+                if (Array.isArray(ticketTypeGroup.itemListElement)) {
+                    ticketTypeIds = ticketTypeGroup.itemListElement.map((e) => e.id);
                 }
                 else {
                     //券種がありません。
@@ -328,7 +328,7 @@ function index(req, res) {
             auth: req.user.authClient
         });
         const ticketTypeGroupsList = yield offerService.searchTicketTypeGroups({
-            project: { ids: [req.project.id] }
+            project: { id: { $eq: req.project.id } }
         });
         // 券種マスタ画面遷移
         res.render('ticketType/index', {
@@ -353,8 +353,10 @@ function getTicketTypeGroupList(req, res) {
             const { data } = yield offerService.searchTicketTypeGroups({
                 limit: limit,
                 page: page,
-                project: { ids: [req.project.id] },
-                ticketTypes: [req.params.ticketTypeId]
+                project: { id: { $eq: req.project.id } },
+                itemListElement: {
+                    id: { $in: [req.params.ticketTypeId] }
+                }
             });
             res.json({
                 success: true,
