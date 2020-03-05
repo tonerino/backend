@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -21,7 +22,7 @@ const base_controller_1 = require("../controllers/base/base.controller");
 const user_1 = require("../user");
 const ordersRouter = express_1.Router();
 const debug = createDebug('chevre-backend:orders');
-ordersRouter.get('', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+ordersRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const placeService = new chevre.service.Place({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient
@@ -39,7 +40,7 @@ ordersRouter.get('', (req, res, next) => __awaiter(this, void 0, void 0, functio
         next(err);
     }
 }));
-ordersRouter.get('/cancel', (req, res) => __awaiter(this, void 0, void 0, function* () {
+ordersRouter.get('/cancel', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const options = base_controller_1.getOptions(req, user_1.ApiEndpoint.cinerino);
     const returnOrderService = new cinerino.service.txn.ReturnOrder(options);
     try {
@@ -73,7 +74,7 @@ ordersRouter.get('/cancel', (req, res) => __awaiter(this, void 0, void 0, functi
     }
 }));
 // tslint:disable-next-line:max-func-body-length
-ordersRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, function* () {
+ordersRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const now = new Date();
         const options = base_controller_1.getOptions(req, user_1.ApiEndpoint.cinerino);
@@ -149,7 +150,7 @@ ordersRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, functi
                 ? (Number(params.page) * Number(params.limit)) + 1
                 : ((Number(params.page) - 1) * Number(params.limit)) + Number(searchResult.data.length),
             results: searchResult.data.map((o) => {
-                return Object.assign({}, o, { paymentMethodId: o.paymentMethods.map((p) => p.paymentMethodId).join(','), ticketInfo: o.acceptedOffers.map((offer) => {
+                return Object.assign(Object.assign({}, o), { paymentMethodId: o.paymentMethods.map((p) => p.paymentMethodId).join(','), ticketInfo: o.acceptedOffers.map((offer) => {
                         let priceStr = String(offer.price);
                         if (offer.priceSpecification !== undefined) {
                             const priceSpecification = offer.priceSpecification;

@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.7.0 - 2020-03-05
+
+### Changed
+
+- update @chevre/api-nodejs-client
+- 細目の科目分類と科目を編集不可に変更
+
 ## v1.6.2 - 2020-02-23
 
 ### Changed

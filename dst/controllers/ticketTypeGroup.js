@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -60,7 +61,7 @@ function add(req, res) {
                     let ticketTypeGroup = yield createFromBody(req);
                     // 券種グループコード重複確認
                     const { data } = yield offerService.searchTicketTypeGroups({
-                        project: { ids: [req.project.id] },
+                        project: { id: { $eq: req.project.id } },
                         identifier: `^${ticketTypeGroup.identifier}$`
                     });
                     if (data.length > 0) {
@@ -85,7 +86,7 @@ function add(req, res) {
                 ticketTypeIds = req.body.ticketTypes;
             }
         }
-        const forms = Object.assign({}, req.body, { name: (_.isEmpty(req.body.name)) ? {} : req.body.name, ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? [] : ticketTypeIds, description: (_.isEmpty(req.body.description)) ? {} : req.body.description, alternateName: (_.isEmpty(req.body.alternateName)) ? {} : req.body.alternateName });
+        const forms = Object.assign(Object.assign({}, req.body), { name: (_.isEmpty(req.body.name)) ? {} : req.body.name, ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? [] : ticketTypeIds, description: (_.isEmpty(req.body.description)) ? {} : req.body.description, alternateName: (_.isEmpty(req.body.alternateName)) ? {} : req.body.alternateName });
         // 券種マスタから取得
         let ticketTypes = [];
         if (forms.ticketTypes.length > 0) {
@@ -118,6 +119,7 @@ exports.add = add;
  * 編集
  */
 function update(req, res) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const offerService = new chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
@@ -157,7 +159,7 @@ function update(req, res) {
         }
         // 券種グループ取得
         const ticketGroup = yield offerService.findTicketTypeGroupById({ id: req.params.id });
-        const forms = Object.assign({}, ticketGroup, { serviceType: ticketGroup.itemOffered.serviceType.codeValue }, req.body, { ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.ticketTypes : [] });
+        const forms = Object.assign(Object.assign(Object.assign(Object.assign({}, ticketGroup), { serviceType: (_a = ticketGroup.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue }), req.body), { ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.itemListElement.map((e) => e.id) : [] });
         // 券種マスタから取得
         let ticketTypes = [];
         if (forms.ticketTypes.length > 0) {
@@ -185,7 +187,14 @@ function update(req, res) {
 exports.update = update;
 function createFromBody(req) {
     return __awaiter(this, void 0, void 0, function* () {
-        const ticketTypes = (Array.isArray(req.body.ticketTypes)) ? req.body.ticketTypes : [req.body.ticketTypes];
+        let ticketTypes = (Array.isArray(req.body.ticketTypes)) ? req.body.ticketTypes : [req.body.ticketTypes];
+        ticketTypes = [...new Set(ticketTypes)]; // 念のため券種IDをユニークに
+        const itemListElement = ticketTypes.map((offerId) => {
+            return {
+                typeOf: chevre.factory.offerType.Offer,
+                id: offerId
+            };
+        });
         const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
@@ -200,18 +209,12 @@ function createFromBody(req) {
         if (serviceType === undefined) {
             throw new Error('興行タイプが見つかりません');
         }
-        return {
-            project: req.project,
-            id: req.body.id,
-            identifier: req.body.identifier,
-            name: req.body.name,
-            description: req.body.description,
-            alternateName: req.body.alternateName,
-            ticketTypes: [...new Set(ticketTypes)],
-            itemOffered: {
+        return Object.assign({ project: req.project, id: req.body.id, identifier: req.body.identifier, name: req.body.name, description: req.body.description, alternateName: req.body.alternateName, itemListElement: itemListElement, itemOffered: {
+                typeOf: 'EventService',
                 serviceType: serviceType
-            }
-        };
+            } }, {
+            ticketTypes: ticketTypes
+        });
     });
 }
 /**
@@ -229,7 +232,7 @@ function getList(req, res) {
             const { data } = yield offerService.searchTicketTypeGroups({
                 limit: limit,
                 page: page,
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 identifier: req.query.identifier,
                 name: req.query.name
             });
@@ -239,7 +242,7 @@ function getList(req, res) {
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data.map((g) => {
-                    return Object.assign({}, g, { ticketGroupCode: g.identifier });
+                    return Object.assign(Object.assign({}, g), { ticketGroupCode: g.identifier });
                 })
             });
         }
@@ -265,16 +268,17 @@ function getTicketTypeList(req, res) {
             });
             // 券種グループ取得
             const ticketGroup = yield offerService.findTicketTypeGroupById({ id: req.query.id });
+            const offerIds = ticketGroup.itemListElement.map((e) => e.id);
             const limit = 100;
             const page = 1;
             const { data } = yield offerService.searchTicketTypes({
                 limit: limit,
                 page: page,
                 project: { ids: [req.project.id] },
-                ids: ticketGroup.ticketTypes
+                ids: offerIds
             });
             // 券種を登録順にソート
-            const ticketTypes = data.sort((a, b) => ticketGroup.ticketTypes.indexOf(a.id) - ticketGroup.ticketTypes.indexOf(b.id));
+            const ticketTypes = data.sort((a, b) => offerIds.indexOf(a.id) - offerIds.indexOf(b.id));
             res.json({
                 success: true,
                 count: (ticketTypes.length === Number(limit))

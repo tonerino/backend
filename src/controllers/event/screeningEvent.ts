@@ -32,7 +32,7 @@ export async function index(req: Request, res: Response, next: NextFunction): Pr
         }
 
         const searchTicketTypeGroupsResult = await offerService.searchTicketTypeGroups({
-            project: { ids: [req.project.id] }
+            project: { id: { $eq: req.project.id } }
         });
 
         res.render('events/screeningEvent/index', {
@@ -119,7 +119,7 @@ export async function search(req: Request, res: Response): Promise<void> {
         }
 
         const searchTicketTypeGroupsResult = await offerService.searchTicketTypeGroups({
-            project: { ids: [req.project.id] }
+            project: { id: { $eq: req.project.id } }
         });
 
         res.json({
@@ -339,7 +339,7 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         limit: 1,
         project: { id: { $eq: req.project.id } },
         inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
-        codeValue: { $eq: ticketTypeGroup.itemOffered.serviceType.codeValue }
+        codeValue: { $eq: ticketTypeGroup.itemOffered.serviceType?.codeValue }
     });
     const serviceType = searchServiceTypesResult.data.shift();
     if (serviceType === undefined) {
@@ -387,9 +387,9 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
 
     const offers: chevre.factory.event.screeningEvent.IOffer = {
         project: { typeOf: req.project.typeOf, id: req.project.id },
-        id: ticketTypeGroup.id,
+        id: <string>ticketTypeGroup.id,
         name: ticketTypeGroup.name,
-        typeOf: 'Offer',
+        typeOf: chevre.factory.offerType.Offer,
         priceCurrency: chevre.factory.priceCurrency.JPY,
         availabilityEnds: salesEndDate,
         availabilityStarts: onlineDisplayStartDate,
@@ -419,8 +419,8 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
             project: req.project,
             typeOf: <chevre.factory.placeType.ScreeningRoom>screeningRoom.typeOf,
             branchCode: <string>screeningRoom.branchCode,
-            name: screeningRoom.name,
-            alternateName: screeningRoom.alternateName,
+            name: <any>screeningRoom.name,
+            alternateName: <any>screeningRoom.alternateName,
             address: screeningRoom.address
         },
         superEvent: screeningEventSeries,
@@ -487,7 +487,7 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
 
     const searchTicketTypeGroupsResult = await offerService.searchTicketTypeGroups({
         limit: 100,
-        project: { ids: [req.project.id] }
+        project: { id: { $eq: req.project.id } }
     });
     const ticketTypeGroups = searchTicketTypeGroupsResult.data;
 
@@ -530,7 +530,7 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
                 if (ticketTypeGroup === undefined) {
                     throw new Error('Ticket Type Group');
                 }
-                const serviceType = serviceTypes.find((t) => t.codeValue === ticketTypeGroup.itemOffered.serviceType.codeValue);
+                const serviceType = serviceTypes.find((t) => t.codeValue === ticketTypeGroup.itemOffered.serviceType?.codeValue);
                 if (serviceType === undefined) {
                     throw new Error('Service Type Not Found');
                 }
@@ -546,9 +546,9 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
 
                 const offers: chevre.factory.event.screeningEvent.IOffer = {
                     project: { typeOf: req.project.typeOf, id: req.project.id },
-                    id: ticketTypeGroup.id,
+                    id: <string>ticketTypeGroup.id,
                     name: ticketTypeGroup.name,
-                    typeOf: 'Offer',
+                    typeOf: chevre.factory.offerType.Offer,
                     priceCurrency: chevre.factory.priceCurrency.JPY,
                     availabilityEnds: salesEndDate,
                     availabilityStarts: onlineDisplayStartDate,
@@ -578,8 +578,8 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
                         project: req.project,
                         typeOf: <chevre.factory.placeType.ScreeningRoom>screeningRoom.typeOf,
                         branchCode: <string>screeningRoom.branchCode,
-                        name: screeningRoom.name === undefined ? { en: '', ja: '', kr: '' } : screeningRoom.name,
-                        alternateName: screeningRoom.alternateName,
+                        name: screeningRoom.name === undefined ? { en: '', ja: '', kr: '' } : <any>screeningRoom.name,
+                        alternateName: <any>screeningRoom.alternateName,
                         address: screeningRoom.address
                     },
                     superEvent: screeningEventSeries,

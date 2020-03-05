@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -130,9 +131,9 @@ function update(req, res, next) {
                 project: { id: { $eq: req.project.id } },
                 inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } }
             });
-            const forms = Object.assign({}, movie, { distribution: (movie.distributor !== undefined && movie.distributor !== null)
+            const forms = Object.assign(Object.assign(Object.assign(Object.assign({}, movie), { distribution: (movie.distributor !== undefined && movie.distributor !== null)
                     ? movie.distributor.distributorType
-                    : '' }, req.body, { duration: (_.isEmpty(req.body.duration))
+                    : '' }), req.body), { duration: (_.isEmpty(req.body.duration))
                     ? (typeof movie.duration === 'string') ? moment.duration(movie.duration).asMinutes() : ''
                     : req.body.duration, datePublished: (_.isEmpty(req.body.datePublished)) ?
                     (movie.datePublished !== undefined) ? moment(movie.datePublished).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
@@ -166,14 +167,14 @@ function createMovieFromBody(req) {
         typeOf: chevre.factory.creativeWorkType.Movie,
         identifier: body.identifier,
         name: body.name,
-        duration: (body.duration !== '') ? moment.duration(Number(body.duration), 'm').toISOString() : null,
+        duration: (body.duration !== '') ? moment.duration(Number(body.duration), 'm').toISOString() : undefined,
         contentRating: (body.contentRating !== '') ? body.contentRating : null,
         headline: body.headline,
         datePublished: (!_.isEmpty(body.datePublished)) ?
             moment(`${body.datePublished}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
         offers: {
             project: { typeOf: req.project.typeOf, id: req.project.id },
-            typeOf: 'Offer',
+            typeOf: chevre.factory.offerType.Offer,
             priceCurrency: chevre.factory.priceCurrency.JPY,
             availabilityEnds: (!_.isEmpty(body.offers) && !_.isEmpty(body.offers.availabilityEnds)) ?
                 moment(`${body.offers.availabilityEnds}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day').toDate() : undefined
@@ -221,7 +222,7 @@ function getList(req, res) {
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data.map((d) => {
-                    return Object.assign({}, d, { distributorType: (d.distributor !== undefined && d.distributor !== null)
+                    return Object.assign(Object.assign({}, d), { distributorType: (d.distributor !== undefined && d.distributor !== null)
                             ? d.distributor.distributorType
                             : '' });
                 })

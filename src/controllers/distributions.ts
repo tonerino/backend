@@ -90,7 +90,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
         const { data } = await categoryCodeService.search({
             limit: limit,
             page: page,
-            project: <any>{ id: { $eq: req.project.id } },
+            project: { id: { $eq: req.project.id } },
             inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } },
             codeValue: { $eq: (typeof req.query.id === 'string' && req.query.id.length > 0) ? req.query.id : undefined },
             name: {

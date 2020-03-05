@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -74,7 +75,7 @@ function add(req, res) {
                     }
                     const movieTheater = yield placeService.findMovieTheaterById({ id: req.body.locationId });
                     req.body.contentRating = movie.contentRating;
-                    const attributes = createEventFromBody(req, movie, movieTheater);
+                    const attributes = createEventFromBody(req, movie, movieTheater, true);
                     debug('saving an event...', attributes);
                     const events = yield eventService.create(attributes);
                     req.flash('message', '登録しました');
@@ -157,7 +158,7 @@ function update(req, res) {
                     }
                     const movieTheater = yield placeService.findMovieTheaterById({ id: req.body.locationId });
                     req.body.contentRating = movie.contentRating;
-                    const attributes = createEventFromBody(req, movie, movieTheater);
+                    const attributes = createEventFromBody(req, movie, movieTheater, false);
                     debug('saving an event...', attributes);
                     yield eventService.update({
                         id: eventId,
@@ -192,7 +193,7 @@ function update(req, res) {
         const signageDisplayName = additionalProperty.find((p) => p.name === 'signageDisplayName');
         const signageDislaySubtitleName = additionalProperty.find((p) => p.name === 'signageDislaySubtitleName');
         const summaryStartDay = additionalProperty.find((p) => p.name === 'summaryStartDay');
-        const forms = Object.assign({ headline: {} }, event, { signageDisplayName: (signageDisplayName !== undefined) ? signageDisplayName.value : '', signageDislaySubtitleName: (signageDislaySubtitleName !== undefined) ? signageDislaySubtitleName.value : '', summaryStartDay: (summaryStartDay !== undefined) ? summaryStartDay.value : '' }, req.body, { nameJa: (_.isEmpty(req.body.nameJa)) ? event.name.ja : req.body.nameJa, nameEn: (_.isEmpty(req.body.nameEn)) ? event.name.en : req.body.nameEn, duration: (_.isEmpty(req.body.duration)) ? moment.duration(event.duration).asMinutes() : req.body.duration, locationId: event.location.id, translationType: translationType, videoFormatType: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf) : [], startDate: (_.isEmpty(req.body.startDate)) ?
+        const forms = Object.assign(Object.assign(Object.assign(Object.assign({ headline: {} }, event), { signageDisplayName: (signageDisplayName !== undefined) ? signageDisplayName.value : '', signageDislaySubtitleName: (signageDislaySubtitleName !== undefined) ? signageDislaySubtitleName.value : '', summaryStartDay: (summaryStartDay !== undefined) ? summaryStartDay.value : '' }), req.body), { nameJa: (_.isEmpty(req.body.nameJa)) ? event.name.ja : req.body.nameJa, nameEn: (_.isEmpty(req.body.nameEn)) ? event.name.en : req.body.nameEn, duration: (_.isEmpty(req.body.duration)) ? moment.duration(event.duration).asMinutes() : req.body.duration, locationId: event.location.id, translationType: translationType, videoFormatType: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf) : [], startDate: (_.isEmpty(req.body.startDate)) ?
                 (event.startDate !== null) ? moment(event.startDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '' :
                 req.body.startDate, endDate: (_.isEmpty(req.body.endDate)) ?
                 (event.endDate !== null) ? moment(event.endDate).tz('Asia/Tokyo').add(-1, 'day').format('YYYY/MM/DD') : '' :
@@ -247,7 +248,7 @@ exports.getRating = getRating;
  * リクエストボディからイベントオブジェクトを作成する
  */
 // tslint:disable-next-line:max-func-body-length
-function createEventFromBody(req, movie, movieTheater) {
+function createEventFromBody(req, movie, movieTheater, isNew) {
     const body = req.body;
     const videoFormat = (Array.isArray(body.videoFormatType)) ? body.videoFormatType.map((f) => {
         return { typeOf: f, name: f };
@@ -269,59 +270,44 @@ function createEventFromBody(req, movie, movieTheater) {
     });
     const offers = {
         project: { typeOf: req.project.typeOf, id: req.project.id },
-        typeOf: 'Offer',
+        typeOf: chevre.factory.offerType.Offer,
         priceCurrency: chevre.factory.priceCurrency.JPY,
         acceptedPaymentMethod: acceptedPaymentMethod
     };
-    let subtitleLanguage = null;
+    let subtitleLanguage;
     if (body.translationType === '0') {
         subtitleLanguage = { typeOf: 'Language', name: 'Japanese' };
     }
-    let dubLanguage = null;
+    let dubLanguage;
     if (body.translationType === '1') {
         dubLanguage = { typeOf: 'Language', name: 'Japanese' };
     }
     if (typeof movie.duration !== 'string') {
         throw new Error('作品の上映時間が未登録です');
     }
-    return {
-        project: req.project,
-        typeOf: chevre.factory.eventType.ScreeningEventSeries,
-        name: {
+    return Object.assign(Object.assign(Object.assign({ project: req.project, typeOf: chevre.factory.eventType.ScreeningEventSeries, name: {
             ja: body.nameJa,
             en: body.nameEn,
             kr: ''
-        },
-        kanaName: body.kanaName,
-        location: {
+        }, kanaName: body.kanaName, location: {
             project: req.project,
             id: movieTheater.id,
             typeOf: movieTheater.typeOf,
             branchCode: movieTheater.branchCode,
             name: movieTheater.name,
             kanaName: movieTheater.kanaName
-        },
+        }, 
         // organizer: {
         //     typeOf: OrganizationType.MovieTheater,
         //     identifier: params.movieTheater.identifier,
         //     name: params.movieTheater.name
         // },
-        videoFormat: videoFormat,
-        soundFormat: soundFormat,
-        subtitleLanguage: subtitleLanguage,
-        dubLanguage: dubLanguage,
-        workPerformed: movie,
-        duration: movie.duration,
-        startDate: (!_.isEmpty(body.startDate)) ? moment(`${body.startDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
-        endDate: (!_.isEmpty(body.endDate))
+        videoFormat: videoFormat, soundFormat: soundFormat, workPerformed: movie, duration: movie.duration, startDate: (!_.isEmpty(body.startDate)) ? moment(`${body.startDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined, endDate: (!_.isEmpty(body.endDate))
             ? moment(`${body.endDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day').toDate()
-            : undefined,
-        eventStatus: chevre.factory.eventStatusType.EventScheduled,
-        headline: {
+            : undefined, eventStatus: chevre.factory.eventStatusType.EventScheduled, headline: {
             ja: body.headline.ja,
             en: ''
-        },
-        additionalProperty: [
+        }, additionalProperty: [
             {
                 name: 'signageDisplayName',
                 value: body.signageDisplayName
@@ -334,14 +320,15 @@ function createEventFromBody(req, movie, movieTheater) {
                 name: 'summaryStartDay',
                 value: body.summaryStartDay
             }
-        ],
-        offers: offers,
-        description: {
+        ], offers: offers, description: {
             ja: body.description,
             en: '',
             kr: ''
+        } }, (subtitleLanguage !== undefined) ? { subtitleLanguage } : undefined), (dubLanguage !== undefined) ? { dubLanguage } : undefined), (!isNew)
+        ? {
+            $unset: Object.assign(Object.assign({}, (subtitleLanguage === undefined) ? { subtitleLanguage: 1 } : undefined), (dubLanguage === undefined) ? { dubLanguage: 1 } : undefined)
         }
-    };
+        : undefined);
 }
 /**
  * 検索API
@@ -386,7 +373,7 @@ function search(req, res) {
                 if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
                     translationType = '吹替';
                 }
-                return Object.assign({}, event, { id: event.id, filmNameJa: event.name.ja, filmNameEn: event.name.en, kanaName: event.kanaName, duration: moment.duration(event.duration).humanize(), contentRating: event.workPerformed.contentRating, translationType: translationType, videoFormat: event.videoFormat, mvtkFlg: mvtkFlg });
+                return Object.assign(Object.assign({}, event), { id: event.id, filmNameJa: event.name.ja, filmNameEn: event.name.en, kanaName: event.kanaName, duration: moment.duration(event.duration).humanize(), contentRating: event.workPerformed.contentRating, translationType: translationType, videoFormat: event.videoFormat, mvtkFlg: mvtkFlg });
             });
             results.sort((event1, event2) => {
                 if (event1.filmNameJa > event2.filmNameJa) {
@@ -425,7 +412,7 @@ function searchScreeningEvents(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const searchScreeningEventsResult = yield eventService.search(Object.assign({}, req.query, { project: { ids: [req.project.id] }, typeOf: chevre.factory.eventType.ScreeningEvent, superEvent: { ids: [req.params.eventId] } }));
+            const searchScreeningEventsResult = yield eventService.search(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, typeOf: chevre.factory.eventType.ScreeningEvent, superEvent: { ids: [req.params.eventId] } }));
             res.json(searchScreeningEventsResult);
         }
         catch (error) {
@@ -468,7 +455,7 @@ function getList(req, res) {
                 if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
                     translationType = '吹替';
                 }
-                return Object.assign({}, event, { translationType: translationType, startDay: (event.startDate !== undefined) ? moment(event.startDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '', endDay: (event.endDate !== undefined) ? moment(event.endDate).tz('Asia/Tokyo').add(-1, 'day').format('YYYY/MM/DD') : '', videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : '' });
+                return Object.assign(Object.assign({}, event), { translationType: translationType, startDay: (event.startDate !== undefined) ? moment(event.startDate).tz('Asia/Tokyo').format('YYYY/MM/DD') : '', endDay: (event.endDate !== undefined) ? moment(event.endDate).tz('Asia/Tokyo').add(-1, 'day').format('YYYY/MM/DD') : '', videoFormat: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf).join(' ') : '' });
             });
             res.json({
                 success: true,

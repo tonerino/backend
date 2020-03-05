@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -19,7 +20,7 @@ movieTheaterRouter.get('', (_, res) => {
         message: ''
     });
 });
-movieTheaterRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, function* () {
+movieTheaterRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const placeService = new chevre.service.Place({
             endpoint: process.env.API_ENDPOINT,
@@ -40,7 +41,7 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, 
                 // tslint:disable-next-line:no-magic-numbers
                 ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
                 : undefined;
-            return Object.assign({}, movieTheater, { availabilityStartsGraceTimeInDays: (movieTheater.offers !== undefined
+            return Object.assign(Object.assign({}, movieTheater), { availabilityStartsGraceTimeInDays: (movieTheater.offers !== undefined
                     && movieTheater.offers.availabilityStartsGraceTime !== undefined
                     && movieTheater.offers.availabilityStartsGraceTime.value !== undefined)
                     // tslint:disable-next-line:no-magic-numbers
@@ -67,7 +68,7 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(this, void 0, void 0, 
         });
     }
 }));
-movieTheaterRouter.get('/getScreenListByTheaterBranchCode', (req, res) => __awaiter(this, void 0, void 0, function* () {
+movieTheaterRouter.get('/getScreenListByTheaterBranchCode', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const branchCode = req.query.branchCode;
         const placeService = new chevre.service.Place({
@@ -85,7 +86,7 @@ movieTheaterRouter.get('/getScreenListByTheaterBranchCode', (req, res) => __awai
         const place = yield placeService.findMovieTheaterById({ id: movieTheaterWithoutScreeningRoom.id });
         const results = place.containsPlace.map((screen) => ({
             branchCode: screen.branchCode,
-            name: screen.name !== undefined ? screen.name.ja : ''
+            name: (screen.name !== undefined) ? screen.name.ja : ''
         }));
         results.sort((screen1, screen2) => {
             if (screen1.name > screen2.name) {

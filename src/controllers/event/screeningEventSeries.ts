@@ -72,7 +72,7 @@ export async function add(req: Request, res: Response): Promise<void> {
 
                 const movieTheater = await placeService.findMovieTheaterById({ id: req.body.locationId });
                 req.body.contentRating = movie.contentRating;
-                const attributes = createEventFromBody(req, movie, movieTheater);
+                const attributes = createEventFromBody(req, movie, movieTheater, true);
                 debug('saving an event...', attributes);
                 const events = await eventService.create<chevre.factory.eventType.ScreeningEventSeries>(attributes);
                 req.flash('message', '登録しました');
@@ -163,7 +163,7 @@ export async function update(req: Request, res: Response): Promise<void> {
 
                 const movieTheater = await placeService.findMovieTheaterById({ id: req.body.locationId });
                 req.body.contentRating = movie.contentRating;
-                const attributes = createEventFromBody(req, movie, movieTheater);
+                const attributes = createEventFromBody(req, movie, movieTheater, false);
                 debug('saving an event...', attributes);
                 await eventService.update({
                     id: eventId,
@@ -271,7 +271,8 @@ export async function getRating(req: Request, res: Response): Promise<void> {
 function createEventFromBody(
     req: Request,
     movie: chevre.factory.creativeWork.movie.ICreativeWork,
-    movieTheater: chevre.factory.place.movieTheater.IPlace
+    movieTheater: chevre.factory.place.movieTheater.IPlace,
+    isNew: boolean
 ): chevre.factory.event.screeningEventSeries.IAttributes {
     const body = req.body;
 
@@ -299,17 +300,17 @@ function createEventFromBody(
 
     const offers: chevre.factory.event.screeningEventSeries.IOffer = {
         project: { typeOf: req.project.typeOf, id: req.project.id },
-        typeOf: 'Offer',
+        typeOf: chevre.factory.offerType.Offer,
         priceCurrency: chevre.factory.priceCurrency.JPY,
         acceptedPaymentMethod: acceptedPaymentMethod
     };
 
-    let subtitleLanguage: chevre.factory.language.ILanguage | null = null;
+    let subtitleLanguage: chevre.factory.language.ILanguage | undefined;
     if (body.translationType === '0') {
         subtitleLanguage = { typeOf: 'Language', name: 'Japanese' };
     }
 
-    let dubLanguage: chevre.factory.language.ILanguage | null = null;
+    let dubLanguage: chevre.factory.language.ILanguage | undefined;
     if (body.translationType === '1') {
         dubLanguage = { typeOf: 'Language', name: 'Japanese' };
     }
@@ -342,8 +343,6 @@ function createEventFromBody(
         // },
         videoFormat: videoFormat,
         soundFormat: soundFormat,
-        subtitleLanguage: subtitleLanguage,
-        dubLanguage: dubLanguage,
         workPerformed: movie,
         duration: movie.duration,
         startDate: (!_.isEmpty(body.startDate)) ? moment(`${body.startDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
@@ -374,7 +373,17 @@ function createEventFromBody(
             ja: body.description,
             en: '',
             kr: ''
-        }
+        },
+        ...(subtitleLanguage !== undefined) ? { subtitleLanguage } : undefined,
+        ...(dubLanguage !== undefined) ? { dubLanguage } : undefined,
+        ...(!isNew)
+            ? {
+                $unset: {
+                    ...(subtitleLanguage === undefined) ? { subtitleLanguage: 1 } : undefined,
+                    ...(dubLanguage === undefined) ? { dubLanguage: 1 } : undefined
+                }
+            }
+            : undefined
     };
 }
 /**
@@ -424,8 +433,8 @@ export async function search(req: Request, res: Response): Promise<void> {
             return {
                 ...event,
                 id: event.id,
-                filmNameJa: event.name.ja,
-                filmNameEn: event.name.en,
+                filmNameJa: <string>event.name.ja,
+                filmNameEn: <string>event.name.en,
                 kanaName: event.kanaName,
                 duration: moment.duration(event.duration).humanize(),
                 contentRating: event.workPerformed.contentRating,

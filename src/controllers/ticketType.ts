@@ -35,7 +35,9 @@ export async function add(req: Request, res: Response): Promise<void> {
         auth: req.user.authClient
     });
 
-    const subjectList = await subjectService.getSubjectList();
+    const subjectList = await subjectService.searchAll({
+        project: { id: { $eq: req.project.id } }
+    });
 
     const searchOfferCategoryTypesResult = await categoryCodeService.search({
         limit: 100,
@@ -55,7 +57,7 @@ export async function add(req: Request, res: Response): Promise<void> {
             // 券種DB登録プロセス
             try {
                 req.body.id = '';
-                let ticketType = await createFromBody(req);
+                let ticketType = await createFromBody(req, true);
 
                 // 券種コード重複確認
                 const { data } = await offerService.searchTicketTypes({
@@ -114,7 +116,9 @@ export async function update(req: Request, res: Response): Promise<void> {
         auth: req.user.authClient
     });
 
-    const subjectList = await subjectService.getSubjectList();
+    const subjectList = await subjectService.searchAll({
+        project: { id: { $eq: req.project.id } }
+    });
 
     const searchOfferCategoryTypesResult = await categoryCodeService.search({
         limit: 100,
@@ -135,7 +139,7 @@ export async function update(req: Request, res: Response): Promise<void> {
             // 券種DB更新プロセス
             try {
                 req.body.id = req.params.id;
-                ticketType = await createFromBody(req);
+                ticketType = await createFromBody(req, false);
                 await offerService.updateTicketType(ticketType);
                 req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
@@ -210,7 +214,7 @@ export async function update(req: Request, res: Response): Promise<void> {
 }
 
 // tslint:disable-next-line:max-func-body-length
-async function createFromBody(req: Request): Promise<chevre.factory.ticketType.ITicketType> {
+async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.ticketType.ITicketType> {
     const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
@@ -274,6 +278,7 @@ async function createFromBody(req: Request): Promise<chevre.factory.ticketType.I
                 typeOf: 'Accounting',
                 operatingRevenue: <any>{
                     typeOf: 'AccountTitle',
+                    codeValue: req.body.subject,
                     identifier: req.body.subject,
                     name: ''
                 },
@@ -301,11 +306,13 @@ async function createFromBody(req: Request): Promise<chevre.factory.ticketType.I
                 }
             }
             : undefined,
-        ...{
-            $unset: {
-                ...(offerCategory === undefined) ? { category: 1 } : undefined
+        ...(!isNew)
+            ? {
+                $unset: {
+                    ...(offerCategory === undefined) ? { category: 1 } : undefined
+                }
             }
-        }
+            : undefined
     };
 }
 
@@ -322,8 +329,8 @@ export async function getList(req: Request, res: Response): Promise<void> {
         let ticketTypeIds: string[] = [];
         if (req.query.ticketTypeGroups !== undefined && req.query.ticketTypeGroups !== '') {
             const ticketTypeGroup = await offerService.findTicketTypeGroupById({ id: req.query.ticketTypeGroups });
-            if (ticketTypeGroup.ticketTypes !== null) {
-                ticketTypeIds = ticketTypeGroup.ticketTypes;
+            if (Array.isArray(ticketTypeGroup.itemListElement)) {
+                ticketTypeIds = ticketTypeGroup.itemListElement.map((e) => e.id);
             } else {
                 //券種がありません。
                 res.json({
@@ -374,7 +381,7 @@ export async function index(req: Request, res: Response): Promise<void> {
     });
 
     const ticketTypeGroupsList = await offerService.searchTicketTypeGroups({
-        project: { ids: [req.project.id] }
+        project: { id: { $eq: req.project.id } }
     });
 
     // 券種マスタ画面遷移
@@ -398,8 +405,10 @@ export async function getTicketTypeGroupList(req: Request, res: Response): Promi
         const { data } = await offerService.searchTicketTypeGroups({
             limit: limit,
             page: page,
-            project: { ids: [req.project.id] },
-            ticketTypes: [req.params.ticketTypeId]
+            project: { id: { $eq: req.project.id } },
+            itemListElement: {
+                id: { $in: [req.params.ticketTypeId] }
+            }
         });
         res.json({
             success: true,

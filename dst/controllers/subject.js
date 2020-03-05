@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -77,9 +78,9 @@ function update(req, res) {
         });
         let message = '';
         let errors = {};
-        const { data } = yield subjectService.searchSubject({
-            detailCd: req.params.id
-        });
+        const { data } = yield subjectService.searchSubject(Object.assign({ detailCd: req.params.id }, {
+            project: { id: { $eq: req.project.id } }
+        }));
         if (data.length === 0) {
             throw new Error('Subject Not Found');
         }
@@ -147,11 +148,9 @@ function getList(req, res) {
             });
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
-            const { data } = yield subjectService.searchSubject({
-                limit: limit,
-                page: page,
-                detailCd: req.query.detailCd
-            });
+            const { data } = yield subjectService.searchSubject(Object.assign({ limit: limit, page: page, detailCd: req.query.detailCd }, {
+                project: { id: { $eq: req.project.id } }
+            }));
             res.json({
                 success: true,
                 count: (data.length === Number(limit))

@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -42,7 +43,9 @@ function add(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const subjectList = yield subjectService.getSubjectList();
+        const subjectList = yield subjectService.searchAll({
+            project: { id: { $eq: req.project.id } }
+        });
         const searchOfferCategoryTypesResult = yield categoryCodeService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },
@@ -60,7 +63,7 @@ function add(req, res) {
                 // 券種DB登録プロセス
                 try {
                     req.body.id = '';
-                    let ticketType = yield createFromBody(req);
+                    let ticketType = yield createFromBody(req, true);
                     // 券種コード重複確認
                     const { data } = yield offerService.searchTicketTypes({
                         project: { ids: [req.project.id] },
@@ -108,7 +111,9 @@ function update(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const subjectList = yield subjectService.getSubjectList();
+        const subjectList = yield subjectService.searchAll({
+            project: { id: { $eq: req.project.id } }
+        });
         const searchOfferCategoryTypesResult = yield categoryCodeService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },
@@ -127,7 +132,7 @@ function update(req, res) {
                 // 券種DB更新プロセス
                 try {
                     req.body.id = req.params.id;
-                    ticketType = yield createFromBody(req);
+                    ticketType = yield createFromBody(req, false);
                     yield offerService.updateTicketType(ticketType);
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
@@ -165,7 +170,7 @@ function update(req, res) {
         const accountsReceivable = (ticketType.priceSpecification.accounting !== undefined)
             ? ticketType.priceSpecification.accounting.accountsReceivable
             : '';
-        const forms = Object.assign({ alternateName: {} }, ticketType, { category: (ticketType.category !== undefined) ? ticketType.category.codeValue : '', nameForPrinting: (nameForPrinting !== undefined) ? nameForPrinting.value : '', price: Math.floor(Number(ticketType.priceSpecification.price) / seatReservationUnit), accountsReceivable: Math.floor(Number(accountsReceivable) / seatReservationUnit) }, req.body, { isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket, isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket, seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit, subject: (_.isEmpty(req.body.subject))
+        const forms = Object.assign(Object.assign(Object.assign(Object.assign({ alternateName: {} }, ticketType), { category: (ticketType.category !== undefined) ? ticketType.category.codeValue : '', nameForPrinting: (nameForPrinting !== undefined) ? nameForPrinting.value : '', price: Math.floor(Number(ticketType.priceSpecification.price) / seatReservationUnit), accountsReceivable: Math.floor(Number(accountsReceivable) / seatReservationUnit) }), req.body), { isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket, isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket, seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit, subject: (_.isEmpty(req.body.subject))
                 ? (ticketType.priceSpecification.accounting !== undefined)
                     ? ticketType.priceSpecification.accounting.operatingRevenue.identifier : undefined
                 : req.body.subject, nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject))
@@ -184,7 +189,7 @@ function update(req, res) {
 }
 exports.update = update;
 // tslint:disable-next-line:max-func-body-length
-function createFromBody(req) {
+function createFromBody(req, isNew) {
     return __awaiter(this, void 0, void 0, function* () {
         const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
@@ -222,7 +227,7 @@ function createFromBody(req) {
         const appliesToMovieTicketType = (typeof req.body.appliesToMovieTicketType === 'string' && req.body.appliesToMovieTicketType.length > 0)
             ? req.body.appliesToMovieTicketType
             : undefined;
-        return Object.assign({ project: req.project, typeOf: 'Offer', priceCurrency: chevre.factory.priceCurrency.JPY, id: req.body.id, identifier: req.body.identifier, name: req.body.name, description: req.body.description, alternateName: { ja: req.body.alternateName.ja, en: '' }, availability: availability, priceSpecification: {
+        return Object.assign(Object.assign({ project: req.project, typeOf: 'Offer', priceCurrency: chevre.factory.priceCurrency.JPY, id: req.body.id, identifier: req.body.identifier, name: req.body.name, description: req.body.description, alternateName: { ja: req.body.alternateName.ja, en: '' }, availability: availability, priceSpecification: {
                 project: req.project,
                 typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
                 price: Number(req.body.price) * referenceQuantity.value,
@@ -234,6 +239,7 @@ function createFromBody(req) {
                     typeOf: 'Accounting',
                     operatingRevenue: {
                         typeOf: 'AccountTitle',
+                        codeValue: req.body.subject,
                         identifier: req.body.subject,
                         name: ''
                     },
@@ -257,9 +263,11 @@ function createFromBody(req) {
                     codeValue: offerCategory.codeValue
                 }
             }
-            : undefined, {
-            $unset: Object.assign({}, (offerCategory === undefined) ? { category: 1 } : undefined)
-        });
+            : undefined), (!isNew)
+            ? {
+                $unset: Object.assign({}, (offerCategory === undefined) ? { category: 1 } : undefined)
+            }
+            : undefined);
     });
 }
 /**
@@ -276,8 +284,8 @@ function getList(req, res) {
             let ticketTypeIds = [];
             if (req.query.ticketTypeGroups !== undefined && req.query.ticketTypeGroups !== '') {
                 const ticketTypeGroup = yield offerService.findTicketTypeGroupById({ id: req.query.ticketTypeGroups });
-                if (ticketTypeGroup.ticketTypes !== null) {
-                    ticketTypeIds = ticketTypeGroup.ticketTypes;
+                if (Array.isArray(ticketTypeGroup.itemListElement)) {
+                    ticketTypeIds = ticketTypeGroup.itemListElement.map((e) => e.id);
                 }
                 else {
                     //券種がありません。
@@ -304,7 +312,7 @@ function getList(req, res) {
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data.map((t) => {
-                    return Object.assign({}, t, { ticketCode: t.identifier });
+                    return Object.assign(Object.assign({}, t), { ticketCode: t.identifier });
                 })
             });
         }
@@ -328,7 +336,7 @@ function index(req, res) {
             auth: req.user.authClient
         });
         const ticketTypeGroupsList = yield offerService.searchTicketTypeGroups({
-            project: { ids: [req.project.id] }
+            project: { id: { $eq: req.project.id } }
         });
         // 券種マスタ画面遷移
         res.render('ticketType/index', {
@@ -353,8 +361,10 @@ function getTicketTypeGroupList(req, res) {
             const { data } = yield offerService.searchTicketTypeGroups({
                 limit: limit,
                 page: page,
-                project: { ids: [req.project.id] },
-                ticketTypes: [req.params.ticketTypeId]
+                project: { id: { $eq: req.project.id } },
+                itemListElement: {
+                    id: { $in: [req.params.ticketTypeId] }
+                }
             });
             res.json({
                 success: true,

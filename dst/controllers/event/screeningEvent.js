@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -35,7 +36,7 @@ function index(req, res, next) {
                 throw new Error('劇場が見つかりません');
             }
             const searchTicketTypeGroupsResult = yield offerService.searchTicketTypeGroups({
-                project: { ids: [req.project.id] }
+                project: { id: { $eq: req.project.id } }
             });
             res.render('events/screeningEvent/index', {
                 movieTheaters: searchMovieTheatersResult.data,
@@ -118,7 +119,7 @@ function search(req, res) {
                 screens = movieTheater.containsPlace;
             }
             const searchTicketTypeGroupsResult = yield offerService.searchTicketTypeGroups({
-                project: { ids: [req.project.id] }
+                project: { id: { $eq: req.project.id } }
             });
             res.json({
                 validation: null,
@@ -300,6 +301,7 @@ exports.cancelPerformance = cancelPerformance;
  */
 // tslint:disable-next-line:max-func-body-length
 function createEventFromBody(req) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const body = req.body;
         const user = req.user;
@@ -343,7 +345,7 @@ function createEventFromBody(req) {
             limit: 1,
             project: { id: { $eq: req.project.id } },
             inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
-            codeValue: { $eq: ticketTypeGroup.itemOffered.serviceType.codeValue }
+            codeValue: { $eq: (_a = ticketTypeGroup.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue }
         });
         const serviceType = searchServiceTypesResult.data.shift();
         if (serviceType === undefined) {
@@ -391,7 +393,7 @@ function createEventFromBody(req) {
             project: { typeOf: req.project.typeOf, id: req.project.id },
             id: ticketTypeGroup.id,
             name: ticketTypeGroup.name,
-            typeOf: 'Offer',
+            typeOf: chevre.factory.offerType.Offer,
             priceCurrency: chevre.factory.priceCurrency.JPY,
             availabilityEnds: salesEndDate,
             availabilityStarts: onlineDisplayStartDate,
@@ -483,7 +485,7 @@ function createMultipleEventFromBody(req, user) {
         const timeData = body.timeData;
         const searchTicketTypeGroupsResult = yield offerService.searchTicketTypeGroups({
             limit: 100,
-            project: { ids: [req.project.id] }
+            project: { id: { $eq: req.project.id } }
         });
         const ticketTypeGroups = searchTicketTypeGroupsResult.data;
         const searchBoxOfficeTypeGroupsResult = yield categoryCodeService.search({
@@ -523,7 +525,7 @@ function createMultipleEventFromBody(req, user) {
                     if (ticketTypeGroup === undefined) {
                         throw new Error('Ticket Type Group');
                     }
-                    const serviceType = serviceTypes.find((t) => t.codeValue === ticketTypeGroup.itemOffered.serviceType.codeValue);
+                    const serviceType = serviceTypes.find((t) => { var _a; return t.codeValue === ((_a = ticketTypeGroup.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue); });
                     if (serviceType === undefined) {
                         throw new Error('Service Type Not Found');
                     }
@@ -539,7 +541,7 @@ function createMultipleEventFromBody(req, user) {
                         project: { typeOf: req.project.typeOf, id: req.project.id },
                         id: ticketTypeGroup.id,
                         name: ticketTypeGroup.name,
-                        typeOf: 'Offer',
+                        typeOf: chevre.factory.offerType.Offer,
                         priceCurrency: chevre.factory.priceCurrency.JPY,
                         availabilityEnds: salesEndDate,
                         availabilityStarts: onlineDisplayStartDate,

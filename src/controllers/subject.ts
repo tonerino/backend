@@ -69,7 +69,10 @@ export async function update(req: Request, res: Response): Promise<void> {
     let message = '';
     let errors: any = {};
     const { data } = await subjectService.searchSubject({
-        detailCd: req.params.id
+        detailCd: req.params.id,
+        ...{
+            project: { id: { $eq: req.project.id } }
+        }
     });
     if (data.length === 0) {
         throw new Error('Subject Not Found');
@@ -149,7 +152,10 @@ export async function getList(req: Request, res: Response): Promise<void> {
         const { data } = await subjectService.searchSubject({
             limit: limit,
             page: page,
-            detailCd: req.query.detailCd
+            detailCd: req.query.detailCd,
+            ...{
+                project: { id: { $eq: req.project.id } }
+            }
         });
         res.json({
             success: true,
