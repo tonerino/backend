@@ -35,7 +35,9 @@ export async function add(req: Request, res: Response): Promise<void> {
         auth: req.user.authClient
     });
 
-    const subjectList = await subjectService.getSubjectList();
+    const subjectList = await subjectService.searchAll({
+        project: { id: { $eq: req.project.id } }
+    });
 
     const searchOfferCategoryTypesResult = await categoryCodeService.search({
         limit: 100,
@@ -114,7 +116,9 @@ export async function update(req: Request, res: Response): Promise<void> {
         auth: req.user.authClient
     });
 
-    const subjectList = await subjectService.getSubjectList();
+    const subjectList = await subjectService.searchAll({
+        project: { id: { $eq: req.project.id } }
+    });
 
     const searchOfferCategoryTypesResult = await categoryCodeService.search({
         limit: 100,
@@ -274,6 +278,7 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
                 typeOf: 'Accounting',
                 operatingRevenue: <any>{
                     typeOf: 'AccountTitle',
+                    codeValue: req.body.subject,
                     identifier: req.body.subject,
                     name: ''
                 },

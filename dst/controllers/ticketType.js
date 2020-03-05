@@ -43,7 +43,9 @@ function add(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const subjectList = yield subjectService.getSubjectList();
+        const subjectList = yield subjectService.searchAll({
+            project: { id: { $eq: req.project.id } }
+        });
         const searchOfferCategoryTypesResult = yield categoryCodeService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },
@@ -109,7 +111,9 @@ function update(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const subjectList = yield subjectService.getSubjectList();
+        const subjectList = yield subjectService.searchAll({
+            project: { id: { $eq: req.project.id } }
+        });
         const searchOfferCategoryTypesResult = yield categoryCodeService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },
@@ -235,6 +239,7 @@ function createFromBody(req, isNew) {
                     typeOf: 'Accounting',
                     operatingRevenue: {
                         typeOf: 'AccountTitle',
+                        codeValue: req.body.subject,
                         identifier: req.body.subject,
                         name: ''
                     },
