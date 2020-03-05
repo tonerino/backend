@@ -32,6 +32,10 @@ export async function add(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
+    const offerCatalogService = new chevre.service.OfferCatalog({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient
+    });
     const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
@@ -51,15 +55,15 @@ export async function add(req: Request, res: Response): Promise<void> {
                 let ticketTypeGroup = await createFromBody(req);
 
                 // 券種グループコード重複確認
-                const { data } = await offerService.searchTicketTypeGroups({
+                const { data } = await offerCatalogService.search({
                     project: { id: { $eq: req.project.id } },
-                    identifier: `^${ticketTypeGroup.identifier}$`
+                    identifier: { $eq: ticketTypeGroup.identifier }
                 });
                 if (data.length > 0) {
                     throw new Error(`既に存在する券種グループコードです: ${ticketTypeGroup.identifier}`);
                 }
 
-                ticketTypeGroup = await offerService.createTicketTypeGroup(ticketTypeGroup);
+                ticketTypeGroup = await offerCatalogService.create(ticketTypeGroup);
                 req.flash('message', '登録しました');
                 res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
 
@@ -124,6 +128,10 @@ export async function update(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
+    const offerCatalogService = new chevre.service.OfferCatalog({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient
+    });
     const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
@@ -148,7 +156,7 @@ export async function update(req: Request, res: Response): Promise<void> {
                 // 券種グループDB登録
                 req.body.id = req.params.id;
                 const ticketTypeGroup = await createFromBody(req);
-                await offerService.updateTicketTypeGroup(ticketTypeGroup);
+                await offerCatalogService.update(ticketTypeGroup);
                 req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
 
@@ -159,7 +167,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         }
     }
     // 券種グループ取得
-    const ticketGroup = await offerService.findTicketTypeGroupById({ id: req.params.id });
+    const ticketGroup = await offerCatalogService.findById({ id: req.params.id });
     const forms = {
         ...ticketGroup,
         serviceType: ticketGroup.itemOffered.serviceType?.codeValue,
@@ -243,17 +251,18 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
  */
 export async function getList(req: Request, res: Response): Promise<void> {
     try {
-        const offerService = new chevre.service.Offer({
+        const offerCatalogService = new chevre.service.OfferCatalog({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
 
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
-        const { data } = await offerService.searchTicketTypeGroups({
+        const { data } = await offerCatalogService.search({
             limit: limit,
             page: page,
             project: { id: { $eq: req.project.id } },
+            itemOffered: { typeOf: { $eq: 'EventService' } },
             identifier: req.query.identifier,
             name: req.query.name
         });
@@ -286,9 +295,14 @@ export async function getTicketTypeList(req: Request, res: Response): Promise<vo
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
+        const offerCatalogService = new chevre.service.OfferCatalog({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+
         // 券種グループ取得
-        const ticketGroup = await offerService.findTicketTypeGroupById({ id: req.query.id });
-        const offerIds = ticketGroup.itemListElement.map((e) => e.id);
+        const offerCatalog = await offerCatalogService.findById({ id: req.query.id });
+        const offerIds = offerCatalog.itemListElement.map((e) => e.id);
 
         const limit = 100;
         const page = 1;
@@ -367,7 +381,7 @@ export async function deleteById(req: Request, res: Response): Promise<void> {
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const offerService = new chevre.service.Offer({
+        const offerCatalogService = new chevre.service.OfferCatalog({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
@@ -390,7 +404,7 @@ export async function deleteById(req: Request, res: Response): Promise<void> {
             }
         }
 
-        await offerService.deleteTicketTypeGroup({ id: ticketTypeGroupId });
+        await offerCatalogService.deleteById({ id: ticketTypeGroupId });
         res.status(NO_CONTENT).end();
     } catch (error) {
         res.status(BAD_REQUEST).json({ error: { message: error.message } });

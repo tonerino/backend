@@ -43,6 +43,10 @@ function add(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
+        const offerCatalogService = new chevre.service.OfferCatalog({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
         const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
@@ -60,14 +64,14 @@ function add(req, res) {
                     req.body.id = '';
                     let ticketTypeGroup = yield createFromBody(req);
                     // 券種グループコード重複確認
-                    const { data } = yield offerService.searchTicketTypeGroups({
+                    const { data } = yield offerCatalogService.search({
                         project: { id: { $eq: req.project.id } },
-                        identifier: `^${ticketTypeGroup.identifier}$`
+                        identifier: { $eq: ticketTypeGroup.identifier }
                     });
                     if (data.length > 0) {
                         throw new Error(`既に存在する券種グループコードです: ${ticketTypeGroup.identifier}`);
                     }
-                    ticketTypeGroup = yield offerService.createTicketTypeGroup(ticketTypeGroup);
+                    ticketTypeGroup = yield offerCatalogService.create(ticketTypeGroup);
                     req.flash('message', '登録しました');
                     res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
                     return;
@@ -125,6 +129,10 @@ function update(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
+        const offerCatalogService = new chevre.service.OfferCatalog({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
         const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
@@ -147,7 +155,7 @@ function update(req, res) {
                     // 券種グループDB登録
                     req.body.id = req.params.id;
                     const ticketTypeGroup = yield createFromBody(req);
-                    yield offerService.updateTicketTypeGroup(ticketTypeGroup);
+                    yield offerCatalogService.update(ticketTypeGroup);
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
                     return;
@@ -158,7 +166,7 @@ function update(req, res) {
             }
         }
         // 券種グループ取得
-        const ticketGroup = yield offerService.findTicketTypeGroupById({ id: req.params.id });
+        const ticketGroup = yield offerCatalogService.findById({ id: req.params.id });
         const forms = Object.assign(Object.assign(Object.assign(Object.assign({}, ticketGroup), { serviceType: (_a = ticketGroup.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue }), req.body), { ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.itemListElement.map((e) => e.id) : [] });
         // 券種マスタから取得
         let ticketTypes = [];
@@ -223,16 +231,17 @@ function createFromBody(req) {
 function getList(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const offerService = new chevre.service.Offer({
+            const offerCatalogService = new chevre.service.OfferCatalog({
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
-            const { data } = yield offerService.searchTicketTypeGroups({
+            const { data } = yield offerCatalogService.search({
                 limit: limit,
                 page: page,
                 project: { id: { $eq: req.project.id } },
+                itemOffered: { typeOf: { $eq: 'EventService' } },
                 identifier: req.query.identifier,
                 name: req.query.name
             });
@@ -266,9 +275,13 @@ function getTicketTypeList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
+            const offerCatalogService = new chevre.service.OfferCatalog({
+                endpoint: process.env.API_ENDPOINT,
+                auth: req.user.authClient
+            });
             // 券種グループ取得
-            const ticketGroup = yield offerService.findTicketTypeGroupById({ id: req.query.id });
-            const offerIds = ticketGroup.itemListElement.map((e) => e.id);
+            const offerCatalog = yield offerCatalogService.findById({ id: req.query.id });
+            const offerIds = offerCatalog.itemListElement.map((e) => e.id);
             const limit = 100;
             const page = 1;
             const { data } = yield offerService.searchTicketTypes({
@@ -351,7 +364,7 @@ function deleteById(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const offerService = new chevre.service.Offer({
+            const offerCatalogService = new chevre.service.OfferCatalog({
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
@@ -371,7 +384,7 @@ function deleteById(req, res) {
                     throw new Error('終了していないスケジュールが存在します');
                 }
             }
-            yield offerService.deleteTicketTypeGroup({ id: ticketTypeGroupId });
+            yield offerCatalogService.deleteById({ id: ticketTypeGroupId });
             res.status(http_status_1.NO_CONTENT).end();
         }
         catch (error) {

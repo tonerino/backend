@@ -325,10 +325,15 @@ export async function getList(req: Request, res: Response): Promise<void> {
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
+        const offerCatalogService = new chevre.service.OfferCatalog({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+
         // 券種グループ取得
         let ticketTypeIds: string[] = [];
         if (req.query.ticketTypeGroups !== undefined && req.query.ticketTypeGroups !== '') {
-            const ticketTypeGroup = await offerService.findTicketTypeGroupById({ id: req.query.ticketTypeGroups });
+            const ticketTypeGroup = await offerCatalogService.findById({ id: req.query.ticketTypeGroups });
             if (Array.isArray(ticketTypeGroup.itemListElement)) {
                 ticketTypeIds = ticketTypeGroup.itemListElement.map((e) => e.id);
             } else {
@@ -375,13 +380,14 @@ export async function getList(req: Request, res: Response): Promise<void> {
  * 一覧
  */
 export async function index(req: Request, res: Response): Promise<void> {
-    const offerService = new chevre.service.Offer({
+    const offerCatalogService = new chevre.service.OfferCatalog({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
 
-    const ticketTypeGroupsList = await offerService.searchTicketTypeGroups({
-        project: { id: { $eq: req.project.id } }
+    const ticketTypeGroupsList = await offerCatalogService.search({
+        project: { id: { $eq: req.project.id } },
+        itemOffered: { typeOf: { $eq: 'EventService' } }
     });
 
     // 券種マスタ画面遷移
@@ -395,14 +401,14 @@ export async function index(req: Request, res: Response): Promise<void> {
  */
 export async function getTicketTypeGroupList(req: Request, res: Response): Promise<void> {
     try {
-        const offerService = new chevre.service.Offer({
+        const offerCatalogService = new chevre.service.OfferCatalog({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
 
         const limit = 100;
         const page = 1;
-        const { data } = await offerService.searchTicketTypeGroups({
+        const { data } = await offerCatalogService.search({
             limit: limit,
             page: page,
             project: { id: { $eq: req.project.id } },

@@ -280,10 +280,14 @@ function getList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
+            const offerCatalogService = new chevre.service.OfferCatalog({
+                endpoint: process.env.API_ENDPOINT,
+                auth: req.user.authClient
+            });
             // 券種グループ取得
             let ticketTypeIds = [];
             if (req.query.ticketTypeGroups !== undefined && req.query.ticketTypeGroups !== '') {
-                const ticketTypeGroup = yield offerService.findTicketTypeGroupById({ id: req.query.ticketTypeGroups });
+                const ticketTypeGroup = yield offerCatalogService.findById({ id: req.query.ticketTypeGroups });
                 if (Array.isArray(ticketTypeGroup.itemListElement)) {
                     ticketTypeIds = ticketTypeGroup.itemListElement.map((e) => e.id);
                 }
@@ -331,12 +335,13 @@ exports.getList = getList;
  */
 function index(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const offerService = new chevre.service.Offer({
+        const offerCatalogService = new chevre.service.OfferCatalog({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const ticketTypeGroupsList = yield offerService.searchTicketTypeGroups({
-            project: { id: { $eq: req.project.id } }
+        const ticketTypeGroupsList = yield offerCatalogService.search({
+            project: { id: { $eq: req.project.id } },
+            itemOffered: { typeOf: { $eq: 'EventService' } }
         });
         // 券種マスタ画面遷移
         res.render('ticketType/index', {
@@ -352,13 +357,13 @@ exports.index = index;
 function getTicketTypeGroupList(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const offerService = new chevre.service.Offer({
+            const offerCatalogService = new chevre.service.OfferCatalog({
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
             const limit = 100;
             const page = 1;
-            const { data } = yield offerService.searchTicketTypeGroups({
+            const { data } = yield offerCatalogService.search({
                 limit: limit,
                 page: page,
                 project: { id: { $eq: req.project.id } },
