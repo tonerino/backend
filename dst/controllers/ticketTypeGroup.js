@@ -95,9 +95,6 @@ function add(req, res) {
         let ticketTypes = [];
         if (forms.ticketTypes.length > 0) {
             const searchTicketTypesResult = yield offerService.searchTicketTypes({
-                // sort: {
-                //     'priceSpecification.price': chevre.factory.sortType.Descending
-                // },
                 ids: forms.ticketTypes
             });
             ticketTypes = searchTicketTypesResult.data;
@@ -114,7 +111,7 @@ function add(req, res) {
             errors: errors,
             ticketTypes: ticketTypes,
             forms: forms,
-            boxOfficeTypeList: searchServiceTypesResult.data
+            serviceTypes: searchServiceTypesResult.data
         });
     });
 }
@@ -173,9 +170,6 @@ function update(req, res) {
         if (forms.ticketTypes.length > 0) {
             const searchTicketTypesResult = yield offerService.searchTicketTypes({
                 limit: 100,
-                // sort: {
-                //     'priceSpecification.price': chevre.factory.sortType.Descending
-                // },
                 project: { ids: [req.project.id] },
                 ids: forms.ticketTypes
             });
@@ -188,7 +182,7 @@ function update(req, res) {
             errors: errors,
             ticketTypes: ticketTypes,
             forms: forms,
-            boxOfficeTypeList: searchServiceTypesResult.data
+            serviceTypes: searchServiceTypesResult.data
         });
     });
 }
@@ -217,12 +211,26 @@ function createFromBody(req) {
         if (serviceType === undefined) {
             throw new Error('興行タイプが見つかりません');
         }
-        return Object.assign({ project: req.project, id: req.body.id, identifier: req.body.identifier, name: req.body.name, description: req.body.description, alternateName: req.body.alternateName, itemListElement: itemListElement, itemOffered: {
+        return {
+            project: req.project,
+            id: req.body.id,
+            identifier: req.body.identifier,
+            name: req.body.name,
+            description: req.body.description,
+            alternateName: req.body.alternateName,
+            itemListElement: itemListElement,
+            itemOffered: {
                 typeOf: 'EventService',
-                serviceType: serviceType
-            } }, {
-            ticketTypes: ticketTypes
-        });
+                serviceType: {
+                    project: serviceType.project,
+                    id: serviceType.id,
+                    typeOf: serviceType.typeOf,
+                    codeValue: serviceType.codeValue,
+                    name: serviceType.name,
+                    inCodeSet: serviceType.inCodeSet
+                }
+            }
+        };
     });
 }
 /**
@@ -250,9 +258,7 @@ function getList(req, res) {
                 count: (data.length === Number(limit))
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
-                results: data.map((g) => {
-                    return Object.assign(Object.assign({}, g), { ticketGroupCode: g.identifier });
-                })
+                results: data
             });
         }
         catch (err) {

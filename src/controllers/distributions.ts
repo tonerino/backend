@@ -36,7 +36,7 @@ export async function add(req: Request, res: Response): Promise<void> {
                     project: { typeOf: <'Project'>'Project', id: req.project.id },
                     typeOf: <'CategoryCode'>'CategoryCode',
                     id: '',
-                    codeValue: req.body.codeVale,
+                    codeValue: req.body.codeValue,
                     inCodeSet: {
                         typeOf: <'CategoryCodeSet'>'CategoryCodeSet',
                         identifier: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType
@@ -176,9 +176,12 @@ function validateForm(req: Request, idAdd: boolean = true): void {
     let colName: string = '';
     if (idAdd) {
         colName = '配給コード';
-        req.checkBody('codeVale', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-        req.checkBody('codeVale', Message.Common.getMaxLengthHalfByte(colName, MAX_LENGTH))
-            .isAlphanumeric().len({ max: MAX_LENGTH });
+        req.checkBody('codeValue')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', colName))
+            .isAlphanumeric()
+            .len({ max: MAX_LENGTH })
+            .withMessage(Message.Common.getMaxLengthHalfByte(colName, MAX_LENGTH));
     }
     colName = '名称';
     req.checkBody('name.ja', Message.Common.required.replace('$fieldName$', colName)).notEmpty();

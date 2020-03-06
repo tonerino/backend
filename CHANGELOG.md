@@ -12,12 +12,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 券種グループサービスをオファーカテゴリーサービスへ移行
 - subjectサービスをaccountTitleサービスへ移行
+- 券種グループから不要な属性を削除
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- 配給を登録できないバグ修正
 
 ### Security
 

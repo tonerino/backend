@@ -94,9 +94,6 @@ export async function add(req: Request, res: Response): Promise<void> {
     let ticketTypes: chevre.factory.ticketType.ITicketType[] = [];
     if (forms.ticketTypes.length > 0) {
         const searchTicketTypesResult = await offerService.searchTicketTypes({
-            // sort: {
-            //     'priceSpecification.price': chevre.factory.sortType.Descending
-            // },
             ids: forms.ticketTypes
         });
         ticketTypes = searchTicketTypesResult.data;
@@ -116,7 +113,7 @@ export async function add(req: Request, res: Response): Promise<void> {
         errors: errors,
         ticketTypes: ticketTypes,
         forms: forms,
-        boxOfficeTypeList: searchServiceTypesResult.data
+        serviceTypes: searchServiceTypesResult.data
     });
 }
 
@@ -180,9 +177,6 @@ export async function update(req: Request, res: Response): Promise<void> {
     if (forms.ticketTypes.length > 0) {
         const searchTicketTypesResult = await offerService.searchTicketTypes({
             limit: 100,
-            // sort: {
-            //     'priceSpecification.price': chevre.factory.sortType.Descending
-            // },
             project: { ids: [req.project.id] },
             ids: forms.ticketTypes
         });
@@ -197,7 +191,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         errors: errors,
         ticketTypes: ticketTypes,
         forms: forms,
-        boxOfficeTypeList: searchServiceTypesResult.data
+        serviceTypes: searchServiceTypesResult.data
     });
 }
 
@@ -238,10 +232,14 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
         itemListElement: itemListElement, // 後にオファーカタログへ統合するため
         itemOffered: {
             typeOf: 'EventService',
-            serviceType: serviceType
-        },
-        ...{
-            ticketTypes: ticketTypes
+            serviceType: {
+                project: serviceType.project,
+                id: serviceType.id,
+                typeOf: serviceType.typeOf,
+                codeValue: serviceType.codeValue,
+                name: serviceType.name,
+                inCodeSet: serviceType.inCodeSet
+            }
         }
     };
 }
@@ -271,12 +269,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
             count: (data.length === Number(limit))
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
-            results: data.map((g) => {
-                return {
-                    ...g,
-                    ticketGroupCode: g.identifier
-                };
-            })
+            results: data
         });
     } catch (err) {
         res.json({
