@@ -35,17 +35,11 @@ function add(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const subjectService = new chevre.service.Subject({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient
-        });
         const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const subjectList = yield subjectService.searchAll({
-            project: { id: { $eq: req.project.id } }
-        });
+        const accountTitles = yield searchAllAccountTitles(req);
         const searchOfferCategoryTypesResult = yield categoryCodeService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },
@@ -87,7 +81,7 @@ function add(req, res) {
             message: message,
             errors: errors,
             forms: forms,
-            subjectList: subjectList,
+            subjectList: accountTitles,
             offerCategoryTypes: searchOfferCategoryTypesResult.data
         });
     });
@@ -98,12 +92,9 @@ exports.add = add;
  */
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function update(req, res) {
+    var _a, _b, _c, _d, _e, _f;
     return __awaiter(this, void 0, void 0, function* () {
         const offerService = new chevre.service.Offer({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient
-        });
-        const subjectService = new chevre.service.Subject({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
@@ -111,9 +102,7 @@ function update(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const subjectList = yield subjectService.searchAll({
-            project: { id: { $eq: req.project.id } }
-        });
+        const accountTitles = yield searchAllAccountTitles(req);
         const searchOfferCategoryTypesResult = yield categoryCodeService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },
@@ -171,23 +160,46 @@ function update(req, res) {
             ? ticketType.priceSpecification.accounting.accountsReceivable
             : '';
         const forms = Object.assign(Object.assign(Object.assign(Object.assign({ alternateName: {} }, ticketType), { category: (ticketType.category !== undefined) ? ticketType.category.codeValue : '', nameForPrinting: (nameForPrinting !== undefined) ? nameForPrinting.value : '', price: Math.floor(Number(ticketType.priceSpecification.price) / seatReservationUnit), accountsReceivable: Math.floor(Number(accountsReceivable) / seatReservationUnit) }), req.body), { isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? isBoxTicket : req.body.isBoxTicket, isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket, seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit, subject: (_.isEmpty(req.body.subject))
-                ? (ticketType.priceSpecification.accounting !== undefined)
-                    ? ticketType.priceSpecification.accounting.operatingRevenue.identifier : undefined
+                ? (typeof ((_b = (_a = ticketType.priceSpecification.accounting) === null || _a === void 0 ? void 0 : _a.operatingRevenue) === null || _b === void 0 ? void 0 : _b.codeValue) === 'string')
+                    ? (_d = (_c = ticketType.priceSpecification.accounting) === null || _c === void 0 ? void 0 : _c.operatingRevenue) === null || _d === void 0 ? void 0 : _d.codeValue : undefined
                 : req.body.subject, nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject))
                 ? (ticketType.priceSpecification.accounting !== undefined
                     && ticketType.priceSpecification.accounting.nonOperatingRevenue !== undefined)
-                    ? ticketType.priceSpecification.accounting.nonOperatingRevenue.identifier : undefined
+                    ? (_f = (_e = ticketType.priceSpecification.accounting) === null || _e === void 0 ? void 0 : _e.nonOperatingRevenue) === null || _f === void 0 ? void 0 : _f.codeValue : undefined
                 : req.body.nonBoxOfficeSubject });
         res.render('ticketType/update', {
             message: message,
             errors: errors,
             forms: forms,
-            subjectList: subjectList,
+            subjectList: accountTitles,
             offerCategoryTypes: searchOfferCategoryTypesResult.data
         });
     });
 }
 exports.update = update;
+function searchAllAccountTitles(req) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const accountTitleService = new chevre.service.AccountTitle({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        const limit = 100;
+        let page = 0;
+        let numData = limit;
+        const accountTitles = [];
+        while (numData === limit) {
+            page += 1;
+            const searchAccountTitlesResult = yield accountTitleService.search({
+                limit: limit,
+                page: page,
+                project: { ids: [req.project.id] }
+            });
+            numData = searchAccountTitlesResult.data.length;
+            accountTitles.push(...searchAccountTitlesResult.data);
+        }
+        return accountTitles;
+    });
+}
 // tslint:disable-next-line:max-func-body-length
 function createFromBody(req, isNew) {
     return __awaiter(this, void 0, void 0, function* () {

@@ -26,18 +26,12 @@ export async function add(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const subjectService = new chevre.service.Subject({
-        endpoint: <string>process.env.API_ENDPOINT,
-        auth: req.user.authClient
-    });
     const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
 
-    const subjectList = await subjectService.searchAll({
-        project: { id: { $eq: req.project.id } }
-    });
+    const accountTitles = await searchAllAccountTitles(req);
 
     const searchOfferCategoryTypesResult = await categoryCodeService.search({
         limit: 100,
@@ -93,7 +87,7 @@ export async function add(req: Request, res: Response): Promise<void> {
         message: message,
         errors: errors,
         forms: forms,
-        subjectList: subjectList,
+        subjectList: accountTitles,
         offerCategoryTypes: searchOfferCategoryTypesResult.data
     });
 }
@@ -107,18 +101,12 @@ export async function update(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const subjectService = new chevre.service.Subject({
-        endpoint: <string>process.env.API_ENDPOINT,
-        auth: req.user.authClient
-    });
     const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
 
-    const subjectList = await subjectService.searchAll({
-        project: { id: { $eq: req.project.id } }
-    });
+    const accountTitles = await searchAllAccountTitles(req);
 
     const searchOfferCategoryTypesResult = await categoryCodeService.search({
         limit: 100,
@@ -194,13 +182,13 @@ export async function update(req: Request, res: Response): Promise<void> {
         isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket,
         seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit,
         subject: (_.isEmpty(req.body.subject))
-            ? (ticketType.priceSpecification.accounting !== undefined)
-                ? (<any>ticketType.priceSpecification.accounting.operatingRevenue).identifier : undefined
+            ? (typeof ticketType.priceSpecification.accounting?.operatingRevenue?.codeValue === 'string')
+                ? ticketType.priceSpecification.accounting?.operatingRevenue?.codeValue : undefined
             : req.body.subject,
         nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject))
             ? (ticketType.priceSpecification.accounting !== undefined
                 && ticketType.priceSpecification.accounting.nonOperatingRevenue !== undefined)
-                ? (<any>ticketType.priceSpecification.accounting.nonOperatingRevenue).identifier : undefined
+                ? ticketType.priceSpecification.accounting?.nonOperatingRevenue?.codeValue : undefined
             : req.body.nonBoxOfficeSubject
     };
 
@@ -208,9 +196,33 @@ export async function update(req: Request, res: Response): Promise<void> {
         message: message,
         errors: errors,
         forms: forms,
-        subjectList: subjectList,
+        subjectList: accountTitles,
         offerCategoryTypes: searchOfferCategoryTypesResult.data
     });
+}
+
+async function searchAllAccountTitles(req: Request): Promise<chevre.factory.accountTitle.IAccountTitle[]> {
+    const accountTitleService = new chevre.service.AccountTitle({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient
+    });
+
+    const limit = 100;
+    let page = 0;
+    let numData: number = limit;
+    const accountTitles: chevre.factory.accountTitle.IAccountTitle[] = [];
+    while (numData === limit) {
+        page += 1;
+        const searchAccountTitlesResult = await accountTitleService.search({
+            limit: limit,
+            page: page,
+            project: { ids: [req.project.id] }
+        });
+        numData = searchAccountTitlesResult.data.length;
+        accountTitles.push(...searchAccountTitlesResult.data);
+    }
+
+    return accountTitles;
 }
 
 // tslint:disable-next-line:max-func-body-length

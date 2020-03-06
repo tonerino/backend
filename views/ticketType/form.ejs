@@ -221,8 +221,8 @@
         <select class="form-control" name="subject">
             <option value="" disabled selected>選択してください</option>
             <% for (let subject of subjectList) { %>
-            <option value="<%= subject.detailCd %>" <% if (forms.subject==subject.detailCd) { %> selected <% } %>>
-                <%= subject.detailName %>
+            <option value="<%= subject.codeValue %>" <% if (forms.subject==subject.codeValue) { %> selected <% } %>>
+                <%= subject.name %>
             </option>
             <% } %>
         </select>
