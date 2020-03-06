@@ -179,11 +179,9 @@ function createMovieFromBody(req) {
             availabilityEnds: (!_.isEmpty(body.offers) && !_.isEmpty(body.offers.availabilityEnds)) ?
                 moment(`${body.offers.availabilityEnds}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day').toDate() : undefined
         },
-        distributor: {
-            id: body.distribution,
-            name: '',
-            distributorType: body.distribution
-        }
+        distributor: Object.assign({ id: body.distribution, distributorType: body.distribution }, {
+            codeValue: body.distribution
+        })
     };
     if (movie.offers !== undefined
         && movie.offers.availabilityEnds !== undefined

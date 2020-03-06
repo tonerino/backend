@@ -185,8 +185,10 @@ function createMovieFromBody(req: Request): chevre.factory.creativeWork.movie.IC
         },
         distributor: {
             id: <string>body.distribution,
-            name: '',
-            distributorType: <string>body.distribution
+            distributorType: <string>body.distribution,
+            ...{
+                codeValue: <string>body.distribution
+            }
         }
     };
 
