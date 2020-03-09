@@ -132,7 +132,7 @@ function update(req, res, next) {
                 inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } }
             });
             const forms = Object.assign(Object.assign(Object.assign(Object.assign({}, movie), { distribution: (movie.distributor !== undefined && movie.distributor !== null)
-                    ? movie.distributor.distributorType
+                    ? movie.distributor.codeValue
                     : '' }), req.body), { duration: (_.isEmpty(req.body.duration))
                     ? (typeof movie.duration === 'string') ? moment.duration(movie.duration).asMinutes() : ''
                     : req.body.duration, datePublished: (_.isEmpty(req.body.datePublished)) ?
@@ -230,7 +230,7 @@ function getList(req, res) {
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data.map((d) => {
                     return Object.assign(Object.assign({}, d), { distributorType: (d.distributor !== undefined && d.distributor !== null)
-                            ? d.distributor.distributorType
+                            ? d.distributor.codeValue
                             : '' });
                 })
             });
