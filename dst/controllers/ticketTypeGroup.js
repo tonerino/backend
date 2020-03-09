@@ -95,7 +95,9 @@ function add(req, res) {
         let ticketTypes = [];
         if (forms.ticketTypes.length > 0) {
             const searchTicketTypesResult = yield offerService.searchTicketTypes({
-                ids: forms.ticketTypes
+                limit: 100,
+                project: { id: { $eq: req.project.id } },
+                id: { $in: forms.ticketTypes }
             });
             ticketTypes = searchTicketTypesResult.data;
             // 券種を登録順にソート
@@ -170,8 +172,8 @@ function update(req, res) {
         if (forms.ticketTypes.length > 0) {
             const searchTicketTypesResult = yield offerService.searchTicketTypes({
                 limit: 100,
-                project: { ids: [req.project.id] },
-                ids: forms.ticketTypes
+                project: { id: { $eq: req.project.id } },
+                id: { $in: forms.ticketTypes }
             });
             ticketTypes = searchTicketTypesResult.data;
             // 券種を登録順にソート
@@ -293,8 +295,8 @@ function getTicketTypeList(req, res) {
             const { data } = yield offerService.searchTicketTypes({
                 limit: limit,
                 page: page,
-                project: { ids: [req.project.id] },
-                ids: offerIds
+                project: { id: { $eq: req.project.id } },
+                id: { $in: offerIds }
             });
             // 券種を登録順にソート
             const ticketTypes = data.sort((a, b) => offerIds.indexOf(a.id) - offerIds.indexOf(b.id));
@@ -334,12 +336,14 @@ function getTicketTypePriceList(req, res) {
                 sort: {
                     'priceSpecification.price': chevre.factory.sortType.Descending
                 },
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 priceSpecification: {
                     // 売上金額で検索
                     accounting: {
-                        minAccountsReceivable: Number(req.query.price),
-                        maxAccountsReceivable: Number(req.query.price)
+                        accountsReceivable: {
+                            $gte: Number(req.query.price),
+                            $lte: Number(req.query.price)
+                        }
                     }
                 }
             });

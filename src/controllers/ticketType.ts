@@ -55,8 +55,8 @@ export async function add(req: Request, res: Response): Promise<void> {
 
                 // 券種コード重複確認
                 const { data } = await offerService.searchTicketTypes({
-                    project: { ids: [req.project.id] },
-                    identifier: `^${ticketType.identifier}$`
+                    project: { id: { $eq: req.project.id } },
+                    identifier: { $eq: ticketType.identifier }
                 });
                 if (data.length > 0) {
                     throw new Error(`既に存在する券種コードです: ${ticketType.identifier}`);
@@ -363,10 +363,10 @@ export async function getList(req: Request, res: Response): Promise<void> {
         const { data } = await offerService.searchTicketTypes({
             limit: limit,
             page: page,
-            project: { ids: [req.project.id] },
-            ids: (ticketTypeIds.length > 0) ? ticketTypeIds : undefined,
-            identifier: req.query.identifier,
-            name: req.query.name
+            project: { id: { $eq: req.project.id } },
+            id: { $in: (ticketTypeIds.length > 0) ? ticketTypeIds : undefined },
+            identifier: { $regex: req.query.identifier },
+            name: { $regex: req.query.name }
         });
         res.json({
             success: true,

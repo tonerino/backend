@@ -133,7 +133,7 @@ export async function update(req: Request, res: Response, next: NextFunction): P
         const forms = {
             ...movie,
             distribution: (movie.distributor !== undefined && movie.distributor !== null)
-                ? movie.distributor.distributorType
+                ? movie.distributor.codeValue
                 : '',
             ...req.body,
             duration: (_.isEmpty(req.body.duration))
@@ -186,9 +186,9 @@ async function createMovieFromBody(req: Request): Promise<chevre.factory.creativ
 
         distributor = {
             id: distributorType.id,
-            distributorType: distributorType.codeValue,
+            codeValue: distributorType.codeValue,
             ...{
-                codeValue: distributorType.codeValue
+                distributorType: distributorType.codeValue
             }
         };
     }
@@ -256,7 +256,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
                 return {
                     ...d,
                     distributorType: (d.distributor !== undefined && d.distributor !== null)
-                        ? d.distributor.distributorType
+                        ? d.distributor.codeValue
                         : ''
                 };
             })

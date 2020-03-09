@@ -94,7 +94,9 @@ export async function add(req: Request, res: Response): Promise<void> {
     let ticketTypes: chevre.factory.ticketType.ITicketType[] = [];
     if (forms.ticketTypes.length > 0) {
         const searchTicketTypesResult = await offerService.searchTicketTypes({
-            ids: forms.ticketTypes
+            limit: 100,
+            project: { id: { $eq: req.project.id } },
+            id: { $in: forms.ticketTypes }
         });
         ticketTypes = searchTicketTypesResult.data;
 
@@ -177,8 +179,8 @@ export async function update(req: Request, res: Response): Promise<void> {
     if (forms.ticketTypes.length > 0) {
         const searchTicketTypesResult = await offerService.searchTicketTypes({
             limit: 100,
-            project: { ids: [req.project.id] },
-            ids: forms.ticketTypes
+            project: { id: { $eq: req.project.id } },
+            id: { $in: forms.ticketTypes }
         });
         ticketTypes = searchTicketTypesResult.data;
 
@@ -302,8 +304,8 @@ export async function getTicketTypeList(req: Request, res: Response): Promise<vo
         const { data } = await offerService.searchTicketTypes({
             limit: limit,
             page: page,
-            project: { ids: [req.project.id] },
-            ids: offerIds
+            project: { id: { $eq: req.project.id } },
+            id: { $in: offerIds }
         });
 
         // 券種を登録順にソート
@@ -342,12 +344,14 @@ export async function getTicketTypePriceList(req: Request, res: Response): Promi
             sort: {
                 'priceSpecification.price': chevre.factory.sortType.Descending
             },
-            project: { ids: [req.project.id] },
+            project: { id: { $eq: req.project.id } },
             priceSpecification: {
                 // 売上金額で検索
                 accounting: {
-                    minAccountsReceivable: Number(req.query.price),
-                    maxAccountsReceivable: Number(req.query.price)
+                    accountsReceivable: {
+                        $gte: Number(req.query.price),
+                        $lte: Number(req.query.price)
+                    }
                 }
             }
         });

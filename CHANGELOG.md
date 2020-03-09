@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 券種グループサービスをオファーカテゴリーサービスへ移行
 - subjectサービスをaccountTitleサービスへ移行
 - 券種グループから不要な属性を削除
+- 券種検索条件をオファー検索条件に統合
 
 ### Deprecated
 
