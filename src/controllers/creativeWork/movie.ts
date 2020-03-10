@@ -34,7 +34,7 @@ export async function add(req: Request, res: Response): Promise<void> {
         if (validatorResult.isEmpty()) {
             try {
                 req.body.id = '';
-                let movie = createMovieFromBody(req);
+                let movie = await createMovieFromBody(req);
                 const creativeWorkService = new chevre.service.CreativeWork({
                     endpoint: <string>process.env.API_ENDPOINT,
                     auth: req.user.authClient
@@ -106,7 +106,7 @@ export async function update(req: Request, res: Response, next: NextFunction): P
                 // 作品DB登録
                 try {
                     req.body.id = req.params.id;
-                    movie = createMovieFromBody(req);
+                    movie = await createMovieFromBody(req);
                     debug('saving an movie...', movie);
                     await creativeWorkService.updateMovie(movie);
                     req.flash('message', '更新しました');
@@ -133,7 +133,7 @@ export async function update(req: Request, res: Response, next: NextFunction): P
         const forms = {
             ...movie,
             distribution: (movie.distributor !== undefined && movie.distributor !== null)
-                ? movie.distributor.distributorType
+                ? movie.distributor.codeValue
                 : '',
             ...req.body,
             duration: (_.isEmpty(req.body.duration))
@@ -162,8 +162,36 @@ export async function update(req: Request, res: Response, next: NextFunction): P
         next(error);
     }
 }
-function createMovieFromBody(req: Request): chevre.factory.creativeWork.movie.ICreativeWork {
+
+async function createMovieFromBody(req: Request): Promise<chevre.factory.creativeWork.movie.ICreativeWork> {
     const body = req.body;
+
+    const categoryCodeService = new chevre.service.CategoryCode({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient
+    });
+    let distributor: chevre.factory.creativeWork.movie.IDistributor | undefined;
+    const distributorCodeParam = body.distribution;
+    if (typeof distributorCodeParam === 'string' && distributorCodeParam.length > 0) {
+        const searchDistributorTypesResult = await categoryCodeService.search({
+            limit: 1,
+            project: { id: { $eq: req.project.id } },
+            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } },
+            codeValue: { $eq: distributorCodeParam }
+        });
+        const distributorType = searchDistributorTypesResult.data.shift();
+        if (distributorType === undefined) {
+            throw new Error('配給区分が見つかりません');
+        }
+
+        distributor = {
+            id: distributorType.id,
+            codeValue: distributorType.codeValue,
+            ...{
+                distributorType: distributorType.codeValue
+            }
+        };
+    }
 
     const movie: chevre.factory.creativeWork.movie.ICreativeWork = {
         id: body.id,
@@ -183,11 +211,7 @@ function createMovieFromBody(req: Request): chevre.factory.creativeWork.movie.IC
             availabilityEnds: (!_.isEmpty(body.offers) && !_.isEmpty(body.offers.availabilityEnds)) ?
                 moment(`${body.offers.availabilityEnds}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day').toDate() : undefined
         },
-        distributor: {
-            id: <string>body.distribution,
-            name: '',
-            distributorType: <string>body.distribution
-        }
+        ...(distributor !== undefined) ? { distributor } : undefined
     };
 
     if (movie.offers !== undefined
@@ -232,7 +256,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
                 return {
                     ...d,
                     distributorType: (d.distributor !== undefined && d.distributor !== null)
-                        ? d.distributor.distributorType
+                        ? d.distributor.codeValue
                         : ''
                 };
             })

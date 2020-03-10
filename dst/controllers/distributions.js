@@ -42,7 +42,7 @@ function add(req, res) {
                         project: { typeOf: 'Project', id: req.project.id },
                         typeOf: 'CategoryCode',
                         id: '',
-                        codeValue: req.body.codeVale,
+                        codeValue: req.body.codeValue,
                         inCodeSet: {
                             typeOf: 'CategoryCodeSet',
                             identifier: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType
@@ -187,9 +187,12 @@ function validateForm(req, idAdd = true) {
     let colName = '';
     if (idAdd) {
         colName = '配給コード';
-        req.checkBody('codeVale', Message.Common.required.replace('$fieldName$', colName)).notEmpty();
-        req.checkBody('codeVale', Message.Common.getMaxLengthHalfByte(colName, MAX_LENGTH))
-            .isAlphanumeric().len({ max: MAX_LENGTH });
+        req.checkBody('codeValue')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', colName))
+            .isAlphanumeric()
+            .len({ max: MAX_LENGTH })
+            .withMessage(Message.Common.getMaxLengthHalfByte(colName, MAX_LENGTH));
     }
     colName = '名称';
     req.checkBody('name.ja', Message.Common.required.replace('$fieldName$', colName)).notEmpty();

@@ -18,6 +18,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.8.0 - 2020-03-10
+
+### Changed
+
+- 券種グループサービスをオファーカテゴリーサービスへ移行
+- subjectサービスをaccountTitleサービスへ移行
+- 券種グループから不要な属性を削除
+- 券種検索条件をオファー検索条件に統合
+
+### Fixed
+
+- 配給を登録できないバグ修正
+
 ## v1.7.0 - 2020-03-05
 
 ### Changed

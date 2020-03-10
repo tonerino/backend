@@ -43,6 +43,10 @@ function add(req, res) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
+        const offerCatalogService = new chevre.service.OfferCatalog({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
         const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
@@ -60,14 +64,14 @@ function add(req, res) {
                     req.body.id = '';
                     let ticketTypeGroup = yield createFromBody(req);
                     // 券種グループコード重複確認
-                    const { data } = yield offerService.searchTicketTypeGroups({
+                    const { data } = yield offerCatalogService.search({
                         project: { id: { $eq: req.project.id } },
-                        identifier: `^${ticketTypeGroup.identifier}$`
+                        identifier: { $eq: ticketTypeGroup.identifier }
                     });
                     if (data.length > 0) {
                         throw new Error(`既に存在する券種グループコードです: ${ticketTypeGroup.identifier}`);
                     }
-                    ticketTypeGroup = yield offerService.createTicketTypeGroup(ticketTypeGroup);
+                    ticketTypeGroup = yield offerCatalogService.create(ticketTypeGroup);
                     req.flash('message', '登録しました');
                     res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
                     return;
@@ -91,10 +95,9 @@ function add(req, res) {
         let ticketTypes = [];
         if (forms.ticketTypes.length > 0) {
             const searchTicketTypesResult = yield offerService.searchTicketTypes({
-                // sort: {
-                //     'priceSpecification.price': chevre.factory.sortType.Descending
-                // },
-                ids: forms.ticketTypes
+                limit: 100,
+                project: { id: { $eq: req.project.id } },
+                id: { $in: forms.ticketTypes }
             });
             ticketTypes = searchTicketTypesResult.data;
             // 券種を登録順にソート
@@ -110,7 +113,7 @@ function add(req, res) {
             errors: errors,
             ticketTypes: ticketTypes,
             forms: forms,
-            boxOfficeTypeList: searchServiceTypesResult.data
+            serviceTypes: searchServiceTypesResult.data
         });
     });
 }
@@ -122,6 +125,10 @@ function update(req, res) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const offerService = new chevre.service.Offer({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        const offerCatalogService = new chevre.service.OfferCatalog({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
@@ -147,7 +154,7 @@ function update(req, res) {
                     // 券種グループDB登録
                     req.body.id = req.params.id;
                     const ticketTypeGroup = yield createFromBody(req);
-                    yield offerService.updateTicketTypeGroup(ticketTypeGroup);
+                    yield offerCatalogService.update(ticketTypeGroup);
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
                     return;
@@ -158,18 +165,15 @@ function update(req, res) {
             }
         }
         // 券種グループ取得
-        const ticketGroup = yield offerService.findTicketTypeGroupById({ id: req.params.id });
+        const ticketGroup = yield offerCatalogService.findById({ id: req.params.id });
         const forms = Object.assign(Object.assign(Object.assign(Object.assign({}, ticketGroup), { serviceType: (_a = ticketGroup.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue }), req.body), { ticketTypes: (_.isEmpty(req.body.ticketTypes)) ? ticketGroup.itemListElement.map((e) => e.id) : [] });
         // 券種マスタから取得
         let ticketTypes = [];
         if (forms.ticketTypes.length > 0) {
             const searchTicketTypesResult = yield offerService.searchTicketTypes({
                 limit: 100,
-                // sort: {
-                //     'priceSpecification.price': chevre.factory.sortType.Descending
-                // },
-                project: { ids: [req.project.id] },
-                ids: forms.ticketTypes
+                project: { id: { $eq: req.project.id } },
+                id: { $in: forms.ticketTypes }
             });
             ticketTypes = searchTicketTypesResult.data;
             // 券種を登録順にソート
@@ -180,7 +184,7 @@ function update(req, res) {
             errors: errors,
             ticketTypes: ticketTypes,
             forms: forms,
-            boxOfficeTypeList: searchServiceTypesResult.data
+            serviceTypes: searchServiceTypesResult.data
         });
     });
 }
@@ -209,12 +213,26 @@ function createFromBody(req) {
         if (serviceType === undefined) {
             throw new Error('興行タイプが見つかりません');
         }
-        return Object.assign({ project: req.project, id: req.body.id, identifier: req.body.identifier, name: req.body.name, description: req.body.description, alternateName: req.body.alternateName, itemListElement: itemListElement, itemOffered: {
+        return {
+            project: req.project,
+            id: req.body.id,
+            identifier: req.body.identifier,
+            name: req.body.name,
+            description: req.body.description,
+            alternateName: req.body.alternateName,
+            itemListElement: itemListElement,
+            itemOffered: {
                 typeOf: 'EventService',
-                serviceType: serviceType
-            } }, {
-            ticketTypes: ticketTypes
-        });
+                serviceType: {
+                    project: serviceType.project,
+                    id: serviceType.id,
+                    typeOf: serviceType.typeOf,
+                    codeValue: serviceType.codeValue,
+                    name: serviceType.name,
+                    inCodeSet: serviceType.inCodeSet
+                }
+            }
+        };
     });
 }
 /**
@@ -223,16 +241,17 @@ function createFromBody(req) {
 function getList(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const offerService = new chevre.service.Offer({
+            const offerCatalogService = new chevre.service.OfferCatalog({
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
-            const { data } = yield offerService.searchTicketTypeGroups({
+            const { data } = yield offerCatalogService.search({
                 limit: limit,
                 page: page,
                 project: { id: { $eq: req.project.id } },
+                itemOffered: { typeOf: { $eq: 'EventService' } },
                 identifier: req.query.identifier,
                 name: req.query.name
             });
@@ -241,9 +260,7 @@ function getList(req, res) {
                 count: (data.length === Number(limit))
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
-                results: data.map((g) => {
-                    return Object.assign(Object.assign({}, g), { ticketGroupCode: g.identifier });
-                })
+                results: data
             });
         }
         catch (err) {
@@ -266,16 +283,20 @@ function getTicketTypeList(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
+            const offerCatalogService = new chevre.service.OfferCatalog({
+                endpoint: process.env.API_ENDPOINT,
+                auth: req.user.authClient
+            });
             // 券種グループ取得
-            const ticketGroup = yield offerService.findTicketTypeGroupById({ id: req.query.id });
-            const offerIds = ticketGroup.itemListElement.map((e) => e.id);
+            const offerCatalog = yield offerCatalogService.findById({ id: req.query.id });
+            const offerIds = offerCatalog.itemListElement.map((e) => e.id);
             const limit = 100;
             const page = 1;
             const { data } = yield offerService.searchTicketTypes({
                 limit: limit,
                 page: page,
-                project: { ids: [req.project.id] },
-                ids: offerIds
+                project: { id: { $eq: req.project.id } },
+                id: { $in: offerIds }
             });
             // 券種を登録順にソート
             const ticketTypes = data.sort((a, b) => offerIds.indexOf(a.id) - offerIds.indexOf(b.id));
@@ -315,12 +336,14 @@ function getTicketTypePriceList(req, res) {
                 sort: {
                     'priceSpecification.price': chevre.factory.sortType.Descending
                 },
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 priceSpecification: {
                     // 売上金額で検索
                     accounting: {
-                        minAccountsReceivable: Number(req.query.price),
-                        maxAccountsReceivable: Number(req.query.price)
+                        accountsReceivable: {
+                            $gte: Number(req.query.price),
+                            $lte: Number(req.query.price)
+                        }
                     }
                 }
             });
@@ -351,7 +374,7 @@ function deleteById(req, res) {
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
-            const offerService = new chevre.service.Offer({
+            const offerCatalogService = new chevre.service.OfferCatalog({
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
@@ -371,7 +394,7 @@ function deleteById(req, res) {
                     throw new Error('終了していないスケジュールが存在します');
                 }
             }
-            yield offerService.deleteTicketTypeGroup({ id: ticketTypeGroupId });
+            yield offerCatalogService.deleteById({ id: ticketTypeGroupId });
             res.status(http_status_1.NO_CONTENT).end();
         }
         catch (error) {

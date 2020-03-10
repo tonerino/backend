@@ -15,7 +15,7 @@ const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
 
 export async function index(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-        const offerService = new chevre.service.Offer({
+        const offerCatalogService = new chevre.service.OfferCatalog({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
@@ -31,8 +31,9 @@ export async function index(req: Request, res: Response, next: NextFunction): Pr
             throw new Error('劇場が見つかりません');
         }
 
-        const searchTicketTypeGroupsResult = await offerService.searchTicketTypeGroups({
-            project: { id: { $eq: req.project.id } }
+        const searchTicketTypeGroupsResult = await offerCatalogService.search({
+            project: { id: { $eq: req.project.id } },
+            itemOffered: { typeOf: { $eq: 'EventService' } }
         });
 
         res.render('events/screeningEvent/index', {
@@ -46,7 +47,7 @@ export async function index(req: Request, res: Response, next: NextFunction): Pr
 }
 
 export async function search(req: Request, res: Response): Promise<void> {
-    const offerService = new chevre.service.Offer({
+    const offerCatalogService = new chevre.service.OfferCatalog({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
@@ -118,8 +119,9 @@ export async function search(req: Request, res: Response): Promise<void> {
             screens = movieTheater.containsPlace;
         }
 
-        const searchTicketTypeGroupsResult = await offerService.searchTicketTypeGroups({
-            project: { id: { $eq: req.project.id } }
+        const searchTicketTypeGroupsResult = await offerCatalogService.search({
+            project: { id: { $eq: req.project.id } },
+            itemOffered: { typeOf: { $eq: 'EventService' } }
         });
 
         res.json({
@@ -303,7 +305,7 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
-    const offerService = new chevre.service.Offer({
+    const offerCatalogService = new chevre.service.OfferCatalog({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
@@ -333,7 +335,7 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         throw new Error('上映スクリーン名が見つかりません');
     }
 
-    const ticketTypeGroup = await offerService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
+    const ticketTypeGroup = await offerCatalogService.findById({ id: body.ticketTypeGroup });
 
     const searchServiceTypesResult = await categoryCodeService.search({
         limit: 1,
@@ -447,7 +449,7 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
-    const offerService = new chevre.service.Offer({
+    const offerCatalogService = new chevre.service.OfferCatalog({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: user.authClient
     });
@@ -485,9 +487,10 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
     const mvtkExcludeFlgs: string[] = body.mvtkExcludeFlgData;
     const timeData: { doorTime: string; startTime: string; endTime: string }[] = body.timeData;
 
-    const searchTicketTypeGroupsResult = await offerService.searchTicketTypeGroups({
+    const searchTicketTypeGroupsResult = await offerCatalogService.search({
         limit: 100,
-        project: { id: { $eq: req.project.id } }
+        project: { id: { $eq: req.project.id } },
+        itemOffered: { typeOf: { $eq: 'EventService' } }
     });
     const ticketTypeGroups = searchTicketTypeGroupsResult.data;
 

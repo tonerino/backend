@@ -26,18 +26,12 @@ export async function add(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const subjectService = new chevre.service.Subject({
-        endpoint: <string>process.env.API_ENDPOINT,
-        auth: req.user.authClient
-    });
     const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
 
-    const subjectList = await subjectService.searchAll({
-        project: { id: { $eq: req.project.id } }
-    });
+    const accountTitles = await searchAllAccountTitles(req);
 
     const searchOfferCategoryTypesResult = await categoryCodeService.search({
         limit: 100,
@@ -61,8 +55,8 @@ export async function add(req: Request, res: Response): Promise<void> {
 
                 // 券種コード重複確認
                 const { data } = await offerService.searchTicketTypes({
-                    project: { ids: [req.project.id] },
-                    identifier: `^${ticketType.identifier}$`
+                    project: { id: { $eq: req.project.id } },
+                    identifier: { $eq: ticketType.identifier }
                 });
                 if (data.length > 0) {
                     throw new Error(`既に存在する券種コードです: ${ticketType.identifier}`);
@@ -93,7 +87,7 @@ export async function add(req: Request, res: Response): Promise<void> {
         message: message,
         errors: errors,
         forms: forms,
-        subjectList: subjectList,
+        subjectList: accountTitles,
         offerCategoryTypes: searchOfferCategoryTypesResult.data
     });
 }
@@ -107,18 +101,12 @@ export async function update(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const subjectService = new chevre.service.Subject({
-        endpoint: <string>process.env.API_ENDPOINT,
-        auth: req.user.authClient
-    });
     const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
 
-    const subjectList = await subjectService.searchAll({
-        project: { id: { $eq: req.project.id } }
-    });
+    const accountTitles = await searchAllAccountTitles(req);
 
     const searchOfferCategoryTypesResult = await categoryCodeService.search({
         limit: 100,
@@ -194,13 +182,13 @@ export async function update(req: Request, res: Response): Promise<void> {
         isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? isOnlineTicket : req.body.isOnlineTicket,
         seatReservationUnit: (_.isEmpty(req.body.seatReservationUnit)) ? seatReservationUnit : req.body.seatReservationUnit,
         subject: (_.isEmpty(req.body.subject))
-            ? (ticketType.priceSpecification.accounting !== undefined)
-                ? (<any>ticketType.priceSpecification.accounting.operatingRevenue).identifier : undefined
+            ? (typeof ticketType.priceSpecification.accounting?.operatingRevenue?.codeValue === 'string')
+                ? ticketType.priceSpecification.accounting?.operatingRevenue?.codeValue : undefined
             : req.body.subject,
         nonBoxOfficeSubject: (_.isEmpty(req.body.nonBoxOfficeSubject))
             ? (ticketType.priceSpecification.accounting !== undefined
                 && ticketType.priceSpecification.accounting.nonOperatingRevenue !== undefined)
-                ? (<any>ticketType.priceSpecification.accounting.nonOperatingRevenue).identifier : undefined
+                ? ticketType.priceSpecification.accounting?.nonOperatingRevenue?.codeValue : undefined
             : req.body.nonBoxOfficeSubject
     };
 
@@ -208,13 +196,37 @@ export async function update(req: Request, res: Response): Promise<void> {
         message: message,
         errors: errors,
         forms: forms,
-        subjectList: subjectList,
+        subjectList: accountTitles,
         offerCategoryTypes: searchOfferCategoryTypesResult.data
     });
 }
 
+async function searchAllAccountTitles(req: Request): Promise<chevre.factory.accountTitle.IAccountTitle[]> {
+    const accountTitleService = new chevre.service.AccountTitle({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient
+    });
+
+    const limit = 100;
+    let page = 0;
+    let numData: number = limit;
+    const accountTitles: chevre.factory.accountTitle.IAccountTitle[] = [];
+    while (numData === limit) {
+        page += 1;
+        const searchAccountTitlesResult = await accountTitleService.search({
+            limit: limit,
+            page: page,
+            project: { ids: [req.project.id] }
+        });
+        numData = searchAccountTitlesResult.data.length;
+        accountTitles.push(...searchAccountTitlesResult.data);
+    }
+
+    return accountTitles;
+}
+
 // tslint:disable-next-line:max-func-body-length
-async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.ticketType.ITicketType> {
+async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.offer.IUnitPriceOffer> {
     const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
@@ -256,6 +268,11 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
             ? <string>req.body.appliesToMovieTicketType
             : undefined;
 
+    const itemOffered = {
+        project: req.project,
+        typeOf: 'EventService'
+    };
+
     return {
         project: req.project,
         typeOf: <chevre.factory.offerType>'Offer',
@@ -266,6 +283,7 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         description: req.body.description,
         alternateName: { ja: <string>req.body.alternateName.ja, en: '' },
         availability: availability,
+        itemOffered: itemOffered,
         priceSpecification: {
             project: req.project,
             typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
@@ -325,10 +343,15 @@ export async function getList(req: Request, res: Response): Promise<void> {
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
+        const offerCatalogService = new chevre.service.OfferCatalog({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+
         // 券種グループ取得
         let ticketTypeIds: string[] = [];
         if (req.query.ticketTypeGroups !== undefined && req.query.ticketTypeGroups !== '') {
-            const ticketTypeGroup = await offerService.findTicketTypeGroupById({ id: req.query.ticketTypeGroups });
+            const ticketTypeGroup = await offerCatalogService.findById({ id: req.query.ticketTypeGroups });
             if (Array.isArray(ticketTypeGroup.itemListElement)) {
                 ticketTypeIds = ticketTypeGroup.itemListElement.map((e) => e.id);
             } else {
@@ -346,10 +369,10 @@ export async function getList(req: Request, res: Response): Promise<void> {
         const { data } = await offerService.searchTicketTypes({
             limit: limit,
             page: page,
-            project: { ids: [req.project.id] },
-            ids: (ticketTypeIds.length > 0) ? ticketTypeIds : undefined,
-            identifier: req.query.identifier,
-            name: req.query.name
+            project: { id: { $eq: req.project.id } },
+            id: { $in: (ticketTypeIds.length > 0) ? ticketTypeIds : undefined },
+            identifier: { $regex: req.query.identifier },
+            name: { $regex: req.query.name }
         });
         res.json({
             success: true,
@@ -375,13 +398,14 @@ export async function getList(req: Request, res: Response): Promise<void> {
  * 一覧
  */
 export async function index(req: Request, res: Response): Promise<void> {
-    const offerService = new chevre.service.Offer({
+    const offerCatalogService = new chevre.service.OfferCatalog({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
 
-    const ticketTypeGroupsList = await offerService.searchTicketTypeGroups({
-        project: { id: { $eq: req.project.id } }
+    const ticketTypeGroupsList = await offerCatalogService.search({
+        project: { id: { $eq: req.project.id } },
+        itemOffered: { typeOf: { $eq: 'EventService' } }
     });
 
     // 券種マスタ画面遷移
@@ -395,14 +419,14 @@ export async function index(req: Request, res: Response): Promise<void> {
  */
 export async function getTicketTypeGroupList(req: Request, res: Response): Promise<void> {
     try {
-        const offerService = new chevre.service.Offer({
+        const offerCatalogService = new chevre.service.OfferCatalog({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
 
         const limit = 100;
         const page = 1;
-        const { data } = await offerService.searchTicketTypeGroups({
+        const { data } = await offerCatalogService.search({
             limit: limit,
             page: page,
             project: { id: { $eq: req.project.id } },

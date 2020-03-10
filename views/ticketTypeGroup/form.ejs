@@ -3,7 +3,8 @@
         券種グループ名<font color="red">＊</font>
     </label>
     <div class="col-sm-9">
-        <input type="text" class="form-control" name="name[ja]" id="name[ja]" placeholder="" maxlength=64 value="<%= forms.name.ja %>">
+        <input type="text" class="form-control" name="name[ja]" id="name[ja]" placeholder="" maxlength=64
+            value="<%= forms.name.ja %>">
         <p class="message">
             全角64文字以内でご入力ください。
         </p>
@@ -19,7 +20,8 @@
         券種グループ名英<font color="red">＊</font>
     </label>
     <div class="col-sm-9">
-        <input type="text" class="form-control" name="name[en]" id="name[en]" placeholder="" maxlength=64 value="<%= forms.name.en %>">
+        <input type="text" class="form-control" name="name[en]" id="name[en]" placeholder="" maxlength=64
+            value="<%= forms.name.en %>">
         <p class="message">
         </p>
         <p class="error message text-danger">
@@ -54,7 +56,8 @@
         </ul>
         <ul id="sortable2" class="connectedSortable">
             <% ticketTypes.forEach((ticketType) => { %>
-            <li class="ui-state-highlight" uid="<%= ticketType.id %>" appliesToMovieTicketType="<%= ticketType.priceSpecification.appliesToMovieTicketType %>"
+            <li class="ui-state-highlight" uid="<%= ticketType.id %>"
+                appliesToMovieTicketType="<%= ticketType.priceSpecification.appliesToMovieTicketType %>"
                 accountsReceivable="<%= ticketType.priceSpecification.accounting.accountsReceivable %>">
                 <%= ticketType.alternateName.ja %>
                 <%= `(${Math.floor(ticketType.priceSpecification.price / ticketType.priceSpecification.referenceQuantity.value)})` %>
@@ -103,20 +106,11 @@
     </label>
     <div class="col-sm-9">
         <select name="serviceType" id="serviceType" class="form-control">
-            <% for (let boxOffice of boxOfficeTypeList) { %>
-            <% if (forms.serviceType === boxOffice.codeValue) { %>
-            <option value="<%= boxOffice.codeValue %>" selected>
-                <%= boxOffice.name.ja %>
+            <% for (let serviceType of serviceTypes) { %>
+            <option value="<%= serviceType.codeValue %>" <% if (forms.serviceType === serviceType.codeValue) { %>
+                selected<% } %>>
+                <%= serviceType.name.ja %>
             </option>
-            <% } else if (boxOffice.name === '通常興行') { %>
-            <option value="<%= boxOffice.codeValue %>" selected>
-                <%= boxOffice.name.ja %>
-            </option>
-            <% } else { %>
-            <option value="<%= boxOffice.codeValue %>">
-                <%= boxOffice.name.ja %>
-            </option>
-            <% } %>
             <% } %>
         </select>
         <p class="error message text-danger">

@@ -21,7 +21,7 @@ const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
 function index(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const offerService = new chevre.service.Offer({
+            const offerCatalogService = new chevre.service.OfferCatalog({
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient
             });
@@ -35,8 +35,9 @@ function index(req, res, next) {
             if (searchMovieTheatersResult.data.length === 0) {
                 throw new Error('劇場が見つかりません');
             }
-            const searchTicketTypeGroupsResult = yield offerService.searchTicketTypeGroups({
-                project: { id: { $eq: req.project.id } }
+            const searchTicketTypeGroupsResult = yield offerCatalogService.search({
+                project: { id: { $eq: req.project.id } },
+                itemOffered: { typeOf: { $eq: 'EventService' } }
             });
             res.render('events/screeningEvent/index', {
                 movieTheaters: searchMovieTheatersResult.data,
@@ -52,7 +53,7 @@ function index(req, res, next) {
 exports.index = index;
 function search(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const offerService = new chevre.service.Offer({
+        const offerCatalogService = new chevre.service.OfferCatalog({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
@@ -118,8 +119,9 @@ function search(req, res) {
                 data = searchResult.data;
                 screens = movieTheater.containsPlace;
             }
-            const searchTicketTypeGroupsResult = yield offerService.searchTicketTypeGroups({
-                project: { id: { $eq: req.project.id } }
+            const searchTicketTypeGroupsResult = yield offerCatalogService.search({
+                project: { id: { $eq: req.project.id } },
+                itemOffered: { typeOf: { $eq: 'EventService' } }
             });
             res.json({
                 validation: null,
@@ -313,7 +315,7 @@ function createEventFromBody(req) {
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
-        const offerService = new chevre.service.Offer({
+        const offerCatalogService = new chevre.service.OfferCatalog({
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
@@ -340,7 +342,7 @@ function createEventFromBody(req) {
         if (screeningRoom.name === undefined) {
             throw new Error('上映スクリーン名が見つかりません');
         }
-        const ticketTypeGroup = yield offerService.findTicketTypeGroupById({ id: body.ticketTypeGroup });
+        const ticketTypeGroup = yield offerCatalogService.findById({ id: body.ticketTypeGroup });
         const searchServiceTypesResult = yield categoryCodeService.search({
             limit: 1,
             project: { id: { $eq: req.project.id } },
@@ -450,7 +452,7 @@ function createMultipleEventFromBody(req, user) {
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
-        const offerService = new chevre.service.Offer({
+        const offerCatalogService = new chevre.service.OfferCatalog({
             endpoint: process.env.API_ENDPOINT,
             auth: user.authClient
         });
@@ -483,9 +485,10 @@ function createMultipleEventFromBody(req, user) {
         const ticketTypeIds = body.ticketData;
         const mvtkExcludeFlgs = body.mvtkExcludeFlgData;
         const timeData = body.timeData;
-        const searchTicketTypeGroupsResult = yield offerService.searchTicketTypeGroups({
+        const searchTicketTypeGroupsResult = yield offerCatalogService.search({
             limit: 100,
-            project: { id: { $eq: req.project.id } }
+            project: { id: { $eq: req.project.id } },
+            itemOffered: { typeOf: { $eq: 'EventService' } }
         });
         const ticketTypeGroups = searchTicketTypeGroupsResult.data;
         const searchBoxOfficeTypeGroupsResult = yield categoryCodeService.search({

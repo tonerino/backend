@@ -41,7 +41,7 @@ function add(req, res) {
             if (validatorResult.isEmpty()) {
                 try {
                     req.body.id = '';
-                    let movie = createMovieFromBody(req);
+                    let movie = yield createMovieFromBody(req);
                     const creativeWorkService = new chevre.service.CreativeWork({
                         endpoint: process.env.API_ENDPOINT,
                         auth: req.user.authClient
@@ -109,7 +109,7 @@ function update(req, res, next) {
                     // 作品DB登録
                     try {
                         req.body.id = req.params.id;
-                        movie = createMovieFromBody(req);
+                        movie = yield createMovieFromBody(req);
                         debug('saving an movie...', movie);
                         yield creativeWorkService.updateMovie(movie);
                         req.flash('message', '更新しました');
@@ -132,7 +132,7 @@ function update(req, res, next) {
                 inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } }
             });
             const forms = Object.assign(Object.assign(Object.assign(Object.assign({}, movie), { distribution: (movie.distributor !== undefined && movie.distributor !== null)
-                    ? movie.distributor.distributorType
+                    ? movie.distributor.codeValue
                     : '' }), req.body), { duration: (_.isEmpty(req.body.duration))
                     ? (typeof movie.duration === 'string') ? moment.duration(movie.duration).asMinutes() : ''
                     : req.body.duration, datePublished: (_.isEmpty(req.body.datePublished)) ?
@@ -160,38 +160,45 @@ function update(req, res, next) {
 }
 exports.update = update;
 function createMovieFromBody(req) {
-    const body = req.body;
-    const movie = {
-        id: body.id,
-        project: req.project,
-        typeOf: chevre.factory.creativeWorkType.Movie,
-        identifier: body.identifier,
-        name: body.name,
-        duration: (body.duration !== '') ? moment.duration(Number(body.duration), 'm').toISOString() : undefined,
-        contentRating: (body.contentRating !== '') ? body.contentRating : null,
-        headline: body.headline,
-        datePublished: (!_.isEmpty(body.datePublished)) ?
-            moment(`${body.datePublished}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined,
-        offers: {
-            project: { typeOf: req.project.typeOf, id: req.project.id },
-            typeOf: chevre.factory.offerType.Offer,
-            priceCurrency: chevre.factory.priceCurrency.JPY,
-            availabilityEnds: (!_.isEmpty(body.offers) && !_.isEmpty(body.offers.availabilityEnds)) ?
-                moment(`${body.offers.availabilityEnds}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day').toDate() : undefined
-        },
-        distributor: {
-            id: body.distribution,
-            name: '',
-            distributorType: body.distribution
+    return __awaiter(this, void 0, void 0, function* () {
+        const body = req.body;
+        const categoryCodeService = new chevre.service.CategoryCode({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+        let distributor;
+        const distributorCodeParam = body.distribution;
+        if (typeof distributorCodeParam === 'string' && distributorCodeParam.length > 0) {
+            const searchDistributorTypesResult = yield categoryCodeService.search({
+                limit: 1,
+                project: { id: { $eq: req.project.id } },
+                inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } },
+                codeValue: { $eq: distributorCodeParam }
+            });
+            const distributorType = searchDistributorTypesResult.data.shift();
+            if (distributorType === undefined) {
+                throw new Error('配給区分が見つかりません');
+            }
+            distributor = Object.assign({ id: distributorType.id, codeValue: distributorType.codeValue }, {
+                distributorType: distributorType.codeValue
+            });
         }
-    };
-    if (movie.offers !== undefined
-        && movie.offers.availabilityEnds !== undefined
-        && movie.datePublished !== undefined
-        && movie.offers.availabilityEnds <= movie.datePublished) {
-        throw new Error('興行終了予定日が公開日よりも前です');
-    }
-    return movie;
+        const movie = Object.assign({ id: body.id, project: req.project, typeOf: chevre.factory.creativeWorkType.Movie, identifier: body.identifier, name: body.name, duration: (body.duration !== '') ? moment.duration(Number(body.duration), 'm').toISOString() : undefined, contentRating: (body.contentRating !== '') ? body.contentRating : null, headline: body.headline, datePublished: (!_.isEmpty(body.datePublished)) ?
+                moment(`${body.datePublished}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').toDate() : undefined, offers: {
+                project: { typeOf: req.project.typeOf, id: req.project.id },
+                typeOf: chevre.factory.offerType.Offer,
+                priceCurrency: chevre.factory.priceCurrency.JPY,
+                availabilityEnds: (!_.isEmpty(body.offers) && !_.isEmpty(body.offers.availabilityEnds)) ?
+                    moment(`${body.offers.availabilityEnds}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day').toDate() : undefined
+            } }, (distributor !== undefined) ? { distributor } : undefined);
+        if (movie.offers !== undefined
+            && movie.offers.availabilityEnds !== undefined
+            && movie.datePublished !== undefined
+            && movie.offers.availabilityEnds <= movie.datePublished) {
+            throw new Error('興行終了予定日が公開日よりも前です');
+        }
+        return movie;
+    });
 }
 /**
  * 一覧データ取得API
@@ -223,7 +230,7 @@ function getList(req, res) {
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data.map((d) => {
                     return Object.assign(Object.assign({}, d), { distributorType: (d.distributor !== undefined && d.distributor !== null)
-                            ? d.distributor.distributorType
+                            ? d.distributor.codeValue
                             : '' });
                 })
             });

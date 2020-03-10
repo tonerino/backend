@@ -32,6 +32,10 @@ export async function add(req: Request, res: Response): Promise<void> {
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
+    const offerCatalogService = new chevre.service.OfferCatalog({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient
+    });
     const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
@@ -51,15 +55,15 @@ export async function add(req: Request, res: Response): Promise<void> {
                 let ticketTypeGroup = await createFromBody(req);
 
                 // 券種グループコード重複確認
-                const { data } = await offerService.searchTicketTypeGroups({
+                const { data } = await offerCatalogService.search({
                     project: { id: { $eq: req.project.id } },
-                    identifier: `^${ticketTypeGroup.identifier}$`
+                    identifier: { $eq: ticketTypeGroup.identifier }
                 });
                 if (data.length > 0) {
                     throw new Error(`既に存在する券種グループコードです: ${ticketTypeGroup.identifier}`);
                 }
 
-                ticketTypeGroup = await offerService.createTicketTypeGroup(ticketTypeGroup);
+                ticketTypeGroup = await offerCatalogService.create(ticketTypeGroup);
                 req.flash('message', '登録しました');
                 res.redirect(`/ticketTypeGroups/${ticketTypeGroup.id}/update`);
 
@@ -87,13 +91,12 @@ export async function add(req: Request, res: Response): Promise<void> {
     };
 
     // 券種マスタから取得
-    let ticketTypes: chevre.factory.ticketType.ITicketType[] = [];
+    let ticketTypes: chevre.factory.offer.IUnitPriceOffer[] = [];
     if (forms.ticketTypes.length > 0) {
         const searchTicketTypesResult = await offerService.searchTicketTypes({
-            // sort: {
-            //     'priceSpecification.price': chevre.factory.sortType.Descending
-            // },
-            ids: forms.ticketTypes
+            limit: 100,
+            project: { id: { $eq: req.project.id } },
+            id: { $in: forms.ticketTypes }
         });
         ticketTypes = searchTicketTypesResult.data;
 
@@ -112,7 +115,7 @@ export async function add(req: Request, res: Response): Promise<void> {
         errors: errors,
         ticketTypes: ticketTypes,
         forms: forms,
-        boxOfficeTypeList: searchServiceTypesResult.data
+        serviceTypes: searchServiceTypesResult.data
     });
 }
 
@@ -121,6 +124,10 @@ export async function add(req: Request, res: Response): Promise<void> {
  */
 export async function update(req: Request, res: Response): Promise<void> {
     const offerService = new chevre.service.Offer({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient
+    });
+    const offerCatalogService = new chevre.service.OfferCatalog({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
@@ -148,7 +155,7 @@ export async function update(req: Request, res: Response): Promise<void> {
                 // 券種グループDB登録
                 req.body.id = req.params.id;
                 const ticketTypeGroup = await createFromBody(req);
-                await offerService.updateTicketTypeGroup(ticketTypeGroup);
+                await offerCatalogService.update(ticketTypeGroup);
                 req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
 
@@ -159,7 +166,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         }
     }
     // 券種グループ取得
-    const ticketGroup = await offerService.findTicketTypeGroupById({ id: req.params.id });
+    const ticketGroup = await offerCatalogService.findById({ id: req.params.id });
     const forms = {
         ...ticketGroup,
         serviceType: ticketGroup.itemOffered.serviceType?.codeValue,
@@ -168,15 +175,12 @@ export async function update(req: Request, res: Response): Promise<void> {
     };
 
     // 券種マスタから取得
-    let ticketTypes: chevre.factory.ticketType.ITicketType[] = [];
+    let ticketTypes: chevre.factory.offer.IUnitPriceOffer[] = [];
     if (forms.ticketTypes.length > 0) {
         const searchTicketTypesResult = await offerService.searchTicketTypes({
             limit: 100,
-            // sort: {
-            //     'priceSpecification.price': chevre.factory.sortType.Descending
-            // },
-            project: { ids: [req.project.id] },
-            ids: forms.ticketTypes
+            project: { id: { $eq: req.project.id } },
+            id: { $in: forms.ticketTypes }
         });
         ticketTypes = searchTicketTypesResult.data;
 
@@ -189,7 +193,7 @@ export async function update(req: Request, res: Response): Promise<void> {
         errors: errors,
         ticketTypes: ticketTypes,
         forms: forms,
-        boxOfficeTypeList: searchServiceTypesResult.data
+        serviceTypes: searchServiceTypesResult.data
     });
 }
 
@@ -230,10 +234,14 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
         itemListElement: itemListElement, // 後にオファーカタログへ統合するため
         itemOffered: {
             typeOf: 'EventService',
-            serviceType: serviceType
-        },
-        ...{
-            ticketTypes: ticketTypes
+            serviceType: {
+                project: serviceType.project,
+                id: serviceType.id,
+                typeOf: serviceType.typeOf,
+                codeValue: serviceType.codeValue,
+                name: serviceType.name,
+                inCodeSet: serviceType.inCodeSet
+            }
         }
     };
 }
@@ -243,17 +251,18 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
  */
 export async function getList(req: Request, res: Response): Promise<void> {
     try {
-        const offerService = new chevre.service.Offer({
+        const offerCatalogService = new chevre.service.OfferCatalog({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
 
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
-        const { data } = await offerService.searchTicketTypeGroups({
+        const { data } = await offerCatalogService.search({
             limit: limit,
             page: page,
             project: { id: { $eq: req.project.id } },
+            itemOffered: { typeOf: { $eq: 'EventService' } },
             identifier: req.query.identifier,
             name: req.query.name
         });
@@ -262,12 +271,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
             count: (data.length === Number(limit))
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
-            results: data.map((g) => {
-                return {
-                    ...g,
-                    ticketGroupCode: g.identifier
-                };
-            })
+            results: data
         });
     } catch (err) {
         res.json({
@@ -286,28 +290,33 @@ export async function getTicketTypeList(req: Request, res: Response): Promise<vo
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
+        const offerCatalogService = new chevre.service.OfferCatalog({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient
+        });
+
         // 券種グループ取得
-        const ticketGroup = await offerService.findTicketTypeGroupById({ id: req.query.id });
-        const offerIds = ticketGroup.itemListElement.map((e) => e.id);
+        const offerCatalog = await offerCatalogService.findById({ id: req.query.id });
+        const offerIds = offerCatalog.itemListElement.map((e) => e.id);
 
         const limit = 100;
         const page = 1;
         const { data } = await offerService.searchTicketTypes({
             limit: limit,
             page: page,
-            project: { ids: [req.project.id] },
-            ids: offerIds
+            project: { id: { $eq: req.project.id } },
+            id: { $in: offerIds }
         });
 
         // 券種を登録順にソート
-        const ticketTypes = data.sort((a, b) => offerIds.indexOf(a.id) - offerIds.indexOf(b.id));
+        const ticketTypes = data.sort((a, b) => offerIds.indexOf(<string>a.id) - offerIds.indexOf(<string>b.id));
 
         res.json({
             success: true,
             count: (ticketTypes.length === Number(limit))
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(ticketTypes.length),
-            results: ticketTypes.map((t) => (t.alternateName !== undefined) ? t.alternateName.ja : t.name.ja)
+            results: ticketTypes.map((t) => (t.alternateName !== undefined) ? (<any>t.alternateName).ja : (<any>t.name).ja)
         });
     } catch (err) {
         res.json({
@@ -335,12 +344,14 @@ export async function getTicketTypePriceList(req: Request, res: Response): Promi
             sort: {
                 'priceSpecification.price': chevre.factory.sortType.Descending
             },
-            project: { ids: [req.project.id] },
+            project: { id: { $eq: req.project.id } },
             priceSpecification: {
                 // 売上金額で検索
                 accounting: {
-                    minAccountsReceivable: Number(req.query.price),
-                    maxAccountsReceivable: Number(req.query.price)
+                    accountsReceivable: {
+                        $gte: Number(req.query.price),
+                        $lte: Number(req.query.price)
+                    }
                 }
             }
         });
@@ -367,7 +378,7 @@ export async function deleteById(req: Request, res: Response): Promise<void> {
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const offerService = new chevre.service.Offer({
+        const offerCatalogService = new chevre.service.OfferCatalog({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
@@ -390,7 +401,7 @@ export async function deleteById(req: Request, res: Response): Promise<void> {
             }
         }
 
-        await offerService.deleteTicketTypeGroup({ id: ticketTypeGroupId });
+        await offerCatalogService.deleteById({ id: ticketTypeGroupId });
         res.status(NO_CONTENT).end();
     } catch (error) {
         res.status(BAD_REQUEST).json({ error: { message: error.message } });
