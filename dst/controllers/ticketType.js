@@ -239,7 +239,11 @@ function createFromBody(req, isNew) {
         const appliesToMovieTicketType = (typeof req.body.appliesToMovieTicketType === 'string' && req.body.appliesToMovieTicketType.length > 0)
             ? req.body.appliesToMovieTicketType
             : undefined;
-        return Object.assign(Object.assign({ project: req.project, typeOf: 'Offer', priceCurrency: chevre.factory.priceCurrency.JPY, id: req.body.id, identifier: req.body.identifier, name: req.body.name, description: req.body.description, alternateName: { ja: req.body.alternateName.ja, en: '' }, availability: availability, priceSpecification: {
+        const itemOffered = {
+            project: req.project,
+            typeOf: 'EventService'
+        };
+        return Object.assign(Object.assign({ project: req.project, typeOf: 'Offer', priceCurrency: chevre.factory.priceCurrency.JPY, id: req.body.id, identifier: req.body.identifier, name: req.body.name, description: req.body.description, alternateName: { ja: req.body.alternateName.ja, en: '' }, availability: availability, itemOffered: itemOffered, priceSpecification: {
                 project: req.project,
                 typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
                 price: Number(req.body.price) * referenceQuantity.value,

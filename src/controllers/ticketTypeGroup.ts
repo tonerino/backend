@@ -91,7 +91,7 @@ export async function add(req: Request, res: Response): Promise<void> {
     };
 
     // 券種マスタから取得
-    let ticketTypes: chevre.factory.ticketType.ITicketType[] = [];
+    let ticketTypes: chevre.factory.offer.IUnitPriceOffer[] = [];
     if (forms.ticketTypes.length > 0) {
         const searchTicketTypesResult = await offerService.searchTicketTypes({
             limit: 100,
@@ -175,7 +175,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     };
 
     // 券種マスタから取得
-    let ticketTypes: chevre.factory.ticketType.ITicketType[] = [];
+    let ticketTypes: chevre.factory.offer.IUnitPriceOffer[] = [];
     if (forms.ticketTypes.length > 0) {
         const searchTicketTypesResult = await offerService.searchTicketTypes({
             limit: 100,
@@ -309,14 +309,14 @@ export async function getTicketTypeList(req: Request, res: Response): Promise<vo
         });
 
         // 券種を登録順にソート
-        const ticketTypes = data.sort((a, b) => offerIds.indexOf(a.id) - offerIds.indexOf(b.id));
+        const ticketTypes = data.sort((a, b) => offerIds.indexOf(<string>a.id) - offerIds.indexOf(<string>b.id));
 
         res.json({
             success: true,
             count: (ticketTypes.length === Number(limit))
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(ticketTypes.length),
-            results: ticketTypes.map((t) => (t.alternateName !== undefined) ? t.alternateName.ja : t.name.ja)
+            results: ticketTypes.map((t) => (t.alternateName !== undefined) ? (<any>t.alternateName).ja : (<any>t.name).ja)
         });
     } catch (err) {
         res.json({

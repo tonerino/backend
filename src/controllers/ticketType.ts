@@ -226,7 +226,7 @@ async function searchAllAccountTitles(req: Request): Promise<chevre.factory.acco
 }
 
 // tslint:disable-next-line:max-func-body-length
-async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.ticketType.ITicketType> {
+async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.offer.IUnitPriceOffer> {
     const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
@@ -268,6 +268,11 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
             ? <string>req.body.appliesToMovieTicketType
             : undefined;
 
+    const itemOffered = {
+        project: req.project,
+        typeOf: 'EventService'
+    };
+
     return {
         project: req.project,
         typeOf: <chevre.factory.offerType>'Offer',
@@ -278,6 +283,7 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         description: req.body.description,
         alternateName: { ja: <string>req.body.alternateName.ja, en: '' },
         availability: availability,
+        itemOffered: itemOffered,
         priceSpecification: {
             project: req.project,
             typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
