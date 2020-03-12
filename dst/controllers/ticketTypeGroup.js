@@ -94,7 +94,7 @@ function add(req, res) {
         // 券種マスタから取得
         let ticketTypes = [];
         if (forms.ticketTypes.length > 0) {
-            const searchTicketTypesResult = yield offerService.searchTicketTypes({
+            const searchTicketTypesResult = yield offerService.search({
                 limit: 100,
                 project: { id: { $eq: req.project.id } },
                 id: { $in: forms.ticketTypes }
@@ -170,7 +170,7 @@ function update(req, res) {
         // 券種マスタから取得
         let ticketTypes = [];
         if (forms.ticketTypes.length > 0) {
-            const searchTicketTypesResult = yield offerService.searchTicketTypes({
+            const searchTicketTypesResult = yield offerService.search({
                 limit: 100,
                 project: { id: { $eq: req.project.id } },
                 id: { $in: forms.ticketTypes }
@@ -292,7 +292,7 @@ function getTicketTypeList(req, res) {
             const offerIds = offerCatalog.itemListElement.map((e) => e.id);
             const limit = 100;
             const page = 1;
-            const { data } = yield offerService.searchTicketTypes({
+            const { data } = yield offerService.search({
                 limit: limit,
                 page: page,
                 project: { id: { $eq: req.project.id } },
@@ -330,7 +330,7 @@ function getTicketTypePriceList(req, res) {
             // 指定価格の券種検索
             const limit = 100;
             const page = 1;
-            const { data } = yield offerService.searchTicketTypes({
+            const { data } = yield offerService.search({
                 limit: limit,
                 page: page,
                 sort: {
