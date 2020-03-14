@@ -93,7 +93,7 @@ export async function add(req: Request, res: Response): Promise<void> {
     // 券種マスタから取得
     let ticketTypes: chevre.factory.offer.IUnitPriceOffer[] = [];
     if (forms.ticketTypes.length > 0) {
-        const searchTicketTypesResult = await offerService.searchTicketTypes({
+        const searchTicketTypesResult = await offerService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },
             id: { $in: forms.ticketTypes }
@@ -177,7 +177,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     // 券種マスタから取得
     let ticketTypes: chevre.factory.offer.IUnitPriceOffer[] = [];
     if (forms.ticketTypes.length > 0) {
-        const searchTicketTypesResult = await offerService.searchTicketTypes({
+        const searchTicketTypesResult = await offerService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },
             id: { $in: forms.ticketTypes }
@@ -301,7 +301,7 @@ export async function getTicketTypeList(req: Request, res: Response): Promise<vo
 
         const limit = 100;
         const page = 1;
-        const { data } = await offerService.searchTicketTypes({
+        const { data } = await offerService.search({
             limit: limit,
             page: page,
             project: { id: { $eq: req.project.id } },
@@ -338,7 +338,7 @@ export async function getTicketTypePriceList(req: Request, res: Response): Promi
         // 指定価格の券種検索
         const limit = 100;
         const page = 1;
-        const { data } = await offerService.searchTicketTypes({
+        const { data } = await offerService.search({
             limit: limit,
             page: page,
             sort: {

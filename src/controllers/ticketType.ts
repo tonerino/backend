@@ -53,8 +53,8 @@ export async function add(req: Request, res: Response): Promise<void> {
                 req.body.id = '';
                 let ticketType = await createFromBody(req, true);
 
-                // 券種コード重複確認
-                const { data } = await offerService.searchTicketTypes({
+                // コード重複確認
+                const { data } = await offerService.search({
                     project: { id: { $eq: req.project.id } },
                     identifier: { $eq: ticketType.identifier }
                 });
@@ -62,7 +62,7 @@ export async function add(req: Request, res: Response): Promise<void> {
                     throw new Error(`既に存在する券種コードです: ${ticketType.identifier}`);
                 }
 
-                ticketType = await offerService.createTicketType(ticketType);
+                ticketType = await offerService.create(ticketType);
                 req.flash('message', '登録しました');
                 res.redirect(`/ticketTypes/${ticketType.id}/update`);
 
@@ -116,7 +116,7 @@ export async function update(req: Request, res: Response): Promise<void> {
 
     let message = '';
     let errors: any = {};
-    let ticketType = await offerService.findTicketTypeById({ id: req.params.id });
+    let ticketType = await offerService.findById({ id: req.params.id });
     if (req.method === 'POST') {
         // 検証
         validateFormAdd(req);
@@ -128,7 +128,7 @@ export async function update(req: Request, res: Response): Promise<void> {
             try {
                 req.body.id = req.params.id;
                 ticketType = await createFromBody(req, false);
-                await offerService.updateTicketType(ticketType);
+                await offerService.update(ticketType);
                 req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
 
@@ -366,7 +366,7 @@ export async function getList(req: Request, res: Response): Promise<void> {
 
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
-        const { data } = await offerService.searchTicketTypes({
+        const { data } = await offerService.search({
             limit: limit,
             page: page,
             project: { id: { $eq: req.project.id } },
