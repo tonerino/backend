@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- Cinerinoに対してプロジェクトを明示的に指定するように調整
+
 ### Deprecated
 
 ### Removed
