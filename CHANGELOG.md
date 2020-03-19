@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.10.0 - 2020-03-19
+
+### Changed
+
+- Cinerinoに対してプロジェクトを明示的に指定するように調整
+
 ## v1.9.0 - 2020-03-14
 
 - update @chevre/api-nodejs-client

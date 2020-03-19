@@ -20,7 +20,11 @@ function getOptions(req, apiEndpoint) {
     }
     return {
         endpoint,
-        auth: authClient
+        auth: authClient,
+        // APIはマルチプロジェクトなので、プロジェクトIDを指定
+        project: {
+            id: process.env.PROJECT_ID
+        }
     };
 }
 exports.getOptions = getOptions;
