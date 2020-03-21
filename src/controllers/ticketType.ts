@@ -2,6 +2,7 @@
  * 券種マスタコントローラー
  */
 import * as chevre from '@chevre/api-nodejs-client';
+import * as cinerino from '@cinerino/api-nodejs-client';
 import { Request, Response } from 'express';
 import * as _ from 'underscore';
 import * as Message from '../common/Const/Message';
@@ -231,6 +232,11 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
+    const sellerService = new cinerino.service.Seller({
+        endpoint: <string>process.env.CINERINO_API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
 
     let offerCategory: chevre.factory.categoryCode.ICategoryCode | undefined;
 
@@ -255,6 +261,40 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         availability = chevre.factory.itemAvailability.InStoreOnly;
     } else if (req.body.isOnlineTicket === '1') {
         availability = chevre.factory.itemAvailability.OnlineOnly;
+    }
+
+    // 利用可能なアプリケーション設定
+    const availableAtOrFrom: { id: string }[] = [];
+
+    const searchSellersResult = await sellerService.search({});
+    const seller = searchSellersResult.data
+        .filter((s) => Array.isArray(s.areaServed) && s.areaServed.length > 0)[0];
+    const areaServed = seller.areaServed;
+    if (Array.isArray(areaServed)) {
+        switch (availability) {
+            case chevre.factory.itemAvailability.InStock:
+                availableAtOrFrom.push(...areaServed.map((a) => {
+                    return { id: <string>a.id };
+                }));
+
+                break;
+            case chevre.factory.itemAvailability.InStoreOnly:
+                availableAtOrFrom.push(...areaServed.filter((a) => a.typeOf === cinerino.factory.placeType.Store)
+                    .map((a) => {
+                        return { id: <string>a.id };
+                    }));
+
+                break;
+            case chevre.factory.itemAvailability.OnlineOnly:
+                availableAtOrFrom.push(...areaServed.filter((a) => a.typeOf === cinerino.factory.placeType.Online)
+                    .map((a) => {
+                        return { id: <string>a.id };
+                    }));
+
+                break;
+
+            default:
+        }
     }
 
     const referenceQuantity = {
@@ -282,6 +322,7 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         name: req.body.name,
         description: req.body.description,
         alternateName: { ja: <string>req.body.alternateName.ja, en: '' },
+        availableAtOrFrom: availableAtOrFrom,
         availability: availability,
         itemOffered: itemOffered,
         priceSpecification: {

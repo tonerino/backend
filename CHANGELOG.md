@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 券種のavailability設定を利用可能アプリケーション設定へ転換するように調整
+
 ### Deprecated
 
 ### Removed
