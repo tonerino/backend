@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 利用可能アプリケーション設定とアプリケーション環境変数の連動
+
 ### Deprecated
 
 ### Removed
