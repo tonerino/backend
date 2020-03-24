@@ -13,7 +13,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 券種マスタコントローラー
  */
 const chevre = require("@chevre/api-nodejs-client");
-const cinerino = require("@cinerino/api-nodejs-client");
 const _ = require("underscore");
 const Message = require("../common/Const/Message");
 // 券種コード 半角64
@@ -26,6 +25,8 @@ const NAME_PRITING_MAX_LENGTH_NAME_JA = 30;
 const NAME_MAX_LENGTH_NAME_EN = 64;
 // 金額
 const CHAGE_MAX_LENGTH = 10;
+const POS_CLIENT_ID = process.env.POS_CLIENT_ID;
+const FRONTEND_CLIENT_ID = process.env.FRONTEND_CLIENT_ID;
 /**
  * 新規登録
  */
@@ -208,11 +209,6 @@ function createFromBody(req, isNew) {
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient
         });
-        const sellerService = new cinerino.service.Seller({
-            endpoint: process.env.CINERINO_API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
         let offerCategory;
         if (typeof req.body.category === 'string' && req.body.category.length > 0) {
             const searchOfferCategoryTypesResult = yield categoryCodeService.search({
@@ -239,32 +235,20 @@ function createFromBody(req, isNew) {
         }
         // 利用可能なアプリケーション設定
         const availableAtOrFrom = [];
-        const searchSellersResult = yield sellerService.search({});
-        const seller = searchSellersResult.data
-            .filter((s) => Array.isArray(s.areaServed) && s.areaServed.length > 0)[0];
-        const areaServed = seller.areaServed;
-        if (Array.isArray(areaServed)) {
-            switch (availability) {
-                case chevre.factory.itemAvailability.InStock:
-                    availableAtOrFrom.push(...areaServed.map((a) => {
-                        return { id: a.id };
-                    }));
-                    break;
-                case chevre.factory.itemAvailability.InStoreOnly:
-                    availableAtOrFrom.push(...areaServed.filter((a) => a.typeOf === cinerino.factory.placeType.Store)
-                        .map((a) => {
-                        return { id: a.id };
-                    }));
-                    break;
-                case chevre.factory.itemAvailability.OnlineOnly:
-                    availableAtOrFrom.push(...areaServed.filter((a) => a.typeOf === cinerino.factory.placeType.Online)
-                        .map((a) => {
-                        return { id: a.id };
-                    }));
-                    break;
-                default:
-            }
+        switch (availability) {
+            case chevre.factory.itemAvailability.InStock:
+                availableAtOrFrom.push({ id: POS_CLIENT_ID }, { id: FRONTEND_CLIENT_ID });
+                break;
+            case chevre.factory.itemAvailability.InStoreOnly:
+                availableAtOrFrom.push({ id: POS_CLIENT_ID });
+                break;
+            case chevre.factory.itemAvailability.OnlineOnly:
+                availableAtOrFrom.push({ id: FRONTEND_CLIENT_ID });
+                break;
+            default:
         }
+        // 結局InStockに統一
+        availability = chevre.factory.itemAvailability.InStock;
         const referenceQuantity = {
             typeOf: 'QuantitativeValue',
             value: Number(req.body.seatReservationUnit),

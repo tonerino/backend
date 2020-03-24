@@ -2,7 +2,6 @@
  * 券種マスタコントローラー
  */
 import * as chevre from '@chevre/api-nodejs-client';
-import * as cinerino from '@cinerino/api-nodejs-client';
 import { Request, Response } from 'express';
 import * as _ from 'underscore';
 import * as Message from '../common/Const/Message';
@@ -17,6 +16,9 @@ const NAME_PRITING_MAX_LENGTH_NAME_JA = 30;
 const NAME_MAX_LENGTH_NAME_EN = 64;
 // 金額
 const CHAGE_MAX_LENGTH = 10;
+
+const POS_CLIENT_ID = <string>process.env.POS_CLIENT_ID;
+const FRONTEND_CLIENT_ID = <string>process.env.FRONTEND_CLIENT_ID;
 
 /**
  * 新規登録
@@ -232,11 +234,6 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient
     });
-    const sellerService = new cinerino.service.Seller({
-        endpoint: <string>process.env.CINERINO_API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
 
     let offerCategory: chevre.factory.categoryCode.ICategoryCode | undefined;
 
@@ -266,36 +263,25 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
     // 利用可能なアプリケーション設定
     const availableAtOrFrom: { id: string }[] = [];
 
-    const searchSellersResult = await sellerService.search({});
-    const seller = searchSellersResult.data
-        .filter((s) => Array.isArray(s.areaServed) && s.areaServed.length > 0)[0];
-    const areaServed = seller.areaServed;
-    if (Array.isArray(areaServed)) {
-        switch (availability) {
-            case chevre.factory.itemAvailability.InStock:
-                availableAtOrFrom.push(...areaServed.map((a) => {
-                    return { id: <string>a.id };
-                }));
+    switch (availability) {
+        case chevre.factory.itemAvailability.InStock:
+            availableAtOrFrom.push({ id: POS_CLIENT_ID }, { id: FRONTEND_CLIENT_ID });
 
-                break;
-            case chevre.factory.itemAvailability.InStoreOnly:
-                availableAtOrFrom.push(...areaServed.filter((a) => a.typeOf === cinerino.factory.placeType.Store)
-                    .map((a) => {
-                        return { id: <string>a.id };
-                    }));
+            break;
+        case chevre.factory.itemAvailability.InStoreOnly:
+            availableAtOrFrom.push({ id: POS_CLIENT_ID });
 
-                break;
-            case chevre.factory.itemAvailability.OnlineOnly:
-                availableAtOrFrom.push(...areaServed.filter((a) => a.typeOf === cinerino.factory.placeType.Online)
-                    .map((a) => {
-                        return { id: <string>a.id };
-                    }));
+            break;
+        case chevre.factory.itemAvailability.OnlineOnly:
+            availableAtOrFrom.push({ id: FRONTEND_CLIENT_ID });
 
-                break;
+            break;
 
-            default:
-        }
+        default:
     }
+
+    // 結局InStockに統一
+    availability = chevre.factory.itemAvailability.InStock;
 
     const referenceQuantity = {
         typeOf: <'QuantitativeValue'>'QuantitativeValue',
