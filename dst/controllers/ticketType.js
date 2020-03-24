@@ -139,18 +139,27 @@ function update(req, res) {
         }
         let isBoxTicket = false;
         let isOnlineTicket = false;
-        switch (ticketType.availability) {
-            case chevre.factory.itemAvailability.InStock:
+        // switch (ticketType.availability) {
+        //     case chevre.factory.itemAvailability.InStock:
+        //         isBoxTicket = true;
+        //         isOnlineTicket = true;
+        //         break;
+        //     case chevre.factory.itemAvailability.InStoreOnly:
+        //         isBoxTicket = true;
+        //         break;
+        //     case chevre.factory.itemAvailability.OnlineOnly:
+        //         isOnlineTicket = true;
+        //         break;
+        //     default:
+        // }
+        const availableAtOrFrom = ticketType.availableAtOrFrom;
+        if (Array.isArray(availableAtOrFrom)) {
+            if (availableAtOrFrom.some((a) => a.id === POS_CLIENT_ID)) {
                 isBoxTicket = true;
+            }
+            if (availableAtOrFrom.some((a) => a.id === FRONTEND_CLIENT_ID)) {
                 isOnlineTicket = true;
-                break;
-            case chevre.factory.itemAvailability.InStoreOnly:
-                isBoxTicket = true;
-                break;
-            case chevre.factory.itemAvailability.OnlineOnly:
-                isOnlineTicket = true;
-                break;
-            default:
+            }
         }
         let seatReservationUnit = 1;
         if (ticketType.priceSpecification.referenceQuantity.value !== undefined) {
@@ -224,31 +233,23 @@ function createFromBody(req, isNew) {
         }
         // availabilityをフォーム値によって作成
         let availability = chevre.factory.itemAvailability.OutOfStock;
-        if (req.body.isBoxTicket === '1' && req.body.isOnlineTicket === '1') {
-            availability = chevre.factory.itemAvailability.InStock;
-        }
-        else if (req.body.isBoxTicket === '1') {
-            availability = chevre.factory.itemAvailability.InStoreOnly;
-        }
-        else if (req.body.isOnlineTicket === '1') {
-            availability = chevre.factory.itemAvailability.OnlineOnly;
-        }
-        // 利用可能なアプリケーション設定
-        const availableAtOrFrom = [];
-        switch (availability) {
-            case chevre.factory.itemAvailability.InStock:
-                availableAtOrFrom.push({ id: POS_CLIENT_ID }, { id: FRONTEND_CLIENT_ID });
-                break;
-            case chevre.factory.itemAvailability.InStoreOnly:
-                availableAtOrFrom.push({ id: POS_CLIENT_ID });
-                break;
-            case chevre.factory.itemAvailability.OnlineOnly:
-                availableAtOrFrom.push({ id: FRONTEND_CLIENT_ID });
-                break;
-            default:
-        }
         // 結局InStockに統一
         availability = chevre.factory.itemAvailability.InStock;
+        // if (req.body.isBoxTicket === '1' && req.body.isOnlineTicket === '1') {
+        //     availability = chevre.factory.itemAvailability.InStock;
+        // } else if (req.body.isBoxTicket === '1') {
+        //     availability = chevre.factory.itemAvailability.InStoreOnly;
+        // } else if (req.body.isOnlineTicket === '1') {
+        //     availability = chevre.factory.itemAvailability.OnlineOnly;
+        // }
+        // 利用可能なアプリケーション設定
+        const availableAtOrFrom = [];
+        if (req.body.isBoxTicket === '1') {
+            availableAtOrFrom.push({ id: POS_CLIENT_ID });
+        }
+        if (req.body.isOnlineTicket === '1') {
+            availableAtOrFrom.push({ id: FRONTEND_CLIENT_ID });
+        }
         const referenceQuantity = {
             typeOf: 'QuantitativeValue',
             value: Number(req.body.seatReservationUnit),
