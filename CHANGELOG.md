@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 利用可能アプリケーション設定とアプリケーション環境変数の連動
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v1.12.0 - 2020-03-24
+
+### Changed
+
+- 券種のavailability設定を利用可能アプリケーション設定へ移行
+- 利用可能アプリケーション設定とアプリケーション環境変数の連動
 
 ## v1.11.0 - 2020-03-21
 
