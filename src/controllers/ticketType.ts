@@ -280,6 +280,9 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         default:
     }
 
+    // 結局InStockに統一
+    availability = chevre.factory.itemAvailability.InStock;
+
     const referenceQuantity = {
         typeOf: <'QuantitativeValue'>'QuantitativeValue',
         value: Number(req.body.seatReservationUnit),

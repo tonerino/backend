@@ -247,6 +247,8 @@ function createFromBody(req, isNew) {
                 break;
             default:
         }
+        // 結局InStockに統一
+        availability = chevre.factory.itemAvailability.InStock;
         const referenceQuantity = {
             typeOf: 'QuantitativeValue',
             value: Number(req.body.seatReservationUnit),
