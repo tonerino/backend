@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.13.0 - 2020-03-24
+
+### Changed
+
+- 券種のavailability設定を利用可能アプリケーション設定へ移行
+
 ## v1.12.0 - 2020-03-24
 
 ### Changed
