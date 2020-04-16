@@ -4,6 +4,7 @@
 import * as express from 'express';
 
 import authentication from '../middlewares/authentication';
+import endOfService from '../middlewares/endOfService';
 
 import authRouter from './auth';
 import movieRouter from './creativeWork/movie';
@@ -20,6 +21,9 @@ import ticketTypeGroupMasterRouter from './ticketTypeGroup';
 const router = express.Router();
 router.use(authRouter);
 router.use(authentication);
+
+router.use(endOfService);
+
 router.use('/boxOfficeTypes', serviceTypesRouter);
 router.use('/creativeWorks/movie', movieRouter);
 router.use('/distributions', distributionsMasterRouter);
