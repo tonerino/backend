@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const express = require("express");
 const authentication_1 = require("../middlewares/authentication");
+const endOfService_1 = require("../middlewares/endOfService");
 const auth_1 = require("./auth");
 const movie_1 = require("./creativeWork/movie");
 const distributions_1 = require("./distributions");
@@ -19,6 +20,7 @@ const ticketTypeGroup_1 = require("./ticketTypeGroup");
 const router = express.Router();
 router.use(auth_1.default);
 router.use(authentication_1.default);
+router.use(endOfService_1.default);
 router.use('/boxOfficeTypes', serviceTypes_1.default);
 router.use('/creativeWorks/movie', movie_1.default);
 router.use('/distributions', distributions_1.default);

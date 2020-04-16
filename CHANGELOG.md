@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.14.0 - 2020-04-16
+
+### Added
+
+- サービス終了ミドルウェアを追加
+
 ## v1.13.0 - 2020-03-24
 
 ### Changed
