@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- サービス終了ミドルウェアを追加
-
 ### Changed
 
 ### Deprecated
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v1.14.0 - 2020-04-16
+
+### Added
+
+- サービス終了ミドルウェアを追加
 
 ## v1.13.0 - 2020-03-24
 
